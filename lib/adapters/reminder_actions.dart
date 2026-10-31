@@ -5,6 +5,9 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 const actionHaveEverything = 'have_everything';
 const actionForgot = 'forgot';
+
+/// Marks a test notification, whose buttons must not act on a real Reminder.
+const testReminderPayload = 'test';
 const _portName = 'geo_alert_reminder_actions';
 
 /// Isolates in one process can reach each other through this name, which lets
@@ -18,7 +21,7 @@ void removeActionPort() => IsolateNameServer.removePortNameMapping(_portName);
 
 void forwardAction(NotificationResponse response) {
   final id = response.actionId;
-  if (id == null) return;
+  if (id == null || response.payload == testReminderPayload) return;
   IsolateNameServer.lookupPortByName(_portName)?.send(id);
 }
 
@@ -36,7 +39,10 @@ const reminderNotificationSettings = InitializationSettings(
 Future<void> initReminderActionsInApp(void Function() onForgot) async {
   void handle(NotificationResponse response) {
     forwardAction(response);
-    if (response.actionId == actionForgot) onForgot();
+    if (response.actionId == actionForgot &&
+        response.payload != testReminderPayload) {
+      onForgot();
+    }
   }
 
   final plugin = FlutterLocalNotificationsPlugin();

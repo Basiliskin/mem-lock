@@ -12,4 +12,8 @@ class PrefsReminderOptions implements ReminderOptionsStore {
     final text = await _prefs.getString(_key);
     return text == null ? const ReminderOptions() : ReminderOptions.parse(text);
   }
+
+  @override
+  Future<void> write(ReminderOptions value) =>
+      _prefs.setString(_key, value.encode());
 }

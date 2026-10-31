@@ -84,7 +84,7 @@ The Detector is one state machine: `step(state, event) → (newState, decisions)
 | `CurrentFixSource` | One-off fix for the screens | geolocator |
 | `ActivitySource` | Activity changes | activity_recognition_flutter, pending S1 results. Do not ship its health-type foreground service without checking Play rules |
 | `ReminderPlayer` | Start, repeat, stop; sound, vibration, voice; silent behaviour | flutter_local_notifications plus an audio plugin |
-| `Recorder` | Record and play back the Helper's voice | To be chosen in S2 |
+| `VoiceRecorder` | Record the Helper's voice; playback goes through the Reminder output | record |
 | `Store` | Settings, Quiet Places, Last Places, Detector state | shared_preferences |
 | `WatcherLink` | Tell the running service a list changed | flutter_foreground_task |
 | `MapLauncher` | Open a location in the map app | url_launcher |

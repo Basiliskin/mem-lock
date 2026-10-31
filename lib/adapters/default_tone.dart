@@ -1,10 +1,28 @@
 import 'dart:math';
 import 'dart:typed_data';
 
-/// The default Reminder sound as a WAV: two rising beeps, generated here so
-/// that it can't go missing like a file could.
-Uint8List defaultToneWav({int sampleRate = 22050}) {
-  const beeps = [(880.0, 0.4), (0.0, 0.1), (1175.0, 0.4), (0.0, 0.6)];
+import '../domain/reminder_options.dart';
+
+/// A built-in Reminder sound as a WAV, generated here so that it can't go
+/// missing like a file could.
+Uint8List toneWav(ReminderTone tone, {int sampleRate = 22050}) {
+  final beeps = switch (tone) {
+    ReminderTone.rising => const [
+      (880.0, 0.4),
+      (0.0, 0.1),
+      (1175.0, 0.4),
+      (0.0, 0.6),
+    ],
+    ReminderTone.bell => const [(660.0, 0.8), (0.0, 0.7)],
+    ReminderTone.pulse => const [
+      (1000.0, 0.15),
+      (0.0, 0.1),
+      (1000.0, 0.15),
+      (0.0, 0.1),
+      (1000.0, 0.15),
+      (0.0, 0.5),
+    ],
+  };
   const rounds = 3;
   final samples = <int>[];
   for (var r = 0; r < rounds; r++) {

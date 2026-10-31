@@ -37,6 +37,36 @@ abstract final class Strings {
   static const confirmRemove = 'Да, удалить';
   static const cancel = 'Отмена';
 
+  static const helperSettings = 'Настройки для близких';
+  static const reminderOptions = 'Напоминание';
+  static const reminderChannelNoVibration = 'Напоминания без вибрации';
+  static const reminderChannelStrong = 'Напоминания с сильной вибрацией';
+  static const testReminder = 'Проверить напоминание';
+  static const stopTest = 'Остановить проверку';
+  static const testFailed = 'Не удалось запустить проверку.';
+  static const soundHeading = 'Звук';
+  static const toneRising = 'Два сигнала';
+  static const toneBell = 'Колокольчик';
+  static const tonePulse = 'Частые сигналы';
+  static const recordVoice = 'Записать голос';
+  static const stopRecording = 'Закончить запись';
+  static const voiceInUse = 'Сейчас звучит записанный голос.';
+  static const micRefused =
+      'Нет доступа к микрофону. Разрешите его в настройках телефона.';
+  static const recordFailed = 'Запись не удалась. Попробуйте снова.';
+  static const vibrationHeading = 'Вибрация';
+  static const vibrationOff = 'Без вибрации';
+  static const vibrationNormal = 'Обычная';
+  static const vibrationStrong = 'Сильная';
+  static const silentHeading = 'Когда телефон без звука';
+  static const silentAloud = 'Всё равно звучать';
+  static const silentVibrate = 'Только вибрация';
+  static const nothingOnSilent =
+      'На беззвучном напоминание не будет ни слышно, ни ощутимо.';
+  static const textHeading = 'Текст';
+  static const reminderTitleLabel = 'Заголовок: «$reminderTitle»';
+  static const reminderBodyLabel = 'Сообщение: «$reminderBody»';
+
   static const _months = [
     'января',
     'февраля',

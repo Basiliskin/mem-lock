@@ -9,7 +9,7 @@ const reminderInterval = Duration(seconds: 30);
 
 /// Runs one Reminder from first try to its end. A failing output never stops
 /// the rest of the Reminder, because any part of it may be the one noticed.
-class ReminderSession implements ReminderPlayer {
+class ReminderSession implements ReminderPlayer, ReminderTester {
   ReminderSession({
     required ReminderOutput output,
     required ReminderOptionsStore options,
@@ -37,6 +37,15 @@ class ReminderSession implements ReminderPlayer {
     if (run == _run) await _fire(run);
   }
 
+  /// One try only, through the same steps as a real Reminder (AC-4.5).
+  @override
+  Future<void> test(ReminderOptions options) async {
+    final run = _begin();
+    _options = options;
+    await _quietly(() => _output.show(alert: true, options: _options));
+    if (run == _run) await _playWithFallback();
+  }
+
   @override
   Future<void> stop() async {
     _begin();
@@ -52,7 +61,7 @@ class ReminderSession implements ReminderPlayer {
 
   Future<void> _fire(int run) async {
     _tries++;
-    await _quietly(() => _output.show(alert: true));
+    await _quietly(() => _output.show(alert: true, options: _options));
     if (run != _run) return;
     await _playWithFallback();
     if (run != _run) return;
@@ -64,21 +73,21 @@ class ReminderSession implements ReminderPlayer {
     if (_tries < reminderTries) {
       await _fire(run);
     } else {
-      await _quietly(() => _output.show(alert: false));
+      await _quietly(() => _output.show(alert: false, options: _options));
     }
   }
 
   Future<void> _playWithFallback() async {
-    final custom = _options.customSoundPath;
-    if (custom != null) {
+    final o = _options;
+    if (o.voicePath != null || o.tone != ReminderTone.rising) {
       try {
-        await _output.play(custom, _options.silent);
+        await _output.play(o.voicePath, o.tone, o.silent);
         return;
       } on Object {
         // Falls through to the default sound (AC-4.4).
       }
     }
-    await _quietly(() => _output.play(null, _options.silent));
+    await _quietly(() => _output.play(null, ReminderTone.rising, o.silent));
   }
 
   Future<void> _quietly(Future<void> Function() action) async {

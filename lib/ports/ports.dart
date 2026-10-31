@@ -35,16 +35,31 @@ abstract interface class BackgroundHost {
 /// What the phone does to present a Reminder.
 abstract interface class ReminderOutput {
   /// [alert] false leaves the notification on screen quietly.
-  Future<void> show({required bool alert});
+  Future<void> show({required bool alert, required ReminderOptions options});
 
-  /// A null [customPath] plays the default sound.
-  Future<void> play(String? customPath, SilentChoice silent);
+  /// Plays [voicePath], or [tone] when it is null.
+  Future<void> play(String? voicePath, ReminderTone tone, SilentChoice silent);
   Future<void> stopSound();
   Future<void> cancel();
 }
 
 abstract interface class ReminderOptionsStore {
   Future<ReminderOptions> read();
+  Future<void> write(ReminderOptions value);
+}
+
+/// Lets the Helper hear and feel a Reminder without a real one starting.
+abstract interface class ReminderTester {
+  Future<void> test(ReminderOptions options);
+  Future<void> stop();
+}
+
+abstract interface class VoiceRecorder {
+  /// Returns false when the microphone permission is refused.
+  Future<bool> start();
+
+  /// Returns the new recording's path, or null when it didn't work.
+  Future<String?> stop();
 }
 
 abstract interface class LastPlaceStore {
