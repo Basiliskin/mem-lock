@@ -17,6 +17,9 @@ class PhoneHealth implements HealthCheck {
     if (!await Permission.notification.isGranted) {
       return ProtectionProblem.notifications;
     }
+    if (!await Permission.activityRecognition.isGranted) {
+      return ProtectionProblem.activityPermission;
+    }
     return null;
   }
 
@@ -27,6 +30,7 @@ class PhoneHealth implements HealthCheck {
         await Geolocator.openLocationSettings();
       case ProtectionProblem.locationPermission:
       case ProtectionProblem.notifications:
+      case ProtectionProblem.activityPermission:
         await openAppSettings();
     }
   }

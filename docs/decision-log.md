@@ -74,3 +74,8 @@
 
 - **Plugin patch:** a copy of activity_recognition_flutter 6.1.0 in `packages/`, because closing the screens would otherwise stop activity updates for the whole app. On detach, only the listening engine now stops them. Found by reading the code, not yet reproduced on a phone. Files: `packages/activity_recognition_flutter/`, `pubspec.yaml`.
 - **Play services check:** google_api_availability, with the note on the activity step. A failing check shows no note, and the permission is still required. Files: `lib/adapters/plugin_activity.dart`, `lib/ui/setup_screen.dart`, `lib/l10n/strings.dart`.
+
+## 2026-10-31 · /developer AC-8.2 fix
+
+- **Activity permission warning:** removing it now shows "Not protecting you", replacing the S11 decision not to check it, because S14 makes Ride Reminders depend on it. Battery optimisation is still not checked. Files: `lib/adapters/phone_health.dart`, `lib/ports/ports.dart`, `lib/ui/main_screen.dart`, `lib/l10n/strings.dart`.
+- **Recovery:** clearing any warning also makes the Watcher listen for activity again, because a failed registration isn't retried. Files: `lib/service/watcher.dart`, `lib/service/entry_point.dart`.

@@ -126,7 +126,12 @@ abstract interface class SetupStore {
 }
 
 /// Something stopping the app from protecting the Wearer.
-enum ProtectionProblem { locationOff, locationPermission, notifications }
+enum ProtectionProblem {
+  locationOff,
+  locationPermission,
+  notifications,
+  activityPermission,
+}
 
 abstract interface class HealthCheck {
   /// Returns null when all is well.

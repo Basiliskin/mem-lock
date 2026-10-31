@@ -170,6 +170,25 @@ void main() {
       expect(watcher.state.phase, isA<OnRide>());
     });
 
+    test('restarting listens again, so a new grant takes effect', () async {
+      var listens = 0;
+      activity = FakeActivity();
+      activity.controller.onListen = () => listens++;
+      await begin();
+      expect(listens, 1);
+      await watcher.restartActivity();
+      expect(listens, 2);
+      await boardRide();
+      expect(watcher.state.phase, isA<OnRide>());
+    });
+
+    test('restarting after stop does not listen again', () async {
+      await begin();
+      await watcher.stop();
+      await watcher.restartActivity();
+      expect(activity.controller.hasListener, isFalse);
+    });
+
     test('stop cancels the subscription', () async {
       await begin();
       expect(activity.controller.hasListener, isTrue);

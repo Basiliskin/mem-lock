@@ -165,6 +165,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     ProtectionProblem.locationOff => Strings.problemLocationOff,
     ProtectionProblem.locationPermission => Strings.problemLocationPermission,
     ProtectionProblem.notifications => Strings.problemNotifications,
+    ProtectionProblem.activityPermission => Strings.problemActivityPermission,
   };
 
   Future<void> _fix(ProtectionProblem problem) async {

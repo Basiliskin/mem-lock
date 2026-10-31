@@ -88,7 +88,7 @@ The Detector is one state machine: `step(state, event) → (newState, decisions)
 | `Store` | Settings, Quiet Places, Last Places, Detector state | shared_preferences |
 | `WatcherLink` | Tell the running service a list changed | flutter_foreground_task |
 | `MapLauncher` | Open a location in the map app | url_launcher |
-| `HealthCheck` | Location on, location and notification permissions | geolocator, permission_handler |
+| `HealthCheck` | Location on; location, notification and activity permissions | geolocator, permission_handler |
 | `ProtectionNotice` | Show the warning in the persistent notification | flutter_foreground_task |
 | `BackgroundHost` | Start and restart the foreground service | flutter_foreground_task |
 
@@ -173,4 +173,4 @@ S1 also ran the plugin in the probe's main isolate with no service of its own, s
 
 **Tests:** kind mapping; Watcher sends activity to the Detector in order, keeps watching after a stream error, and cancels on stop; setup shows the note; a saved `OnRide` continues after a restart with signals arriving.
 
-**Unchanged:** the Detector and its thresholds. A later loss of the activity permission still gives no warning, as decided in S11.
+**Unchanged:** the Detector and its thresholds. Losing the activity permission gives a warning, which replaces the S11 decision.

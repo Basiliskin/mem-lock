@@ -87,6 +87,7 @@ void main() {
       ProtectionProblem.locationOff: Strings.problemLocationOff,
       ProtectionProblem.locationPermission: Strings.problemLocationPermission,
       ProtectionProblem.notifications: Strings.problemNotifications,
+      ProtectionProblem.activityPermission: Strings.problemActivityPermission,
     };
     for (final e in reasons.entries) {
       testWidgets('AC-8.2: ${e.key.name} warns with the reason and a fix', (

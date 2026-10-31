@@ -58,7 +58,10 @@ class _Handler extends TaskHandler {
     final monitor = ProtectionMonitor(
       health: PhoneHealth(),
       notice: ServiceProtectionNotice(),
-      onRecovered: watcher.restartLocation,
+      onRecovered: () async {
+        await watcher.restartLocation();
+        await watcher.restartActivity();
+      },
     );
     _monitor = monitor;
     await monitor.check();

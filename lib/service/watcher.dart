@@ -45,10 +45,7 @@ class Watcher {
     await syncQuietPlaces();
     await syncStaySetting();
     _subscription = _location.fixes.listen(handle, onError: (Object _) {});
-    _activitySubscription = _activity.changes.listen(
-      handle,
-      onError: (Object _) {},
-    );
+    _listenToActivity();
   }
 
   Future<void> stop() async {
@@ -62,6 +59,21 @@ class Watcher {
   Future<void> restartLocation() => _queue = _queue.then(
     (_) => _quietly(() => _location.setMode(state.locationMode)),
   );
+
+  /// Listens again, because activity updates that failed to register while the
+  /// permission was missing are not retried by the phone.
+  Future<void> restartActivity() => _queue = _queue.then((_) async {
+    if (_activitySubscription == null) return;
+    await _quietly(() async => _activitySubscription?.cancel());
+    _listenToActivity();
+  });
+
+  void _listenToActivity() {
+    _activitySubscription = _activity.changes.listen(
+      handle,
+      onError: (Object _) {},
+    );
+  }
 
   Future<void> tick(DateTime now) => handle(Tick(now));
 
