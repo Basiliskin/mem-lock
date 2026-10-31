@@ -127,6 +127,7 @@ void main() {
             places: places,
             map: FakeMap(),
             forgotRequests: requests,
+            helperSettings: (_) => const Text('helper-settings'),
           ),
         ),
       );
@@ -164,6 +165,7 @@ void main() {
             places: FakePlaces(place),
             map: FakeMap(),
             forgotRequests: requests,
+            helperSettings: (_) => const Text('helper-settings'),
           ),
         ),
       );

@@ -80,16 +80,18 @@ The Detector is one state machine: `step(state, event) → (newState, decisions)
 
 | Port | Provides | Adapter |
 |---|---|---|
-| `LocationSource` | Position stream, one-off fix, mode switch | geolocator |
+| `LocationSource` | Position stream, mode switch | geolocator |
+| `CurrentFixSource` | One-off fix for the screens | geolocator |
 | `ActivitySource` | Activity changes | activity_recognition_flutter, pending S1 results. Do not ship its health-type foreground service without checking Play rules |
 | `ReminderPlayer` | Start, repeat, stop; sound, vibration, voice; silent behaviour | flutter_local_notifications plus an audio plugin |
 | `Recorder` | Record and play back the Helper's voice | To be chosen in S2 |
 | `Store` | Settings, Quiet Places, Last Places, Detector state | shared_preferences |
+| `WatcherLink` | Tell the running service a list changed | flutter_foreground_task |
 | `MapLauncher` | Open a location in the map app | url_launcher |
 | `HealthCheck` | Location on, permissions, battery optimisation, battery level | geolocator, permission_handler, battery plugin |
 | `BackgroundHost` | Start and restart the foreground service | flutter_foreground_task |
 
-The service and screens run in separate isolates, so they share data through `Store` and the service's message channel.
+The service and screens run in separate isolates, so they share data through `Store` and the service's message channel. Only the screens write the Quiet Places list. The service re-reads it when told of a change and whenever it starts, and passes it to the Detector as `QuietPlacesChanged`.
 
 ## Errors
 

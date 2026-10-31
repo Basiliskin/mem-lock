@@ -3,6 +3,7 @@ import 'dart:async';
 import '../domain/detector.dart';
 import '../domain/detector_json.dart';
 import '../domain/last_place_record.dart';
+import '../domain/quiet_place_record.dart';
 import '../ports/ports.dart';
 
 /// Connects the ports to the Detector. Events run strictly one at a time, and
@@ -13,15 +14,18 @@ class Watcher {
     required StateStore store,
     required ReminderPlayer reminders,
     required LastPlaceStore places,
+    required QuietPlaceStore quiet,
   }) : _location = location,
        _store = store,
        _reminders = reminders,
-       _places = places;
+       _places = places,
+       _quiet = quiet;
 
   final LocationSource _location;
   final StateStore _store;
   final ReminderPlayer _reminders;
   final LastPlaceStore _places;
+  final QuietPlaceStore _quiet;
 
   DetectorState state = DetectorState.initial();
   StreamSubscription<LocationFix>? _subscription;
@@ -30,6 +34,8 @@ class Watcher {
   Future<void> start() async {
     state = await _load();
     await _quietly(() => _location.setMode(state.locationMode));
+    // The list may have changed while the service wasn't running.
+    await syncQuietPlaces();
     _subscription = _location.fixes.listen(handle, onError: (Object _) {});
   }
 
@@ -39,6 +45,20 @@ class Watcher {
   }
 
   Future<void> tick(DateTime now) => handle(Tick(now));
+
+  /// Reads the Helper's list and passes it to the Detector, in turn with other
+  /// events. A failed read keeps the list the Detector already has.
+  Future<void> syncQuietPlaces() => _queue = _queue.then((_) async {
+    final List<QuietPlaceRecord> records;
+    try {
+      records = await _quiet.read();
+    } on Object {
+      return;
+    }
+    await _process(
+      QuietPlacesChanged(DateTime.now(), [for (final r in records) r.place]),
+    );
+  });
 
   Future<void> handle(DetectorEvent event) =>
       _queue = _queue.then((_) => _process(event));

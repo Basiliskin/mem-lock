@@ -5,6 +5,7 @@ import 'package:geo_alert/domain/detector.dart';
 import 'package:geo_alert/domain/detector_json.dart';
 import 'package:geo_alert/domain/geo.dart';
 import 'package:geo_alert/domain/last_place_record.dart';
+import 'package:geo_alert/domain/quiet_place_record.dart';
 import 'package:geo_alert/ports/ports.dart';
 import 'package:geo_alert/service/watcher.dart';
 
@@ -49,6 +50,19 @@ class FakePlaces implements LastPlaceStore {
   }
 }
 
+class FakeQuiet implements QuietPlaceStore {
+  List<QuietPlaceRecord> saved = [];
+  bool fail = false;
+  @override
+  Future<List<QuietPlaceRecord>> read() async {
+    if (fail) throw StateError('disk');
+    return saved;
+  }
+
+  @override
+  Future<void> write(List<QuietPlaceRecord> places) async => saved = places;
+}
+
 class FakeReminders implements ReminderPlayer {
   final started = <StartReminder>[];
   int stopped = 0;
@@ -64,6 +78,9 @@ void main() {
   late FakeReminders reminders;
   late Watcher watcher;
   final places = FakePlaces();
+  late FakeQuiet quiet;
+
+  setUp(() => quiet = FakeQuiet());
 
   Future<void> begin([String? saved]) async {
     location = FakeLocation();
@@ -74,6 +91,7 @@ void main() {
       store: store,
       reminders: reminders,
       places: places,
+      quiet: quiet,
     );
     await watcher.start();
   }
@@ -136,6 +154,7 @@ void main() {
       store: store,
       reminders: _OrderReminders(order),
       places: p,
+      quiet: quiet,
     );
     await watcher.start();
     await settle();
@@ -203,9 +222,72 @@ void main() {
         store: store,
         reminders: reminders,
         places: places,
+        quiet: quiet,
       );
       await watcher.start();
       expect(watcher.state.phase, isA<Roaming>());
+    });
+  });
+
+  group('Quiet Places', () {
+    final atCafe = QuietPlaceRecord(const QuietPlace('c', cafe), t0);
+
+    test('AC-1.3: a place marked during the Stay gives no Reminder', () async {
+      await begin();
+      await settle();
+      quiet.saved = [atCafe];
+      await watcher.syncQuietPlaces();
+      await walkOut();
+      expect(reminders.started, isEmpty);
+    });
+
+    test('AC-6.3: a place removed during the Stay gives a Reminder', () async {
+      quiet.saved = [atCafe];
+      await begin();
+      await settle();
+      quiet.saved = [];
+      await watcher.syncQuietPlaces();
+      await walkOut();
+      expect(reminders.started, hasLength(1));
+    });
+
+    test('a change made while the service was stopped is picked up', () async {
+      await begin();
+      final saved = store.text;
+      quiet.saved = [atCafe];
+      await begin(saved);
+      await settle();
+      await walkOut();
+      expect(reminders.started, isEmpty);
+    });
+
+    test('a change is saved, so it survives a failed read later', () async {
+      quiet.saved = [atCafe];
+      await begin();
+      expect(decodeState(store.text!).quietPlaces.single.id, 'c');
+      quiet.fail = true;
+      await begin(store.text);
+      await settle();
+      await walkOut();
+      expect(reminders.started, isEmpty);
+    });
+
+    test('a failed read keeps the list and later events still run', () async {
+      quiet.saved = [atCafe];
+      await begin();
+      quiet.fail = true;
+      await watcher.syncQuietPlaces();
+      expect(watcher.state.quietPlaces, hasLength(1));
+      await settle();
+      expect(watcher.state.phase, isA<InStay>());
+    });
+
+    test('a change does not disturb the Stay in progress', () async {
+      await begin();
+      await settle();
+      quiet.saved = [atCafe];
+      await watcher.syncQuietPlaces();
+      expect(watcher.state.phase, isA<InStay>());
     });
   });
 
@@ -229,6 +311,7 @@ void main() {
       store: store,
       reminders: failing,
       places: places,
+      quiet: quiet,
     );
     await watcher.start();
     await settle();

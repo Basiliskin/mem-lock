@@ -24,3 +24,8 @@
 ## 2026-10-31 · /developer S5
 
 - **Wake on movement:** low-power location checks during a Stay, switching to precise when a reading looks outside the area. AC-9.1 reworded. Files: `docs/requirements.md`, `docs/architecture.md`, `lib/`.
+
+## 2026-10-31 · /developer S8
+
+- **Quiet Places sync:** the screens own the saved list; the service re-reads it on a message and at every start, so a change made while it is stopped isn't lost. One-off fix moved to its own `CurrentFixSource` port. Files: `docs/architecture.md`, `lib/`.
+- **Helper entry:** S8 adds the 2-second long press from the design, opening Quiet Places directly. S10 builds the rest of protected settings. Files: `lib/ui/main_screen.dart`.

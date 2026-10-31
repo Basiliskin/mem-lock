@@ -3,9 +3,11 @@ import 'dart:isolate';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
+import '../adapters/foreground_host.dart';
 import '../adapters/geolocator_location.dart';
 import '../adapters/phone_reminder_output.dart';
 import '../adapters/prefs_last_place.dart';
+import '../adapters/prefs_quiet_places.dart';
 import '../adapters/prefs_reminder_options.dart';
 import '../adapters/prefs_state_store.dart';
 import '../adapters/reminder_actions.dart';
@@ -36,10 +38,18 @@ class _Handler extends TaskHandler {
       store: PrefsStateStore(),
       reminders: session,
       places: PrefsLastPlace(),
+      quiet: PrefsQuietPlaces(),
     );
     await watcher.start();
     _watcher = watcher;
+    // A message sent before this point was dropped, so read once more.
+    await watcher.syncQuietPlaces();
     debugPrint('Watcher started by ${starter.name}');
+  }
+
+  @override
+  void onReceiveData(Object data) {
+    if (data == ForegroundHost.quietPlacesMessage) _watcher?.syncQuietPlaces();
   }
 
   @override

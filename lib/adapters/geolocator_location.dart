@@ -6,12 +6,35 @@ import '../domain/detector.dart';
 import '../domain/geo.dart';
 import '../ports/ports.dart';
 
-class GeolocatorLocation implements LocationSource {
+class GeolocatorLocation implements LocationSource, CurrentFixSource {
+  static const _fixTimeLimit = Duration(seconds: 20);
+
   final _controller = StreamController<LocationFix>.broadcast();
   StreamSubscription<Position>? _subscription;
 
   @override
   Stream<LocationFix> get fixes => _controller.stream;
+
+  /// Always a new reading, never the last known one: a Quiet Place must be
+  /// where the Helper is standing now.
+  @override
+  Future<LocationFix?> currentFix() async {
+    try {
+      final p = await Geolocator.getCurrentPosition(
+        locationSettings: AndroidSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: _fixTimeLimit,
+        ),
+      );
+      return LocationFix(
+        p.timestamp,
+        GeoPoint(p.latitude, p.longitude),
+        p.accuracy,
+      );
+    } on Exception {
+      return null;
+    }
+  }
 
   @override
   Future<void> setMode(LocationMode mode) async {

@@ -1,3 +1,5 @@
+import 'dart:ui' show SemanticsAction;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geo_alert/domain/geo.dart';
@@ -29,6 +31,7 @@ Future<void> show(WidgetTester t, BackgroundHost host) async {
         places: _NoPlaces(),
         map: _NoMap(),
         forgotRequests: ValueNotifier(0),
+        helperSettings: (_) => const Text('helper-settings'),
       ),
     ),
   );
@@ -57,6 +60,47 @@ void main() {
     await t.pumpAndSettle();
     expect(host.starts, 1);
     expect(find.text(Strings.protecting), findsOneWidget);
+  });
+
+  group('Helper entry', () {
+    Future<void> hold(WidgetTester t, Duration time) async {
+      final g = await t.startGesture(
+        t.getCenter(find.text(Strings.helperEntry)),
+      );
+      await t.pump(time);
+      await g.up();
+      await t.pumpAndSettle();
+    }
+
+    testWidgets('a 2-second press opens the Helper settings', (t) async {
+      await show(t, FakeHost(running: true));
+      await hold(t, const Duration(seconds: 2));
+      expect(find.text('helper-settings'), findsOneWidget);
+    });
+
+    testWidgets('a short press or tap does not', (t) async {
+      await show(t, FakeHost(running: true));
+      await hold(t, const Duration(seconds: 1));
+      expect(find.text('helper-settings'), findsNothing);
+      await t.tap(find.text(Strings.helperEntry));
+      await t.pumpAndSettle();
+      expect(find.text('helper-settings'), findsNothing);
+    });
+
+    testWidgets('TalkBack has an equal action', (t) async {
+      await show(t, FakeHost(running: true));
+      final handle = t.ensureSemantics();
+      t
+          .getSemantics(find.text(Strings.helperEntry))
+          .owner!
+          .performAction(
+            t.getSemantics(find.text(Strings.helperEntry)).id,
+            SemanticsAction.longPress,
+          );
+      await t.pumpAndSettle();
+      expect(find.text('helper-settings'), findsOneWidget);
+      handle.dispose();
+    });
   });
 
   testWidgets('a failed start says so and still offers the button', (t) async {

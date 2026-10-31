@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../domain/last_place_record.dart';
@@ -8,6 +9,7 @@ import 'forgot_screen.dart';
 
 const _ok = Color(0xFF0B6B2E);
 const _bad = Color(0xFFB3141C);
+const _helperPress = Duration(seconds: 2);
 
 class MainScreen extends StatefulWidget {
   const MainScreen({
@@ -16,6 +18,7 @@ class MainScreen extends StatefulWidget {
     required this.places,
     required this.map,
     required this.forgotRequests,
+    required this.helperSettings,
   });
 
   final BackgroundHost host;
@@ -24,6 +27,9 @@ class MainScreen extends StatefulWidget {
 
   /// Goes up each time the notification's "I forgot something" is tapped.
   final ValueListenable<int> forgotRequests;
+
+  /// What the Helper's long press opens.
+  final WidgetBuilder helperSettings;
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -86,6 +92,36 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   void _openForgot(LastPlaceRecord place) => Navigator.of(context).push(
     MaterialPageRoute<void>(
       builder: (_) => ForgotScreen(place: place, map: widget.map),
+    ),
+  );
+
+  void _openHelper() =>
+      Navigator.of(context)
+          .push(MaterialPageRoute<void>(builder: widget.helperSettings));
+
+  Widget _helperEntry() => Semantics(
+    container: true,
+    onLongPress: _openHelper,
+    child: RawGestureDetector(
+      excludeFromSemantics: true,
+      behavior: HitTestBehavior.opaque,
+      gestures: {
+        LongPressGestureRecognizer:
+            GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
+              () => LongPressGestureRecognizer(duration: _helperPress),
+              (r) => r.onLongPress = _openHelper,
+            ),
+      },
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 48),
+        child: const Center(
+          child: Text(
+            Strings.helperEntry,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 16, color: Color(0xFF3D3D3D)),
+          ),
+        ),
+      ),
     ),
   );
 
@@ -169,34 +205,40 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                 ),
               ),
             ),
-            if (_place != null)
-              Container(
-                color: Colors.white,
-                padding: const EdgeInsets.all(16),
-                child: SizedBox(
-                  height: 96,
-                  child: OutlinedButton(
-                    onPressed: () => _openForgot(_place!),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          Strings.actionForgot,
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
+            Container(
+              color: Colors.white,
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (_place != null)
+                    SizedBox(
+                      height: 96,
+                      child: OutlinedButton(
+                        onPressed: () => _openForgot(_place!),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              Strings.actionForgot,
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              Strings.whenText(_place!.time, DateTime.now()),
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ],
                         ),
-                        Text(
-                          Strings.whenText(_place!.time, DateTime.now()),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
+                  _helperEntry(),
+                ],
               ),
+            ),
           ],
         ),
       ),

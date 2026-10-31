@@ -21,6 +21,22 @@ abstract final class Strings {
   static const noMapApp = 'Не найдено приложение карт.';
   static const coordinates = 'Координаты';
 
+  static const helperEntry = 'Для близких: удерживайте 2 секунды';
+  static const quietPlaces = 'Тихие места';
+  static const noQuietPlaces = 'Тихих мест пока нет.';
+  static const markQuietPlace = 'Отметить место, где я сейчас';
+  static const noFixToMark =
+      'Место не сохранено: не удалось точно определить, где вы. '
+      'Проверьте, что геолокация включена, выйдите ближе к окну или на улицу '
+      'и попробуйте снова.';
+  static const alreadyQuiet = 'Это место уже отмечено.';
+  static const saveFailed = 'Не удалось сохранить. Попробуйте снова.';
+  static const remove = 'Удалить';
+  static const removeQuestion =
+      'Удалить это место? Снова отметить его можно будет, только находясь там.';
+  static const confirmRemove = 'Да, удалить';
+  static const cancel = 'Отмена';
+
   static const _months = [
     'января',
     'февраля',
@@ -36,12 +52,20 @@ abstract final class Strings {
     'декабря',
   ];
 
+  static String _clock(DateTime t) =>
+      '${t.hour.toString().padLeft(2, '0')}:'
+      '${t.minute.toString().padLeft(2, '0')}';
+
+  static String quietMarkedAt(DateTime time) {
+    final t = time.toLocal();
+    return 'Отмечено ${t.day} ${_months[t.month - 1]} в ${_clock(t)}';
+  }
+
   /// Adds the date when it isn't today, so yesterday's time can't mislead.
   static String whenText(DateTime time, DateTime now) {
     final t = time.toLocal();
     final n = now.toLocal();
-    String two(int v) => v.toString().padLeft(2, '0');
-    final clock = '${two(t.hour)}:${two(t.minute)}';
+    final clock = _clock(t);
     final today = t.year == n.year && t.month == n.month && t.day == n.day;
     return today
         ? 'Вы были здесь до $clock'
