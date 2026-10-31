@@ -32,8 +32,9 @@ class ForegroundHost implements BackgroundHost, WatcherLink {
   void quietPlacesChanged() =>
       FlutterForegroundTask.sendDataToTask(quietPlacesMessage);
 
-  /// A temporary permission flow, until guided setup arrives in S10. "Allow
-  /// all the time" is required for the service to restart after a reboot.
+  /// Asks again for anything missing, because the main screen's button uses
+  /// this after setup too. "Allow all the time" is required for the service to
+  /// restart after a reboot.
   @override
   Future<bool> start() async {
     if (!await Permission.locationWhenInUse.request().isGranted) return false;

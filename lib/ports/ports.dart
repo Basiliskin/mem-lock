@@ -77,6 +77,21 @@ abstract interface class WatcherLink {
   void quietPlacesChanged();
 }
 
+enum SetupPermission { location, notifications, activity, battery }
+
+enum PermissionState { granted, denied, permanentlyDenied }
+
+abstract interface class PermissionGate {
+  Future<PermissionState> check(SetupPermission permission);
+  Future<PermissionState> request(SetupPermission permission);
+  Future<void> openSettings();
+}
+
+abstract interface class SetupStore {
+  Future<bool> isDone();
+  Future<void> markDone();
+}
+
 abstract interface class MapLauncher {
   /// Returns false when no map app could open it.
   Future<bool> open(GeoPoint point);

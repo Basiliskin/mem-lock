@@ -35,3 +35,8 @@
 - **Recorded voice:** built before S2 has a recorded verdict; FT-5 on the real app is the gate, and a failure hides the option. Files: `lib/`, `android/app/src/main/AndroidManifest.xml`.
 - **Sound choice:** three tones generated in the app, with no ringtone or file picker. Files: `lib/adapters/default_tone.dart`.
 - **Vibration:** off, normal or strong, each with its own notification channel. Files: `lib/adapters/phone_reminder_output.dart`.
+
+## 2026-10-31 · /developer S10
+
+- **Protected settings:** the 2-second long press alone meets AC-7.5, so no code is added. Files: `lib/ui/main_screen.dart`.
+- **Setup:** all four permissions block Next, as in the chosen prototype. Watching starts on the last step's button. Files: `lib/ui/setup_screen.dart`, `lib/ui/app_root.dart`.

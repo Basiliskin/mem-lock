@@ -67,6 +67,56 @@ abstract final class Strings {
   static const reminderTitleLabel = 'Заголовок: «$reminderTitle»';
   static const reminderBodyLabel = 'Сообщение: «$reminderBody»';
 
+  static const setupNext = 'Дальше';
+  static const setupBack = 'Назад';
+  static const setupStart = 'Начать';
+  static const setupAllow = 'Разрешить';
+  static const setupAllowed = 'Разрешено ✓';
+  static const setupOpenSettings = 'Открыть настройки телефона';
+  static const setupBlocked = 'Сначала разрешите, чтобы продолжить.';
+  static const setupWelcomeTitle = 'Настройка для близкого';
+  static const setupWelcomeText =
+      'Настройте приложение на телефоне близкого человека. '
+      'Это займёт несколько минут.';
+  static const setupLocationTitle = 'Разрешите геолокацию';
+  static const setupLocationText = 'Выберите «Разрешить всегда».';
+  static const setupWhyLocation =
+      'Без этого приложение не заметит, что человек ушёл.';
+  static const setupNotificationsTitle = 'Разрешите уведомления';
+  static const setupNotificationsText = 'Так напоминание появится на экране.';
+  static const setupWhyNotifications =
+      'Без этого напоминание не появится на экране.';
+  static const setupActivityTitle = 'Разрешите данные о движении';
+  static const setupActivityText =
+      'Так приложение понимает, что человек вышел из поезда или автобуса.';
+  static const setupWhyActivity =
+      'Без этого приложение не заметит выход из транспорта.';
+  static const setupBatteryTitle = 'Отключите экономию заряда';
+  static const setupBatteryText =
+      'Разрешите приложению работать без ограничений.';
+  static const setupWhyBattery = 'Иначе телефон может закрыть приложение.';
+  static const setupPhoneTitle = 'Телефон должен быть при себе';
+  static const setupPhoneText =
+      'Если телефон останется в забытой сумке, приложение ничего не заметит. '
+      'Носите его в кармане или в чехле на шее.';
+  static const setupQuietTitle = 'Отметьте дом';
+  static const setupQuietText =
+      'Уходя из тихого места, человек не получит напоминания. '
+      'Отметить можно, только находясь там.';
+  static const setupOpenQuiet = 'Отметить место';
+  static const setupOptionsTitle = 'Напоминание';
+  static const setupSilentText =
+      'Когда телефон без звука, напоминание всё равно звучит вслух, с '
+      'громкостью будильника. Можно выбрать «Только вибрация». Здесь же можно '
+      'изменить звук, текст и записать голос.';
+  static const setupChangeOptions = 'Настроить напоминание';
+  static const setupDoneTitle = 'Готово';
+  static const setupDoneText =
+      'Нажмите «Начать», и приложение заработает. '
+      'Больше ничего нажимать не нужно.';
+
+  static String setupProgress(int step, int total) => 'Шаг $step из $total';
+
   static const _months = [
     'января',
     'февраля',
