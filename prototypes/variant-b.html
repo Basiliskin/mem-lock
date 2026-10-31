@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Geo Alert: Variant B</title>
+<style>
+:root{--ink:#1c2733;--bg:#fff8ec;--card:#fff;--pri:#12355b;--ok:#0b6b2e;--bad:#a3121a;--line:#6b5d45;--mut:#47525e}
+*{box-sizing:border-box}
+body{margin:0;background:#d9d3c7;color:var(--ink);font:20px/1.4 Georgia,'Times New Roman',serif}
+.wrap{display:flex;flex-wrap:wrap;gap:20px;justify-content:center;padding:16px}
+#phone{position:relative;width:100%;max-width:390px;min-height:700px;background:var(--bg);border:2px solid #222;border-radius:20px;overflow:hidden;display:flex;flex-direction:column}
+.bar{display:flex;align-items:center;gap:10px;padding:14px 16px;color:#fff;font-weight:700;font-size:22px}
+.bar.ok{background:var(--ok)}.bar.bad{background:var(--bad)}
+.bar button{width:auto;min-height:48px;margin-left:auto;background:#fff;color:var(--bad);border-color:#fff;font-size:18px}
+.body{flex:1;padding:16px;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
+h1{font-size:28px;line-height:1.2;margin:0}h1:focus{outline:none}h2{font-size:22px;margin:0}
+p{margin:0}
+button{font:inherit;font-weight:700;min-height:60px;width:100%;padding:10px;border-radius:12px;border:2px solid var(--pri);background:#fff;color:var(--pri);cursor:pointer}
+button.pri{background:var(--pri);color:#fff}
+button.danger{background:var(--bad);border-color:var(--bad);color:#fff}
+button[aria-disabled=true]{background:#e4e4e4;border-color:#666;color:#333}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:4px solid #c75b00;outline-offset:2px}
+nav{display:flex;border-top:2px solid var(--line)}
+nav button{border:0;border-radius:0;background:var(--card);min-height:72px}
+nav button[aria-current=page]{background:var(--pri);color:#fff}
+.sheet{position:absolute;inset:auto 0 0 0;background:#fff;border-top:6px solid var(--bad);border-radius:20px 20px 0 0;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 -8px 30px #0006}
+.dim{position:absolute;inset:0;background:#0009}
+.lockbg{flex:1;background:#14213d}
+.check{display:flex;align-items:center;gap:10px}
+.check .mark{flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--line);font-weight:700}
+.check.done .mark{background:var(--ok);border-color:var(--ok);color:#fff}
+.check button{width:auto;min-height:48px;margin-left:auto;font-size:17px;flex:none}
+.check div{min-width:0}
+small{font-size:16px;color:var(--mut);display:block}
+.note{background:#fff3c4;border:2px solid #7a5c00;padding:12px;border-radius:12px}
+label{display:block;font-weight:700}
+input[type=text],select{font:inherit;width:100%;min-height:56px;padding:8px;border:2px solid var(--line);border-radius:10px;background:#fff;color:#111;margin-top:4px}
+ul{margin:0;padding-left:22px}
+.hold{min-height:48px;font-size:16px;font-weight:400;border:1px solid var(--line);color:var(--mut)}
+#demo{width:100%;max-width:300px;background:#fff;border-radius:12px;padding:14px;font:15px/1.4 system-ui,sans-serif;align-self:flex-start}
+#demo h2{font-size:17px;margin:0 0 4px}#demo p{margin-bottom:8px;color:#333}
+#demo button{min-height:40px;font-size:15px;font-weight:600;margin-bottom:6px;padding:6px;border-width:1px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <main id="phone"></main>
+  <aside id="demo" aria-label="Demo controls">
+    <h2>Variant B: tabs and a sheet</h2>
+    <p>Demo controls, not part of the app. All data is mocked.</p>
+    <button data-a="demoStay">Stay ended</button>
+    <button data-a="demoRide">Ride ended</button>
+    <button data-a="demoQuiet">Left a Quiet Place</button>
+    <button data-a="demoRepeat">Next repeat</button>
+    <button data-a="demoReturn">Wearer came back</button>
+    <button data-a="demoLocation">Toggle location</button>
+    <button data-a="demoBattery">Toggle low battery</button>
+    <button data-a="demoMap">Toggle map app</button>
+    <button data-a="demoFix">Toggle location fix (Quiet Place)</button>
+    <button data-a="demoReset">Restart from setup</button>
+    <p id="demolog" aria-live="polite"></p>
+  </aside>
+</div>
+<div id="live" class="sr" aria-live="assertive"></div>
+<script>
+const init=()=>({screen:'setup',tab:'now',perm:{location:false,notifications:false,activity:false,battery:false},advice:false,
+  locationOn:true,lowBattery:false,hasMap:true,hasFix:true,
+  reminder:null,places:[],msg:'',quietPlaces:[],
+  settings:{text:'Папа, ваша сумка с вами?',sound:'Звонок',vibration:'Сильная',voice:false,silent:'aloud',stay:'Обычно'}});
+let s=init();
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const say=t=>{const l=document.getElementById('live');l.textContent='';setTimeout(()=>l.textContent=t,30)};
+const log=t=>{document.getElementById('demolog').textContent=t};
+const PERMS=[['location','Геолокация','Выберите «Разрешить всегда»'],['notifications','Уведомления','Чтобы напоминание появилось'],['activity','Данные о движении','Чтобы заметить выход из поезда'],['battery','Экономия заряда','Отключите, чтобы приложение не закрывалось']];
+const protecting=()=>s.locationOn&&Object.values(s.perm).every(Boolean);
+const setupDone=()=>Object.values(s.perm).every(Boolean)&&s.advice&&s.quietPlaces.length>0;
+const when=p=>p.source==='ride'?`Вышли из транспорта в ${p.time}`:`Были здесь до ${p.time}`;
+const soundLine=()=>s.settings.silent==='vibrate'?'в беззвучном только вибрация':(s.settings.voice?'играет записанный голос':`звук: ${esc(s.settings.sound)}`);
+function optionsForm(){const o=s.settings;return `
+ <label>Текст<input type="text" data-set="text" value="${esc(o.text)}"></label>
+ <label>Звук<select data-set="sound">${['Звонок','Колокольчик','Сирена'].map(x=>`<option ${x==o.sound?'selected':''}>${x}</option>`).join('')}</select></label>
+ <label>Вибрация<select data-set="vibration">${['Сильная','Обычная','Нет'].map(x=>`<option ${x==o.vibration?'selected':''}>${x}</option>`).join('')}</select></label>
+ <label>В беззвучном режиме<select data-set="silent"><option value="aloud" ${o.silent=='aloud'?'selected':''}>Играть вслух</option><option value="vibrate" ${o.silent=='vibrate'?'selected':''}>Только вибрация</option></select></label>
+ <button data-a="record">${o.voice?'Перезаписать голос (записан)':'Записать свой голос'}</button>
+ <button data-a="test">Проверить напоминание</button>`}
+const quietCard=()=>`<div class="card"><h2>Тихие места</h2><p>Уходя отсюда, человек не получит напоминания. Отметить можно, только находясь там.</p>
+ <ul>${s.quietPlaces.map(q=>`<li>${esc(q.name)} <button data-a="rmQuiet" data-k="${q.id}" style="min-height:44px;margin:4px 0">Убрать</button></li>`).join('')||'<li>Пока нет</li>'}</ul>
+ <button data-a="markQuiet">Я сейчас здесь: отметить</button>${s.msg?`<p class="note" role="alert">${s.msg}</p>`:''}</div>`;
+const tabs=()=>`<nav aria-label="Разделы"><button data-a="tab" data-k="now" ${s.tab==='now'?'aria-current="page"':''}>Сейчас</button><button data-a="tab" data-k="places" ${s.tab==='places'?'aria-current="page"':''}>Где я был</button></nav>`;
+const bar=()=>{const ok=protecting();return `<div class="bar ${ok?'ok':'bad'}"><span aria-hidden="true">${ok?'✓':'!'}</span><span>${ok?'Защита работает':'Защита не работает'}</span>${ok?'':'<button data-a="fixLocation">Исправить</button>'}</div>`};
+const views={
+ setup(){const missing=[];if(!Object.values(s.perm).every(Boolean))missing.push('дайте все разрешения');if(!s.advice)missing.push('подтвердите совет о телефоне');if(!s.quietPlaces.length)missing.push('отметьте хотя бы одно тихое место');
+  return `<div class="body"><h1 tabindex="-1">Настройка для близкого</h1>
+  <div class="card"><h2>Разрешения</h2>${PERMS.map(([k,t,d])=>`<div class="check ${s.perm[k]?'done':''}"><span class="mark" aria-hidden="true">${s.perm[k]?'✓':''}</span><div>${t}<small>${d}</small></div>${s.perm[k]?'<span class="sr">разрешено</span>':`<button data-a="grant" data-k="${k}">Разрешить</button>`}</div>`).join('')}</div>
+  <div class="card"><h2>Телефон при себе</h2><p>Если телефон останется в забытой сумке, приложение ничего не заметит. Носите его в кармане или в чехле на шее.</p>
+  <button data-a="advice" ${s.advice?'aria-pressed="true"':''}>${s.advice?'Понятно ✓':'Понятно'}</button></div>
+  ${quietCard()}
+  <div class="card"><h2>Напоминание</h2>${optionsForm()}</div>
+  ${missing.length?`<p class="note">Чтобы начать: ${missing.join(', ')}.</p>`:''}
+  <button class="pri" data-a="finish" ${missing.length?'aria-disabled="true"':''}>Начать защиту</button></div>`},
+ main(){let c;if(s.tab==='now'){c=`<h1 tabindex="-1">Сейчас</h1>
+   ${s.lowBattery?'<p class="note">Заряд заканчивается. Поставьте телефон на зарядку.</p>':''}
+   <div class="card"><h2>Всё в порядке?</h2><p>${protecting()?'Приложение напомнит о вещах, когда вы уйдёте с места или выйдете из транспорта.':'Пока защита выключена, напоминаний не будет.'}</p></div>
+   ${s.places[0]?`<div class="card"><h2>Последнее место</h2><p>${when(s.places[0])}</p><button class="pri" data-a="tab" data-k="places">Я что-то забыл</button></div>`:''}
+   <div style="flex:1"></div><button class="hold" data-a="holdSettings" data-hold="1">Для близких: удерживайте 2 секунды</button>`}
+  else{c=`<h1 tabindex="-1">Где я был</h1>${s.msg?`<p class="note" role="alert">${s.msg}</p>`:''}
+   ${s.places.map((p,i)=>`<div class="card"><h2>${i?'Предыдущее':'Последнее'} место</h2><p style="font-size:24px"><strong>${when(p)}</strong></p>${p.source==='ride'?'<p>Сообщите в бюро находок время и станцию.</p>':''}<button class="pri" data-a="openMap" data-k="${i}">Открыть на карте</button></div>`).join('')||'<p>Пока ничего. Здесь появятся последние места.</p>'}`}
+  return bar()+`<div class="body">${c}</div>`+tabs()},
+ lock(){const r=s.reminder;return `<div class="lockbg"></div><div class="dim"></div><div class="sheet" role="alert"><p style="color:var(--mut);font-size:17px">Телефон заблокирован · Повтор ${r.tries} из 3</p>
+  <h1 tabindex="-1">${esc(s.settings.text)}</h1><p>${r.place.source==='ride'?'Вы вышли из транспорта.':'Вы ушли с места.'} Проверьте вещи.</p><p style="color:var(--mut);font-size:17px">${soundLine()}</p>
+  <button class="pri" data-a="haveAll">Всё при мне</button><button class="danger" data-a="forgot">Я что-то забыл</button></div>`},
+ settings(){return `<div class="body"><h1 tabindex="-1">Настройки для близких</h1><div class="card"><h2>Напоминание</h2>${optionsForm()}
+  <label>Как часто напоминать<select data-set="stay">${['Чаще','Обычно','Реже'].map(x=>`<option ${x==s.settings.stay?'selected':''}>${x}</option>`).join('')}</select></label></div>${quietCard()}<button class="pri" data-a="backMain">Готово</button></div>`}
+};
+function render(focus=true){document.getElementById('phone').innerHTML=views[s.screen]();
+ if(focus){const h=document.querySelector('#phone h1');if(h)h.focus()}}
+function startReminder(source){const d=new Date(),pad=n=>String(n).padStart(2,'0');
+ const place={source,time:pad(d.getHours())+':'+pad(d.getMinutes()),lat:55.75124,lng:37.61842};
+ s.places=[place,...s.places].slice(0,2);s.reminder={place,tries:1};s.screen='lock';s.msg='';render();say('Напоминание: '+s.settings.text)}
+const toMain=tab=>{s.screen='main';s.tab=tab;s.msg='';render()};
+const actions={
+ grant(el){s.perm[el.dataset.k]=true;render(false);say('Разрешено')},
+ advice(){s.advice=!s.advice;render(false)},
+ finish(el){if(el.getAttribute('aria-disabled')==='true'){say('Настройка ещё не закончена');return}toMain('now');say('Защита работает')},
+ record(){s.settings.voice=true;render(false);say('Голос записан (имитация)')},
+ test(){say('Проверка: '+s.settings.text);log('Test Reminder played (mock): '+soundLine())},
+ markQuiet(){if(!s.hasFix){s.msg='Не удалось определить место. Выйдите ближе к окну и попробуйте снова. Ничего не сохранено.';render(false);say(s.msg);return}
+  s.msg='';s.quietPlaces.push({id:Date.now()+s.quietPlaces.length,name:'Место '+(s.quietPlaces.length+1)});render(false);say('Место отмечено')},
+ rmQuiet(el){s.quietPlaces=s.quietPlaces.filter(q=>String(q.id)!==el.dataset.k);render(false);say('Место убрано')},
+ tab(el){toMain(el.dataset.k)},
+ haveAll(){s.reminder=null;toMain('now');say('Хорошо. Всё при вас')},
+ forgot(){s.reminder=null;toMain('places')},
+ openMap(el){const p=s.places[+el.dataset.k];if(s.hasMap){log('Map app opened at '+p.lat+', '+p.lng+' (mock)');say('Открываем карту')}
+  else{s.msg=`Не найдено приложение карт. Время: ${p.time}. Координаты: ${p.lat}, ${p.lng}`;render(false);say(s.msg)}},
+ holdSettings(){s.screen='settings';s.msg='';render()},
+ backMain(){toMain('now')},
+ fixLocation(){s.locationOn=true;render();say('Защита работает')},
+ demoStay(){if(s.screen==='setup')return log('Finish setup first.');startReminder('stay')},
+ demoRide(){if(s.screen==='setup')return log('Finish setup first.');startReminder('ride')},
+ demoQuiet(){log('Left a Quiet Place: no Reminder.')},
+ demoRepeat(){if(!s.reminder)return log('No Reminder is playing.');if(s.reminder.tries>=3){s.reminder=null;toMain('now');log('Tries ran out: Reminder stopped. Last Place is kept.');return}s.reminder.tries++;render();say('Напоминание: '+s.settings.text)},
+ demoReturn(){if(!s.reminder)return log('No Reminder is playing.');s.reminder=null;toMain('now');log('Came back: repeats stopped.')},
+ demoLocation(){s.locationOn=!s.locationOn;if(s.screen==='main')render();say(s.locationOn?'Защита работает':'Защита не работает');log('Location '+(s.locationOn?'on':'off'))},
+ demoBattery(){s.lowBattery=!s.lowBattery;if(s.screen==='main')render(false);log('Low battery '+(s.lowBattery?'on':'off'))},
+ demoMap(){s.hasMap=!s.hasMap;log('Map app '+(s.hasMap?'available':'missing'))},
+ demoFix(){s.hasFix=!s.hasFix;log('Location fix '+(s.hasFix?'available':'missing'))},
+ demoReset(){s=init();render();log('')}
+};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;
+ if(b.dataset.hold&&e.detail!==0)return; /* pointer must hold; keyboard Enter opens directly */
+ actions[b.dataset.a](b)});
+let holdT;
+document.addEventListener('pointerdown',e=>{const b=e.target.closest('[data-hold]');if(b)holdT=setTimeout(()=>actions.holdSettings(),2000)});
+['pointerup','pointerleave','pointercancel'].forEach(n=>document.addEventListener(n,()=>clearTimeout(holdT)));
+document.addEventListener('change',e=>{const k=e.target.dataset&&e.target.dataset.set;if(k)s.settings[k]=e.target.value});
+render(false);
+</script>
+</body>
+</html>

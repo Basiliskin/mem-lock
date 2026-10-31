@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Geo Alert: Variant A</title>
+<style>
+:root{--ink:#111;--bg:#fff;--line:#555;--ok:#0b6b2e;--bad:#b3141c;--warn:#fff3c4;--pri:#0b3d91;--mut:#3d3d3d}
+*{box-sizing:border-box}
+body{margin:0;background:#e6e6e6;color:var(--ink);font:20px/1.4 system-ui,sans-serif}
+.wrap{display:flex;flex-wrap:wrap;gap:20px;justify-content:center;padding:16px}
+#phone{width:100%;max-width:390px;min-height:700px;background:var(--bg);border:2px solid #222;border-radius:20px;overflow:hidden;display:flex;flex-direction:column}
+.scr{flex:1;display:flex;flex-direction:column;gap:16px;padding:20px}
+h1{font-size:30px;line-height:1.2;margin:0}h1:focus{outline:none}h2{font-size:22px;margin:8px 0 0}
+p{margin:0}.grow{flex:1}
+button{font:inherit;font-weight:700;min-height:64px;width:100%;padding:12px;border-radius:14px;border:2px solid var(--pri);background:#fff;color:var(--pri);cursor:pointer}
+button.pri{background:var(--pri);color:#fff}
+button.danger{background:var(--bad);border-color:var(--bad);color:#fff}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:4px solid #e07b00;outline-offset:2px}
+button[aria-disabled=true]{background:#e4e4e4;border-color:#666;color:#333}
+.status{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;color:#fff;padding:24px}
+.status.ok{background:var(--ok)}.status.bad{background:var(--bad)}
+.status .icon{font-size:88px;line-height:1}.status strong{font-size:36px;line-height:1.15}
+.status button{background:#fff;color:var(--bad);border-color:#fff}
+.foot{padding:16px;display:flex;flex-direction:column;gap:12px}
+.hold{min-height:48px;font-size:16px;font-weight:400;border:1px solid var(--line);color:var(--mut)}
+.lock{background:#14213d;color:#fff;flex:1;padding:20px;display:flex;flex-direction:column;gap:16px}
+.clock{font-size:60px;text-align:center;font-weight:300}
+.notif{background:#fff;color:#111;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.note{background:var(--warn);border:2px solid #7a5c00;padding:12px;border-radius:12px}
+.reminder{background:#fff3c4;flex:1}
+label{display:block;font-weight:700}
+input[type=text],select{font:inherit;width:100%;min-height:56px;padding:8px;border:2px solid var(--line);border-radius:10px;background:#fff;color:#111;margin-top:4px}
+ul{margin:0;padding-left:22px}
+.progress{color:var(--mut);font-size:17px}
+#demo{width:100%;max-width:300px;background:#fff;border-radius:12px;padding:14px;font-size:15px;align-self:flex-start}
+#demo h2{font-size:17px;margin:0 0 4px}#demo p{margin-bottom:8px;color:#333}
+#demo button{min-height:40px;font-size:15px;font-weight:600;margin-bottom:6px;padding:6px;border-width:1px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <main id="phone"></main>
+  <aside id="demo" aria-label="Demo controls">
+    <h2>Variant A: one big status</h2>
+    <p>Demo controls, not part of the app. All data is mocked.</p>
+    <button data-a="demoStay">Stay ended</button>
+    <button data-a="demoRide">Ride ended</button>
+    <button data-a="demoQuiet">Left a Quiet Place</button>
+    <button data-a="demoRepeat">Next repeat</button>
+    <button data-a="demoReturn">Wearer came back</button>
+    <button data-a="demoLocation">Toggle location</button>
+    <button data-a="demoBattery">Toggle low battery</button>
+    <button data-a="demoMap">Toggle map app</button>
+    <button data-a="demoFix">Toggle location fix (Quiet Place)</button>
+    <button data-a="demoReset">Restart from setup</button>
+    <p id="demolog" aria-live="polite"></p>
+  </aside>
+</div>
+<div id="live" class="sr" aria-live="assertive"></div>
+<script>
+const init=()=>({screen:'setup',step:0,perm:{location:false,notifications:false,activity:false,battery:false},
+  locationOn:true,lowBattery:false,hasMap:true,hasFix:true,
+  reminder:null,lastPlace:null,msg:'',
+  quietPlaces:[],
+  settings:{text:'Папа, ваша сумка с вами?',sound:'Звонок',vibration:'Сильная',voice:false,silent:'aloud',stay:'Обычно'}});
+let s=init();
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const say=t=>{const l=document.getElementById('live');l.textContent='';setTimeout(()=>l.textContent=t,30)};
+const log=t=>{document.getElementById('demolog').textContent=t};
+const STEPS=[
+ {t:'Настройка для близкого',b:'Настройте приложение на телефоне близкого человека. Это займёт несколько минут.',k:null},
+ {t:'Разрешите геолокацию',b:'Выберите «Разрешить всегда». Иначе приложение не заметит, что человек ушёл.',k:'location'},
+ {t:'Разрешите уведомления',b:'Без них напоминание не появится на экране.',k:'notifications'},
+ {t:'Разрешите данные о движении',b:'Так приложение понимает, что человек вышел из поезда или автобуса.',k:'activity'},
+ {t:'Отключите экономию заряда',b:'Иначе телефон может закрыть приложение.',k:'battery'},
+ {t:'Телефон должен быть при себе',b:'Если телефон останется в забытой сумке, приложение ничего не заметит. Носите его в кармане или в чехле на шее.',k:null},
+ {t:'Отметьте дом',b:'Уходя из тихого места, человек не получит напоминания. Отметить можно, только находясь там.',k:'quiet'},
+ {t:'Напоминание',b:'',k:'options'},
+ {t:'Готово',b:'Приложение уже работает. Больше ничего нажимать не нужно.',k:null}];
+const protecting=()=>s.locationOn&&Object.values(s.perm).every(Boolean);
+function optionsForm(){const o=s.settings;return `
+ <label>Текст<input type="text" data-set="text" value="${esc(o.text)}"></label>
+ <label>Звук<select data-set="sound">${['Звонок','Колокольчик','Сирена'].map(x=>`<option ${x==o.sound?'selected':''}>${x}</option>`).join('')}</select></label>
+ <label>Вибрация<select data-set="vibration">${['Сильная','Обычная','Нет'].map(x=>`<option ${x==o.vibration?'selected':''}>${x}</option>`).join('')}</select></label>
+ <label>В беззвучном режиме<select data-set="silent"><option value="aloud" ${o.silent=='aloud'?'selected':''}>Играть вслух</option><option value="vibrate" ${o.silent=='vibrate'?'selected':''}>Только вибрация</option></select></label>
+ <button data-a="record">${o.voice?'Перезаписать голос (записан)':'Записать свой голос'}</button>
+ <button data-a="test">Проверить напоминание</button>`}
+const when=p=>p.source==='ride'?`Вы вышли из транспорта в ${p.time}`:`Вы были здесь до ${p.time}`;
+const views={
+ setup(){const st=STEPS[s.step];let body=`<p>${st.b}</p>`,next='Дальше',a='next';
+  if(st.k&&s.perm[st.k]!==undefined){const g=s.perm[st.k];body+=`<button data-a="grant" data-k="${st.k}" class="${g?'':'pri'}">${g?'Разрешено ✓':'Разрешить'}</button>`;
+    if(!g)body+=`<p class="note">Сначала разрешите, чтобы продолжить: без этого приложение не сможет защищать.</p>`}
+  if(st.k==='quiet'){body+=`<button data-a="markQuiet" class="pri">Я сейчас здесь: отметить</button>`+(s.msg?`<p class="note">${s.msg}</p>`:'')+`<p>Отмечено мест: ${s.quietPlaces.length}</p>`}
+  if(st.k==='options')body+=optionsForm();
+  if(s.step===STEPS.length-1){next='Начать';a='finish'}
+  const blocked=st.k&&s.perm[st.k]===false;
+  return `<div class="scr"><p class="progress">Шаг ${s.step+1} из ${STEPS.length}</p><h1 tabindex="-1">${st.t}</h1>${body}<div class="grow"></div>
+  <button data-a="${a}" class="pri" ${blocked?'aria-disabled="true"':''}>${next}</button>${s.step?'<button data-a="back">Назад</button>':''}</div>`},
+ home(){const ok=protecting();return `<div class="status ${ok?'ok':'bad'}"><div class="icon" aria-hidden="true">${ok?'✓':'!'}</div>
+  <h1 tabindex="-1" style="font-size:36px">${ok?'Защита работает':'Защита не работает'}</h1>
+  ${ok?'<p>Ничего нажимать не нужно</p>':'<p>Геолокация выключена</p><button data-a="fixLocation">Исправить</button>'}</div>
+  <div class="foot">${s.lowBattery?'<p class="note">Заряд заканчивается. Поставьте телефон на зарядку.</p>':''}
+  ${s.lastPlace?`<button data-a="openForgot">Я что-то забыл<br><span style="font-weight:400">${when(s.lastPlace)}</span></button>`:''}
+  <button class="hold" data-a="holdSettings" data-hold="1">Для близких: удерживайте 2 секунды</button></div>`},
+ lock(){const r=s.reminder;return `<div class="lock"><div class="clock" aria-hidden="true">${r.place.time}</div><p style="text-align:center">Телефон заблокирован</p>
+  <div class="notif" role="alert"><h1 tabindex="-1" style="font-size:26px">${esc(s.settings.text)}</h1>
+  <p>${r.place.source==='ride'?'Вы вышли из транспорта.':'Вы ушли с места.'} Проверьте вещи.</p>
+  <p class="progress">Повтор ${r.tries} из 3 · ${soundLine()}</p>
+  <button class="pri" data-a="haveAll">Всё при мне</button><button class="danger" data-a="forgot">Я что-то забыл</button></div></div>`},
+ forgot(){const p=s.lastPlace;return `<div class="scr"><h1 tabindex="-1">Не волнуйтесь</h1><p style="font-size:24px"><strong>${when(p)}</strong></p>
+  ${p.source==='ride'?'<p>Если вещь в поезде, сообщите в бюро находок время и станцию.</p>':'<p>Вернитесь на это место или позвоните туда.</p>'}
+  ${s.msg?`<p class="note" role="alert">${s.msg}</p>`:''}
+  <div class="grow"></div><button class="pri" data-a="openMap">Открыть на карте</button><button data-a="home">На главный экран</button></div>`},
+ settings(){return `<div class="scr"><h1 tabindex="-1">Настройки для близких</h1>${optionsForm()}
+  <label>Как часто напоминать<select data-set="stay">${['Чаще','Обычно','Реже'].map(x=>`<option ${x==s.settings.stay?'selected':''}>${x}</option>`).join('')}</select></label>
+  <h2>Тихие места</h2><ul>${s.quietPlaces.map(q=>`<li>${esc(q.name)} <button data-a="rmQuiet" data-k="${q.id}" style="min-height:44px;margin:4px 0">Убрать</button></li>`).join('')||'<li>Пока нет</li>'}</ul>
+  <button data-a="markQuiet">Я сейчас здесь: отметить</button>${s.msg?`<p class="note" role="alert">${s.msg}</p>`:''}<button class="pri" data-a="home">Готово</button></div>`}
+};
+const soundLine=()=>s.settings.silent==='vibrate'?'в беззвучном только вибрация':(s.settings.voice?'играет записанный голос':`звук: ${esc(s.settings.sound)}`);
+function render(focus=true){document.getElementById('phone').innerHTML=views[s.screen]();
+ if(focus){const h=document.querySelector('#phone h1');if(h)h.focus()}}
+function go(sc){s.screen=sc;s.msg='';render()}
+function startReminder(source){const d=new Date();const pad=n=>String(n).padStart(2,'0');
+ const place={source,time:pad(d.getHours())+':'+pad(d.getMinutes()),lat:55.75124,lng:37.61842};
+ if(s.lastPlace)s.olderPlace=s.lastPlace;s.lastPlace=place;s.reminder={place,tries:1};go('lock');say('Напоминание: '+s.settings.text)}
+const actions={
+ next(el){if(el.getAttribute('aria-disabled')==='true'){say('Сначала разрешите, чтобы продолжить');return}s.msg='';s.step++;render()},
+ back(){s.msg='';s.step--;render()},
+ grant(el){s.perm[el.dataset.k]=true;render(false);say('Разрешено')},
+ finish(){s.screen='home';render();say('Защита работает')},
+ record(){s.settings.voice=true;render(false);say('Голос записан (имитация)')},
+ test(){say('Проверка: '+s.settings.text);log('Test Reminder played (mock): '+soundLine())},
+ markQuiet(){if(!s.hasFix){s.msg='Не удалось определить место. Выйдите ближе к окну и попробуйте снова. Ничего не сохранено.';render(false);say(s.msg);return}
+  s.msg='';s.quietPlaces.push({id:Date.now()+s.quietPlaces.length,name:'Место '+(s.quietPlaces.length+1)});render(false);say('Место отмечено')},
+ rmQuiet(el){s.quietPlaces=s.quietPlaces.filter(q=>String(q.id)!==el.dataset.k);render(false);say('Место убрано')},
+ haveAll(){s.reminder=null;go('home');say('Хорошо. Всё при вас')},
+ forgot(){s.reminder=null;go('forgot')},
+ openForgot(){go('forgot')},
+ openMap(){if(s.hasMap){log('Map app opened at '+s.lastPlace.lat+', '+s.lastPlace.lng+' (mock)');say('Открываем карту')}
+  else{s.msg=`Не найдено приложение карт. Время: ${s.lastPlace.time}. Координаты: ${s.lastPlace.lat}, ${s.lastPlace.lng}`;render(false);say(s.msg)}},
+ home(){go('home')},
+ holdSettings(){go('settings')},
+ fixLocation(){s.locationOn=true;render();say('Защита работает')},
+ demoStay(){if(s.screen==='setup')return log('Finish setup first.');startReminder('stay')},
+ demoRide(){if(s.screen==='setup')return log('Finish setup first.');startReminder('ride')},
+ demoQuiet(){log('Left a Quiet Place: no Reminder.')},
+ demoRepeat(){if(!s.reminder)return log('No Reminder is playing.');if(s.reminder.tries>=3){s.reminder=null;go('home');log('Tries ran out: Reminder stopped. Last Place is kept on the main screen.');return}s.reminder.tries++;render();say('Напоминание: '+s.settings.text)},
+ demoReturn(){if(!s.reminder)return log('No Reminder is playing.');s.reminder=null;go('home');log('Came back: repeats stopped.')},
+ demoLocation(){s.locationOn=!s.locationOn;if(s.screen==='home')render();say(s.locationOn?'Защита работает':'Защита не работает');log('Location '+(s.locationOn?'on':'off'))},
+ demoBattery(){s.lowBattery=!s.lowBattery;if(s.screen==='home')render(false);log('Low battery '+(s.lowBattery?'on':'off'))},
+ demoMap(){s.hasMap=!s.hasMap;log('Map app '+(s.hasMap?'available':'missing'))},
+ demoFix(){s.hasFix=!s.hasFix;log('Location fix '+(s.hasFix?'available':'missing'))},
+ demoReset(){s=init();render();log('')}
+};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;
+ if(b.dataset.hold&&e.detail!==0)return; /* pointer must hold; keyboard Enter opens directly */
+ actions[b.dataset.a](b)});
+let holdT;
+document.addEventListener('pointerdown',e=>{const b=e.target.closest('[data-hold]');if(b)holdT=setTimeout(()=>actions.holdSettings(),2000)});
+['pointerup','pointerleave','pointercancel'].forEach(n=>document.addEventListener(n,()=>clearTimeout(holdT)));
+document.addEventListener('change',e=>{const k=e.target.dataset&&e.target.dataset.set;if(k)s.settings[k]=e.target.value});
+render(false);
+</script>
+</body>
+</html>
