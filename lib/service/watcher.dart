@@ -11,12 +11,14 @@ import '../ports/ports.dart';
 class Watcher {
   Watcher({
     required LocationSource location,
+    required ActivitySource activity,
     required StateStore store,
     required ReminderPlayer reminders,
     required LastPlaceStore places,
     required QuietPlaceStore quiet,
     required StayChoiceStore stayChoice,
   }) : _location = location,
+       _activity = activity,
        _store = store,
        _reminders = reminders,
        _places = places,
@@ -24,6 +26,7 @@ class Watcher {
        _stayChoice = stayChoice;
 
   final LocationSource _location;
+  final ActivitySource _activity;
   final StateStore _store;
   final ReminderPlayer _reminders;
   final LastPlaceStore _places;
@@ -32,6 +35,7 @@ class Watcher {
 
   DetectorState state = DetectorState.initial();
   StreamSubscription<LocationFix>? _subscription;
+  StreamSubscription<ActivityChanged>? _activitySubscription;
   Future<void> _queue = Future.value();
 
   Future<void> start() async {
@@ -41,11 +45,17 @@ class Watcher {
     await syncQuietPlaces();
     await syncStaySetting();
     _subscription = _location.fixes.listen(handle, onError: (Object _) {});
+    _activitySubscription = _activity.changes.listen(
+      handle,
+      onError: (Object _) {},
+    );
   }
 
   Future<void> stop() async {
     await _subscription?.cancel();
     _subscription = null;
+    await _activitySubscription?.cancel();
+    _activitySubscription = null;
   }
 
   /// Asks for readings again, in turn with other events.

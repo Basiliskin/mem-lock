@@ -44,6 +44,10 @@ dependencies:
   url_launcher: ^6.3.3
   record: ^7.1.2
   battery_plus: ^7.1.2
+  # 6.1.0 with one fix; see packages/activity_recognition_flutter/GEO_ALERT_PATCH.md
+  activity_recognition_flutter:
+    path: packages/activity_recognition_flutter
+  google_api_availability: ^5.0.1
 
 dev_dependencies:
   flutter_test:

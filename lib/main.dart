@@ -7,6 +7,7 @@ import 'adapters/prefs_last_place.dart';
 import 'adapters/phone_battery.dart';
 import 'adapters/phone_health.dart';
 import 'adapters/phone_reminder_output.dart';
+import 'adapters/plugin_activity.dart';
 import 'adapters/prefs_quiet_places.dart';
 import 'adapters/prefs_reminder_options.dart';
 import 'adapters/prefs_stay_choice.dart';
@@ -62,6 +63,7 @@ Future<void> main() async {
           gate: PhonePermissionGate(),
           host: host,
           store: setupStore,
+          activityCheck: PlayServicesCheck(),
           quietPlaces: quietPlaces,
           reminderOptions: reminderOptions,
           onDone: onDone,

@@ -82,7 +82,7 @@ The Detector is one state machine: `step(state, event) → (newState, decisions)
 |---|---|---|
 | `LocationSource` | Position stream, mode switch | geolocator |
 | `CurrentFixSource` | One-off fix for the screens | geolocator |
-| `ActivitySource` | Activity changes | activity_recognition_flutter, pending S1 results. Do not ship its health-type foreground service without checking Play rules |
+| `ActivitySource` | Activity changes | activity_recognition_flutter, using the patched copy in `packages/`, called with `runForegroundService: false`, because the service already runs in the location foreground service. The plugin's health-type service and `FOREGROUND_SERVICE_HEALTH` permission are removed from the merged manifest. See S14 |
 | `ReminderPlayer` | Start, repeat, stop; sound, vibration, voice; silent behaviour | flutter_local_notifications plus an audio plugin |
 | `VoiceRecorder` | Record the Helper's voice; playback goes through the Reminder output | record |
 | `Store` | Settings, Quiet Places, Last Places, Detector state | shared_preferences |
@@ -102,7 +102,8 @@ The service and screens run in separate isolates, so they share data through `St
 | No fix when marking a Quiet Place | Nothing saved; a message says why | AC-6.4 |
 | Chosen sound or recording won't play | Default Reminder plays | AC-4.4 |
 | No map app | Message, plus time and coordinates | AC-5.4 |
-| Activity service unavailable, such as no Google Play services | Stay detection continues; Helper is told at setup that train Reminders are unavailable or weaker | D3 |
+| Activity service unavailable, such as no Google Play services | Stay detection continues; Helper is told at setup that train Reminders are unavailable or weaker. Setup must check for Play services itself: the plugin only logs a failed registration, so nothing reaches Dart | D3 |
+| Activity stream reports an error | Ignored, as with location errors; Stay detection continues and the Ride's 15-minute limit still applies | S14 |
 | Saved state unreadable | Reset Detector to `Roaming` and keep watching; keep settings if readable | Invariant 6 |
 | Service stopped unexpectedly | Warning when next detectable | AC-8.2 |
 
@@ -139,5 +140,37 @@ Each slice can be delivered and tested alone. **Gate** means the result can chan
 | **S11** | "Not protecting you" warnings | AC-8.2, AC-8.3 | Turning off location warns; fixing it clears the warning |
 | **S12** | Should items: low battery warning, Stay setting, two Last Places | AC-9.2, AC-10.1, AC-10.2 | Tests and a manual check pass |
 | **S13** | Could items: adjustable repeats, spoken text | Scope "Could" | Build only if still wanted after field results |
+| **S14** | `ActivitySource` adapter and service wiring, so the Ride rules receive real activity signals. Build next: it doesn't depend on S13 | AC-2.1 to AC-2.3 on the phone, AC-7.2, D3 error row | Tests pass; the release manifest has no health service or permission; on one real ride with the phone locked, getting off gives a Reminder |
 
 FT-4 (full days) runs at `/qa`, once all Must items are in.
+
+### S14 scope
+
+**No S1 results exist yet.** S14 needs no measured numbers, so it goes ahead without them. The Ride values stay the placeholders from S4, and these remain open:
+
+- S1's 10 logged rides, which retune those values using `probes/ride`. The main app must not log rides, because location history is out of scope for v1.
+- S4's "tests pass on real recorded rides".
+- FT-2, which decides whether Ride stays in v1. S14 passing doesn't settle it, and setup still makes no train or bus claim.
+
+S1 also ran the plugin in the probe's main isolate with no service of its own, so it can't show that signals reach the service isolate. S14's real ride checks that.
+
+**Build:**
+
+1. **Port:** `ActivitySource` in `lib/ports/ports.dart`, with `Stream<ActivityChanged> get changes`.
+2. **Adapter:** `lib/adapters/plugin_activity.dart`, with the plugin in `pubspec.yaml`. It passes confidence through, uses the plugin's timestamp, and maps kinds as the replay test does:
+
+   | Plugin type | `ActivityKind` |
+   |---|---|
+   | `IN_VEHICLE` | `inVehicle` |
+   | `WALKING`, `ON_FOOT`, `RUNNING` | `walking` |
+   | `STILL` | `still` |
+   | `ON_BICYCLE`, `TILTING`, `UNKNOWN` | `unknown` |
+
+3. **Watcher:** takes `ActivitySource`, subscribes in `start()` and cancels in `stop()`. Events go through `handle`, so they run in turn with location readings, and stream errors are ignored.
+4. **Entry point:** `lib/service/entry_point.dart` passes the adapter to the Watcher.
+5. **Manifest:** `tools:node="remove"` for the plugin's service and `FOREGROUND_SERVICE_HEALTH`.
+6. **Setup:** a Play services check. If they are missing, setup tells the Helper that train and bus Reminders won't work on this phone, then continues.
+
+**Tests:** kind mapping; Watcher sends activity to the Detector in order, keeps watching after a stream error, and cancels on stop; setup shows the note; a saved `OnRide` continues after a restart with signals arriving.
+
+**Unchanged:** the Detector and its thresholds. A later loss of the activity permission still gives no warning, as decided in S11.

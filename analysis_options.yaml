@@ -5,6 +5,7 @@ analyzer:
     - build/**
     - android/**
     - probes/**
+    - packages/**
 
 linter:
   rules:

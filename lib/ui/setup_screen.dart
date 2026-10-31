@@ -28,6 +28,7 @@ class SetupScreen extends StatefulWidget {
     required this.gate,
     required this.host,
     required this.store,
+    required this.activityCheck,
     required this.quietPlaces,
     required this.reminderOptions,
     required this.onDone,
@@ -36,6 +37,7 @@ class SetupScreen extends StatefulWidget {
   final PermissionGate gate;
   final BackgroundHost host;
   final SetupStore store;
+  final ActivityAvailability activityCheck;
   final WidgetBuilder quietPlaces;
   final WidgetBuilder reminderOptions;
   final VoidCallback onDone;
@@ -92,6 +94,7 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
   bool _blockedTap = false;
   bool _startFailed = false;
   bool _busy = false;
+  bool _noRideDetection = false;
 
   _Step get _step => _steps[_index];
   bool get _isLast => _index == _steps.length - 1;
@@ -100,6 +103,18 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _checkActivity();
+  }
+
+  /// A failing check makes no claim about the phone.
+  Future<void> _checkActivity() async {
+    bool available;
+    try {
+      available = await widget.activityCheck.isAvailable();
+    } on Object {
+      available = true;
+    }
+    if (mounted && !available) setState(() => _noRideDetection = true);
   }
 
   @override
@@ -264,6 +279,9 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
                     const SizedBox(height: 16),
                     Text(step.text, style: const TextStyle(fontSize: 20)),
                     if (step.permission != null) ..._permissionPart(step),
+                    if (_noRideDetection &&
+                        step.permission == SetupPermission.activity)
+                      _note(Strings.setupNoRideDetection),
                     if (open != null)
                       _button(
                         step.openLabel!,

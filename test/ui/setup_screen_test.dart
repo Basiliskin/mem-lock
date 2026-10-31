@@ -26,6 +26,16 @@ class FakeGate implements PermissionGate {
   Future<void> openSettings() async => settingsOpened++;
 }
 
+class FakeActivityCheck implements ActivityAvailability {
+  bool available = true;
+  bool throws = false;
+  @override
+  Future<bool> isAvailable() async {
+    if (throws) throw StateError('plugin');
+    return available;
+  }
+}
+
 class FakeHost implements BackgroundHost {
   bool works = true;
   int starts = 0;
@@ -55,12 +65,14 @@ void main() {
   late FakeGate gate;
   late FakeHost host;
   late FakeSetup store;
+  late FakeActivityCheck activityCheck;
   late bool finished;
 
   setUp(() {
     gate = FakeGate();
     host = FakeHost();
     store = FakeSetup();
+    activityCheck = FakeActivityCheck();
     finished = false;
   });
 
@@ -71,6 +83,7 @@ void main() {
           gate: gate,
           host: host,
           store: store,
+          activityCheck: activityCheck,
           quietPlaces: (_) => const Text('quiet-screen'),
           reminderOptions: (_) => const Text('options-screen'),
           onDone: () => finished = true,
@@ -124,6 +137,43 @@ void main() {
       SetupPermission.activity,
       SetupPermission.battery,
     ]);
+  });
+
+  group('Play services note', () {
+    Future<void> toActivity(WidgetTester t) async {
+      await toPermission(t);
+      for (var i = 0; i < 2; i++) {
+        await tap(t, Strings.setupAllow);
+        await tap(t, Strings.setupNext);
+      }
+      expect(find.text(Strings.setupActivityTitle), findsOneWidget);
+    }
+
+    testWidgets('shows on the activity step when they are missing', (t) async {
+      activityCheck.available = false;
+      await toActivity(t);
+      expect(find.text(Strings.setupNoRideDetection), findsOneWidget);
+    });
+
+    testWidgets('missing Play services do not block setup', (t) async {
+      activityCheck.available = false;
+      await toActivity(t);
+      await tap(t, Strings.setupAllow);
+      await tap(t, Strings.setupNext);
+      expect(find.text(Strings.setupBatteryTitle), findsOneWidget);
+    });
+
+    testWidgets('stays hidden when they are available', (t) async {
+      await toActivity(t);
+      expect(find.text(Strings.setupNoRideDetection), findsNothing);
+    });
+
+    testWidgets('a failing check makes no claim', (t) async {
+      activityCheck.throws = true;
+      await toActivity(t);
+      expect(find.text(Strings.setupNoRideDetection), findsNothing);
+      expect(t.takeException(), isNull);
+    });
   });
 
   testWidgets('a failed start stays in setup and says so', (t) async {

@@ -23,6 +23,12 @@ class FakeLocation implements LocationSource {
   Future<void> setMode(LocationMode mode) async => modes.add(mode);
 }
 
+class FakeActivity implements ActivitySource {
+  final controller = StreamController<ActivityChanged>.broadcast();
+  @override
+  Stream<ActivityChanged> get changes => controller.stream;
+}
+
 class FakeStore implements StateStore {
   FakeStore([this.text]);
   String? text;
@@ -87,6 +93,7 @@ class FakeReminders implements ReminderPlayer {
 
 void main() {
   late FakeLocation location;
+  late FakeActivity activity;
   late FakeStore store;
   late FakeReminders reminders;
   late Watcher watcher;
@@ -95,6 +102,7 @@ void main() {
   late FakeChoice choice;
 
   setUp(() {
+    activity = FakeActivity();
     quiet = FakeQuiet();
     choice = FakeChoice();
   });
@@ -105,6 +113,7 @@ void main() {
     reminders = FakeReminders();
     watcher = Watcher(
       location: location,
+      activity: activity,
       store: store,
       reminders: reminders,
       places: places,
@@ -125,6 +134,64 @@ void main() {
     await send(LocationFix(at(0), cafe, 10));
     await watcher.tick(at(5));
   }
+
+  group('activity signals', () {
+    ActivityChanged act(int s, ActivityKind kind, [int confidence = 90]) =>
+        ActivityChanged(at(0, s), kind, confidence);
+
+    Future<void> boardRide() async {
+      await send(LocationFix(at(0), cafe, 10));
+      activity.controller.add(act(10, ActivityKind.inVehicle));
+      await pumpEventQueue();
+      await watcher.handle(Tick(at(0, 11)));
+    }
+
+    test('reach the Detector and start a Ride', () async {
+      await begin();
+      await boardRide();
+      expect(watcher.state.phase, isA<OnRide>());
+    });
+
+    test('AC-2.1: getting off gives one Reminder', () async {
+      await begin();
+      await boardRide();
+      activity.controller.add(act(20, ActivityKind.walking));
+      await pumpEventQueue();
+      await watcher.tick(at(0, 55));
+      await watcher.tick(at(1, 30));
+      expect(reminders.started, hasLength(1));
+    });
+
+    test('a stream error keeps watching', () async {
+      await begin();
+      activity.controller.addError(StateError('no play services'));
+      await pumpEventQueue();
+      await boardRide();
+      expect(watcher.state.phase, isA<OnRide>());
+    });
+
+    test('stop cancels the subscription', () async {
+      await begin();
+      expect(activity.controller.hasListener, isTrue);
+      await watcher.stop();
+      expect(activity.controller.hasListener, isFalse);
+    });
+
+    test('a saved Ride continues after a restart', () async {
+      await begin();
+      await boardRide();
+      await watcher.stop();
+      activity = FakeActivity();
+      final before = reminders;
+      await begin(store.text);
+      expect(watcher.state.phase, isA<OnRide>());
+      activity.controller.add(act(20, ActivityKind.walking));
+      await pumpEventQueue();
+      await watcher.tick(at(0, 55));
+      expect(before.started, isEmpty);
+      expect(reminders.started, hasLength(1));
+    });
+  });
 
   test('a full visit starts one Reminder and sets the modes', () async {
     await begin();
@@ -187,6 +254,7 @@ void main() {
     store = FakeStore();
     watcher = Watcher(
       location: location,
+      activity: activity,
       store: store,
       reminders: _OrderReminders(order),
       places: p,
@@ -256,6 +324,7 @@ void main() {
       reminders = FakeReminders();
       watcher = Watcher(
         location: location,
+        activity: activity,
         store: store,
         reminders: reminders,
         places: places,
@@ -346,6 +415,7 @@ void main() {
     store = FakeStore();
     watcher = Watcher(
       location: location,
+      activity: activity,
       store: store,
       reminders: failing,
       places: places,

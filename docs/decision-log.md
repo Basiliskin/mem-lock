@@ -63,3 +63,14 @@
 - **Missed ride ends:** with no sign of a vehicle for 15 minutes, the Ride ends with a Reminder, so Stay detection can't stay stuck. This may give a false Reminder on a long tunnel ride; check it in the logs.
 - **Quiet Places:** a Ride ending at one gives no Reminder, as in the settled decisions.
 - **Last Place:** the last trusted reading before walking began, which may be old after a tunnel. With no reading at all, the Reminder waits for the first one.
+
+## 2026-10-31 · /architect
+
+- **S14 added before S1 results:** no ride logs exist, so the `ActivitySource` slice goes ahead with S4's placeholder values. S1's rides, S4's real-ride check and FT-2 stay open, and FT-2 still decides whether Ride stays in v1. Files: `docs/architecture.md`.
+- **Activity plugin in the service:** no plugin foreground service, and its health service and permission are removed from the manifest. Files: `docs/architecture.md`.
+- **Play services check at setup:** the plugin doesn't report a failed registration to Dart, so setup checks directly. Files: `docs/architecture.md`.
+
+## 2026-10-31 · /developer S14
+
+- **Plugin patch:** a copy of activity_recognition_flutter 6.1.0 in `packages/`, because closing the screens would otherwise stop activity updates for the whole app. On detach, only the listening engine now stops them. Found by reading the code, not yet reproduced on a phone. Files: `packages/activity_recognition_flutter/`, `pubspec.yaml`.
+- **Play services check:** google_api_availability, with the note on the activity step. A failing check shows no note, and the permission is still required. Files: `lib/adapters/plugin_activity.dart`, `lib/ui/setup_screen.dart`, `lib/l10n/strings.dart`.

@@ -10,6 +10,15 @@ abstract interface class LocationSource {
   Future<void> setMode(LocationMode mode);
 }
 
+abstract interface class ActivitySource {
+  Stream<ActivityChanged> get changes;
+}
+
+/// Whether this phone can report activity at all.
+abstract interface class ActivityAvailability {
+  Future<bool> isAvailable();
+}
+
 /// A single reading taken now, for the screens.
 abstract interface class CurrentFixSource {
   /// Returns null when no reading could be taken in time.
