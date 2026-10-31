@@ -94,7 +94,7 @@ As a Helper, I want the app to restart itself and warn when it can't watch, so t
 ### US-9: Battery (Must; low battery warning is Should)
 As a Wearer, I want the app to use little battery, so that my phone lasts the day.
 
-- **AC-9.1** Given the Wearer is not moving, then location stays off until movement wakes it.
+- **AC-9.1** Given the Wearer is in a Stay, then only low-power location runs until a reading suggests the Wearer has moved.
 - **AC-9.2** (Should) Given the battery runs low, then the app warns the Wearer once per low-battery period.
 
 ### US-10: Stay setting (Should)

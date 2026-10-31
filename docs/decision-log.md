@@ -20,3 +20,7 @@
 ## 2026-10-31 · /developer S1
 
 - **Activity plugin:** `activity_recognition_flutter` for the probe, which requires minSdk 26. Files: `probes/ride/`, `docs/architecture.md`.
+
+## 2026-10-31 · /developer S5
+
+- **Wake on movement:** low-power location checks during a Stay, switching to precise when a reading looks outside the area. AC-9.1 reworded. Files: `docs/requirements.md`, `docs/architecture.md`, `lib/`.

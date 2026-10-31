@@ -24,7 +24,7 @@ List<Decision> replay(String name) {
         : Tick(time);
     final (next, decisions) = step(state, event);
     state = next;
-    out.addAll(decisions);
+    out.addAll(decisions.where((d) => d is! SetLocationMode));
   }
   return out;
 }

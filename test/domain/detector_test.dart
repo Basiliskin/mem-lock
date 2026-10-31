@@ -24,7 +24,7 @@ LocationFix fix(DateTime time, GeoPoint p, {double accuracy = 10}) =>
   for (final e in events) {
     final (next, decisions) = step(state, e);
     state = next;
-    out.addAll(decisions);
+    out.addAll(decisions.where((d) => d is! SetLocationMode));
   }
   return (state, out);
 }

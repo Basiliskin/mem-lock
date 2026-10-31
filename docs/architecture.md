@@ -59,7 +59,7 @@ The Detector is one state machine: `step(state, event) → (newState, decisions)
 |---|---|
 | `StartReminder(source, lastPlace)` | A Stay or Ride ended |
 | `StopRepeats` | The Wearer came back to where the Stay ended |
-| `SetLocationMode(off / precise)` | Wake or rest the location signal |
+| `SetLocationMode(lowPower / precise)` | Rest location during a Stay, or wake it when a reading looks outside the area |
 
 | State | Moves on when |
 |---|---|

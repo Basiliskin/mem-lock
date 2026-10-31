@@ -76,6 +76,8 @@ class SettingsChanged extends DetectorEvent {
 
 enum ReminderSource { stay }
 
+enum LocationMode { precise, lowPower }
+
 sealed class Decision {
   const Decision();
 }
@@ -90,6 +92,13 @@ class StartReminder extends Decision {
 /// The Wearer came back to where the Stay ended.
 class StopRepeats extends Decision {
   const StopRepeats();
+}
+
+/// Rest location during a Stay, or wake it when a reading looks outside.
+class SetLocationMode extends Decision {
+  const SetLocationMode(this.mode);
+
+  final LocationMode mode;
 }
 
 // State ---------------------------------------------------------------------
@@ -119,6 +128,7 @@ class DetectorState {
     required this.settings,
     required this.quietPlaces,
     this.returnTo,
+    this.locationMode = LocationMode.precise,
   });
 
   factory DetectorState.initial() => const DetectorState(
@@ -135,11 +145,14 @@ class DetectorState {
   /// Stay begins.
   final GeoPoint? returnTo;
 
+  final LocationMode locationMode;
+
   DetectorState _with({Phase? phase}) => DetectorState(
     phase: phase ?? this.phase,
     settings: settings,
     quietPlaces: quietPlaces,
     returnTo: returnTo,
+    locationMode: locationMode,
   );
 
   DetectorState _withReturnTo(GeoPoint? point) => DetectorState(
@@ -147,6 +160,7 @@ class DetectorState {
     settings: settings,
     quietPlaces: quietPlaces,
     returnTo: point,
+    locationMode: locationMode,
   );
 }
 
@@ -155,6 +169,42 @@ class DetectorState {
 /// The whole Detector: no clock, plugin or storage, so recorded movement can
 /// be replayed in a test.
 (DetectorState, List<Decision>) step(DetectorState state, DetectorEvent event) {
+  final (next, decisions) = _core(state, event);
+  final mode = _modeAfter(state, next, event);
+  if (mode == state.locationMode) return (next, decisions);
+  return (
+    DetectorState(
+      phase: next.phase,
+      settings: next.settings,
+      quietPlaces: next.quietPlaces,
+      returnTo: next.returnTo,
+      locationMode: mode,
+    ),
+    [...decisions, SetLocationMode(mode)],
+  );
+}
+
+/// Precise unless settled in a Stay. Any reading outside wakes precise, even
+/// an inaccurate one, and any reading inside rests it again.
+LocationMode _modeAfter(
+  DetectorState before,
+  DetectorState after,
+  DetectorEvent event,
+) {
+  final phase = after.phase;
+  if (phase is! InStay) return LocationMode.precise;
+  if (event is LocationFix) {
+    return event.point.distanceTo(phase.center) > after.settings.stayMeters
+        ? LocationMode.precise
+        : LocationMode.lowPower;
+  }
+  return before.phase is InStay ? before.locationMode : LocationMode.lowPower;
+}
+
+(DetectorState, List<Decision>) _core(
+  DetectorState state,
+  DetectorEvent event,
+) {
   return switch (event) {
     LocationFix() => _onFix(state, event),
     Tick() => (_onTick(state, event.time), const []),
@@ -164,6 +214,7 @@ class DetectorState {
         settings: state.settings,
         quietPlaces: event.places,
         returnTo: state.returnTo,
+        locationMode: state.locationMode,
       ),
       const [],
     ),
@@ -173,6 +224,7 @@ class DetectorState {
         settings: event.settings,
         quietPlaces: state.quietPlaces,
         returnTo: state.returnTo,
+        locationMode: state.locationMode,
       ),
       const [],
     ),

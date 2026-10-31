@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
-void main() => runApp(const GeoAlertApp());
+import 'adapters/foreground_host.dart';
+import 'l10n/strings.dart';
+import 'ui/main_screen.dart';
 
-class GeoAlertApp extends StatelessWidget {
-  const GeoAlertApp({super.key});
-
-  @override
-  Widget build(BuildContext context) => const MaterialApp(
-    title: 'Geo Alert',
-    home: Scaffold(body: Center(child: Text('Geo Alert'))),
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  FlutterForegroundTask.initCommunicationPort();
+  ForegroundHost.init();
+  runApp(
+    MaterialApp(
+      title: Strings.appName,
+      home: MainScreen(host: ForegroundHost()),
+    ),
   );
 }
