@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:geo_alert/domain/detector.dart';
 import 'package:geo_alert/domain/detector_json.dart';
 import 'package:geo_alert/domain/geo.dart';
+import 'package:geo_alert/domain/last_place_record.dart';
 import 'package:geo_alert/ports/ports.dart';
 import 'package:geo_alert/service/watcher.dart';
 
@@ -35,6 +36,19 @@ class FakeStore implements StateStore {
   Future<void> write(String value) async => text = value;
 }
 
+class FakePlaces implements LastPlaceStore {
+  LastPlaceRecord? record;
+  bool fail = false;
+  final log = <String>[];
+  @override
+  Future<LastPlaceRecord?> read() async => record;
+  @override
+  Future<void> save(LastPlaceRecord value) async {
+    if (fail) throw StateError('disk');
+    record = value;
+  }
+}
+
 class FakeReminders implements ReminderPlayer {
   final started = <StartReminder>[];
   int stopped = 0;
@@ -49,12 +63,18 @@ void main() {
   late FakeStore store;
   late FakeReminders reminders;
   late Watcher watcher;
+  final places = FakePlaces();
 
   Future<void> begin([String? saved]) async {
     location = FakeLocation();
     store = FakeStore(saved);
     reminders = FakeReminders();
-    watcher = Watcher(location: location, store: store, reminders: reminders);
+    watcher = Watcher(
+      location: location,
+      store: store,
+      reminders: reminders,
+      places: places,
+    );
     await watcher.start();
   }
 
@@ -88,6 +108,48 @@ void main() {
     await pumpEventQueue();
     await watcher.tick(at(5));
     expect(decodeState(store.text!).phase, isA<InStay>());
+  });
+
+  test(
+    'AC-5.5: each Reminder saves the Last Place, replacing the old',
+    () async {
+      places.record = null;
+      await begin();
+      await settle();
+      await walkOut();
+      expect(places.record!.point, cafe);
+      expect(places.record!.time, at(6, 10));
+      await watcher.tick(at(12));
+      await send(LocationFix(at(13), north(600), 10));
+      await send(LocationFix(at(13, 10), north(620), 10));
+      expect(places.record!.time, at(13, 10));
+    },
+  );
+
+  test('the Last Place is saved before the Reminder starts', () async {
+    final order = <String>[];
+    final p = _OrderPlaces(order);
+    location = FakeLocation();
+    store = FakeStore();
+    watcher = Watcher(
+      location: location,
+      store: store,
+      reminders: _OrderReminders(order),
+      places: p,
+    );
+    await watcher.start();
+    await settle();
+    await walkOut();
+    expect(order, ['save', 'start']);
+  });
+
+  test('a failed save still starts the Reminder', () async {
+    places.fail = true;
+    addTearDown(() => places.fail = false);
+    await begin();
+    await settle();
+    await walkOut();
+    expect(reminders.started, hasLength(1));
   });
 
   test('coming back stops the repeats', () async {
@@ -136,7 +198,12 @@ void main() {
       location = FakeLocation();
       store = FakeStore()..failReads = true;
       reminders = FakeReminders();
-      watcher = Watcher(location: location, store: store, reminders: reminders);
+      watcher = Watcher(
+        location: location,
+        store: store,
+        reminders: reminders,
+        places: places,
+      );
       await watcher.start();
       expect(watcher.state.phase, isA<Roaming>());
     });
@@ -157,7 +224,12 @@ void main() {
     final failing = _FailingReminders();
     location = FakeLocation();
     store = FakeStore();
-    watcher = Watcher(location: location, store: store, reminders: failing);
+    watcher = Watcher(
+      location: location,
+      store: store,
+      reminders: failing,
+      places: places,
+    );
     await watcher.start();
     await settle();
     await walkOut();
@@ -185,4 +257,22 @@ class _FailingReminders implements ReminderPlayer {
     calls++;
     throw StateError('no');
   }
+}
+
+class _OrderPlaces implements LastPlaceStore {
+  _OrderPlaces(this.order);
+  final List<String> order;
+  @override
+  Future<LastPlaceRecord?> read() async => null;
+  @override
+  Future<void> save(LastPlaceRecord value) async => order.add('save');
+}
+
+class _OrderReminders implements ReminderPlayer {
+  _OrderReminders(this.order);
+  final List<String> order;
+  @override
+  Future<void> start(StartReminder reminder) async => order.add('start');
+  @override
+  Future<void> stop() async {}
 }

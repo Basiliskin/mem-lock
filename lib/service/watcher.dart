@@ -2,6 +2,7 @@ import 'dart:async';
 
 import '../domain/detector.dart';
 import '../domain/detector_json.dart';
+import '../domain/last_place_record.dart';
 import '../ports/ports.dart';
 
 /// Connects the ports to the Detector. Events run strictly one at a time, and
@@ -11,13 +12,16 @@ class Watcher {
     required LocationSource location,
     required StateStore store,
     required ReminderPlayer reminders,
+    required LastPlaceStore places,
   }) : _location = location,
        _store = store,
-       _reminders = reminders;
+       _reminders = reminders,
+       _places = places;
 
   final LocationSource _location;
   final StateStore _store;
   final ReminderPlayer _reminders;
+  final LastPlaceStore _places;
 
   DetectorState state = DetectorState.initial();
   StreamSubscription<LocationFix>? _subscription;
@@ -57,6 +61,14 @@ class Watcher {
     // Saved before acting, so a crash can't repeat a Reminder after a restart.
     if (after != before) await _quietly(() => _store.write(after));
     for (final d in decisions) {
+      if (d is StartReminder) {
+        // Saved first, so "I forgot something" always has a place to show.
+        await _quietly(
+          () => _places.save(
+            LastPlaceRecord(d.lastPlace.point, d.lastPlace.time, d.source),
+          ),
+        );
+      }
       await _quietly(
         () => switch (d) {
           StartReminder() => _reminders.start(d),

@@ -32,17 +32,22 @@ const reminderNotificationSettings = InitializationSettings(
 );
 
 /// For the app's own isolate: "I forgot something" opens the app, including
-/// from a cold start.
-Future<void> initReminderActionsInApp() async {
+/// from a cold start, and [onForgot] then shows the Last Place.
+Future<void> initReminderActionsInApp(void Function() onForgot) async {
+  void handle(NotificationResponse response) {
+    forwardAction(response);
+    if (response.actionId == actionForgot) onForgot();
+  }
+
   final plugin = FlutterLocalNotificationsPlugin();
   await plugin.initialize(
     settings: reminderNotificationSettings,
-    onDidReceiveNotificationResponse: forwardAction,
+    onDidReceiveNotificationResponse: handle,
     onDidReceiveBackgroundNotificationResponse: onBackgroundReminderAction,
   );
   final launch = await plugin.getNotificationAppLaunchDetails();
   final response = launch?.notificationResponse;
   if (launch?.didNotificationLaunchApp == true && response != null) {
-    forwardAction(response);
+    handle(response);
   }
 }

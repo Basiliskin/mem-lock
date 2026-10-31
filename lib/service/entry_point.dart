@@ -5,6 +5,7 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
 import '../adapters/geolocator_location.dart';
 import '../adapters/phone_reminder_output.dart';
+import '../adapters/prefs_last_place.dart';
 import '../adapters/prefs_reminder_options.dart';
 import '../adapters/prefs_state_store.dart';
 import '../adapters/reminder_actions.dart';
@@ -34,6 +35,7 @@ class _Handler extends TaskHandler {
       location: GeolocatorLocation(),
       store: PrefsStateStore(),
       reminders: session,
+      places: PrefsLastPlace(),
     );
     await watcher.start();
     _watcher = watcher;

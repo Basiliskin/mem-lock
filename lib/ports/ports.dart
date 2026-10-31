@@ -1,4 +1,6 @@
 import '../domain/detector.dart';
+import '../domain/geo.dart';
+import '../domain/last_place_record.dart';
 import '../domain/reminder_options.dart';
 
 abstract interface class LocationSource {
@@ -36,4 +38,14 @@ abstract interface class ReminderOutput {
 
 abstract interface class ReminderOptionsStore {
   Future<ReminderOptions> read();
+}
+
+abstract interface class LastPlaceStore {
+  Future<LastPlaceRecord?> read();
+  Future<void> save(LastPlaceRecord value);
+}
+
+abstract interface class MapLauncher {
+  /// Returns false when no map app could open it.
+  Future<bool> open(GeoPoint point);
 }

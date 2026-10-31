@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:geo_alert/domain/geo.dart';
+import 'package:geo_alert/domain/last_place_record.dart';
 import 'package:geo_alert/l10n/strings.dart';
 import 'package:geo_alert/ports/ports.dart';
 import 'package:geo_alert/ui/main_screen.dart';
@@ -20,7 +22,16 @@ class FakeHost implements BackgroundHost {
 }
 
 Future<void> show(WidgetTester t, BackgroundHost host) async {
-  await t.pumpWidget(MaterialApp(home: MainScreen(host: host)));
+  await t.pumpWidget(
+    MaterialApp(
+      home: MainScreen(
+        host: host,
+        places: _NoPlaces(),
+        map: _NoMap(),
+        forgotRequests: ValueNotifier(0),
+      ),
+    ),
+  );
   await t.pumpAndSettle();
 }
 
@@ -56,4 +67,16 @@ void main() {
     expect(find.text(Strings.startFailed), findsOneWidget);
     expect(find.text(Strings.enable), findsOneWidget);
   });
+}
+
+class _NoPlaces implements LastPlaceStore {
+  @override
+  Future<LastPlaceRecord?> read() async => null;
+  @override
+  Future<void> save(LastPlaceRecord value) async {}
+}
+
+class _NoMap implements MapLauncher {
+  @override
+  Future<bool> open(GeoPoint point) async => false;
 }

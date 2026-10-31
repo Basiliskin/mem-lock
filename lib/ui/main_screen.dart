@@ -1,15 +1,29 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../domain/last_place_record.dart';
 import '../l10n/strings.dart';
 import '../ports/ports.dart';
+import 'forgot_screen.dart';
 
 const _ok = Color(0xFF0B6B2E);
 const _bad = Color(0xFFB3141C);
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key, required this.host});
+  const MainScreen({
+    super.key,
+    required this.host,
+    required this.places,
+    required this.map,
+    required this.forgotRequests,
+  });
 
   final BackgroundHost host;
+  final LastPlaceStore places;
+  final MapLauncher map;
+
+  /// Goes up each time the notification's "I forgot something" is tapped.
+  final ValueListenable<int> forgotRequests;
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -18,16 +32,20 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   bool? _running;
   bool _failed = false;
+  LastPlaceRecord? _place;
+  int _handledRequests = 0;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _refresh();
+    widget.forgotRequests.addListener(_onForgotRequest);
+    _refresh().then((_) => _onForgotRequest());
   }
 
   @override
   void dispose() {
+    widget.forgotRequests.removeListener(_onForgotRequest);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -39,8 +57,37 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   Future<void> _refresh() async {
     final running = await widget.host.isRunning();
-    if (mounted) setState(() => _running = running);
+    final place = await _readPlace();
+    if (mounted) {
+      setState(() {
+        _running = running;
+        _place = place;
+      });
+    }
   }
+
+  Future<LastPlaceRecord?> _readPlace() async {
+    try {
+      return await widget.places.read();
+    } on Object {
+      return null;
+    }
+  }
+
+  Future<void> _onForgotRequest() async {
+    if (widget.forgotRequests.value <= _handledRequests) return;
+    _handledRequests = widget.forgotRequests.value;
+    final place = await _readPlace();
+    if (!mounted || place == null) return;
+    setState(() => _place = place);
+    _openForgot(place);
+  }
+
+  void _openForgot(LastPlaceRecord place) => Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (_) => ForgotScreen(place: place, map: widget.map),
+    ),
+  );
 
   Future<void> _enable() async {
     final running = await widget.host.start();
@@ -59,63 +106,98 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     return Scaffold(
       backgroundColor: running ? _ok : _bad,
       body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  running ? Icons.check : Icons.priority_high,
-                  size: 88,
-                  color: Colors.white,
-                ),
-                Semantics(
-                  liveRegion: true,
-                  child: Text(
-                    running ? Strings.protecting : Strings.notProtecting,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                if (running)
-                  const Text(
-                    Strings.nothingToDo,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white, fontSize: 20),
-                  ),
-                if (!running) ...[
-                  if (_failed)
-                    const Text(
-                      Strings.startFailed,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white, fontSize: 20),
-                    ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 64,
-                    child: FilledButton(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: _bad,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        running ? Icons.check : Icons.priority_high,
+                        size: 88,
+                        color: Colors.white,
                       ),
-                      onPressed: _enable,
-                      child: const Text(
-                        Strings.enable,
-                        style: TextStyle(fontSize: 20),
+                      Semantics(
+                        liveRegion: true,
+                        child: Text(
+                          running ? Strings.protecting : Strings.notProtecting,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 36,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      if (running)
+                        const Text(
+                          Strings.nothingToDo,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.white, fontSize: 20),
+                        ),
+                      if (!running) ...[
+                        if (_failed)
+                          const Text(
+                            Strings.startFailed,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.white, fontSize: 20),
+                          ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 64,
+                          child: FilledButton(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: _bad,
+                            ),
+                            onPressed: _enable,
+                            child: const Text(
+                              Strings.enable,
+                              style: TextStyle(fontSize: 20),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
-                ],
-              ],
+                ),
+              ),
             ),
-          ),
+            if (_place != null)
+              Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(16),
+                child: SizedBox(
+                  height: 96,
+                  child: OutlinedButton(
+                    onPressed: () => _openForgot(_place!),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          Strings.actionForgot,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          Strings.whenText(_place!.time, DateTime.now()),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
