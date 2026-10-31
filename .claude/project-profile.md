@@ -16,16 +16,15 @@ The single source of project facts for this repo's role skills. Edit here; skill
 - Decision log: docs/decision-log.md
 
 ## Stack
-- Languages and frameworks: Flutter, Dart ≥ 3.3 (project not created yet)
-- Layout: Planned in docs/architecture.md (lib/domain, ports, adapters, service, ui, l10n; probes/); project not created yet
-- Has UI: yes
+- Languages and frameworks: Flutter, Dart ≥ 3.3
+- Layout: Planned in docs/architecture.md (lib/domain, ports, adapters, service, ui, l10n; probes/)- Has UI: yes
 
 ## Commands
-- Install: unknown
-- Run: unknown
-- Test: unknown
-- Lint: unknown
-- Typecheck: unknown
+- Install: flutter pub get
+- Run: flutter run
+- Test: flutter test
+- Lint: flutter analyze
+- Typecheck: flutter analyze
 
 ## Engineering rules
 <!-- Fixed architecture rules, as a checkable list. -->

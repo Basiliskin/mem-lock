@@ -81,7 +81,7 @@ The Detector is one state machine: `step(state, event) → (newState, decisions)
 | Port | Provides | Adapter |
 |---|---|---|
 | `LocationSource` | Position stream, one-off fix, mode switch | geolocator |
-| `ActivitySource` | Activity changes | Activity Recognition plugin, to be chosen in S1 |
+| `ActivitySource` | Activity changes | activity_recognition_flutter, pending S1 results. Do not ship its health-type foreground service without checking Play rules |
 | `ReminderPlayer` | Start, repeat, stop; sound, vibration, voice; silent behaviour | flutter_local_notifications plus an audio plugin |
 | `Recorder` | Record and play back the Helper's voice | To be chosen in S2 |
 | `Store` | Settings, Quiet Places, Last Places, Detector state | shared_preferences |
@@ -114,7 +114,7 @@ The service and screens run in separate isolates, so they share data through `St
 
 ## Early risk to check
 
-Google Play requires a declaration and review for always-on background location. Check this before S3, because a rejection would threaten the Android-first plan.
+Google Play requires a declaration and review for always-on background location. The S0 reading is in `docs/play-policy-check.md`: approval is not assured, because reminders could be judged as convenience. Test this before S3, because a rejection would threaten the Android-first plan.
 
 ## Vertical slices
 

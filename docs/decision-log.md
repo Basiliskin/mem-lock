@@ -16,3 +16,7 @@
 ## 2026-10-31 · /designer
 
 - **UX:** Variant A, one big status with step-by-step setup. Files: `docs/design.md`, `prototypes/`.
+
+## 2026-10-31 · /developer S1
+
+- **Activity plugin:** `activity_recognition_flutter` for the probe, which requires minSdk 26. Files: `probes/ride/`, `docs/architecture.md`.

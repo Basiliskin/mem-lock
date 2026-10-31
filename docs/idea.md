@@ -98,7 +98,7 @@ The Helper's settings cover Reminder options, the Stay setting, Quiet Places, an
 - Setup guides the Helper through location ("Allow all the time"), notifications, physical activity, and turning off battery optimisation, which matters most on aggressive brands such as Xiaomi, Samsung and Huawei.
 - Permission refused: explain why it is needed. Refused permanently: open system settings.
 - Android manifest: `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`, `ACCESS_BACKGROUND_LOCATION`, `ACTIVITY_RECOGNITION`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_LOCATION`, `POST_NOTIFICATIONS`, `RECEIVE_BOOT_COMPLETED`, `WAKE_LOCK`.
-- minSdk 21, compileSdk 35, core library desugaring enabled. Re-check these against current Google Play requirements before release.
+- minSdk, compileSdk and targetSdk follow the Flutter defaults (currently 24, 36 and 36). Raise minSdk if plugins require it, and re-check these against current Google Play requirements before release.
 
 ## 7. Background behaviour
 
