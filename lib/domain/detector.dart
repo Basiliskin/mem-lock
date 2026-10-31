@@ -10,6 +10,28 @@ const outsideReadingsToLeave = 2;
 /// How close a Stay must be to a Quiet Place to count as being at it.
 const quietPlaceMeters = 100.0;
 
+// Ride thresholds are placeholders, set without real rides. Retune them from
+// the S1 logs before trusting them.
+
+/// A vehicle signal must be this sure to start a Ride, because starting one
+/// can end a Stay.
+const rideStartConfidence = 75;
+
+/// Other activity signals below this are ignored. Same as the S1 probe.
+const activityMinConfidence = 50;
+
+/// How long walking must last to confirm the Wearer got off. Leaves room to
+/// stay within FT-2's 60 seconds.
+const walkingToEndRide = Duration(seconds: 30);
+
+/// Faster than this between readings means still in the vehicle, whatever the
+/// activity signal says.
+const maxWalkingMetersPerSecond = 4.0;
+
+/// With no sign of a vehicle for this long, the end of the Ride was missed.
+/// Without it, Stay detection would never resume.
+const rideTimeLimit = Duration(minutes: 15);
+
 class StaySettings {
   const StaySettings({required this.stayTime, required this.stayMeters});
 
@@ -72,6 +94,15 @@ class Tick extends DetectorEvent {
   const Tick(super.time);
 }
 
+enum ActivityKind { still, walking, inVehicle, unknown }
+
+class ActivityChanged extends DetectorEvent {
+  const ActivityChanged(super.time, this.kind, this.confidence);
+
+  final ActivityKind kind;
+  final int confidence;
+}
+
 class QuietPlacesChanged extends DetectorEvent {
   const QuietPlacesChanged(super.time, this.places);
 
@@ -86,7 +117,7 @@ class SettingsChanged extends DetectorEvent {
 
 // Decisions -----------------------------------------------------------------
 
-enum ReminderSource { stay }
+enum ReminderSource { stay, ride }
 
 enum LocationMode { precise, lowPower }
 
@@ -136,6 +167,33 @@ class InStay extends Phase {
   /// to later Stays, so changing it can't end this one.
   final double meters;
   final int outsideReadings;
+}
+
+class OnRide extends Phase {
+  const OnRide({
+    required this.movingAt,
+    this.lastPoint,
+    this.lastFixAt,
+    this.walkingSince,
+    this.gotOffPoint,
+  });
+
+  /// The last sign of being in a vehicle.
+  final DateTime movingAt;
+
+  /// The last trusted reading. It may be old, such as in a metro tunnel.
+  final GeoPoint? lastPoint;
+  final DateTime? lastFixAt;
+
+  /// When unconfirmed walking began, and the best reading of where.
+  final DateTime? walkingSince;
+  final GeoPoint? gotOffPoint;
+
+  OnRide stoppedWalking({DateTime? movingAt}) => OnRide(
+    movingAt: movingAt ?? this.movingAt,
+    lastPoint: lastPoint,
+    lastFixAt: lastFixAt,
+  );
 }
 
 class DetectorState {
@@ -223,7 +281,8 @@ LocationMode _modeAfter(
 ) {
   return switch (event) {
     LocationFix() => _onFix(state, event),
-    Tick() => (_onTick(state, event.time), const []),
+    Tick() => _onTick(state, event.time),
+    ActivityChanged() => _onActivity(state, event),
     QuietPlacesChanged() => (
       DetectorState(
         phase: state.phase,
@@ -256,14 +315,15 @@ DetectorState _beginStay(DetectorState s, GeoPoint center, int outside) => s
       phase: InStay(center, s.settings.stayMeters, outsideReadings: outside),
     );
 
-DetectorState _onTick(DetectorState s, DateTime now) {
+(DetectorState, List<Decision>) _onTick(DetectorState s, DateTime now) {
   final phase = s.phase;
+  if (phase is OnRide) return _checkRideEnd(s, phase, now);
   if (phase is Roaming &&
       phase.anchor != null &&
       _stayTimeReached(s, phase.since!, now)) {
-    return _beginStay(s, phase.anchor!, 0);
+    return (_beginStay(s, phase.anchor!, 0), const []);
   }
-  return s;
+  return (s, const []);
 }
 
 (DetectorState, List<Decision>) _onFix(DetectorState s, LocationFix fix) {
@@ -281,6 +341,7 @@ DetectorState _onTick(DetectorState s, DateTime now) {
   final (next, more) = switch (state.phase) {
     Roaming() => _fixWhileRoaming(state, fix),
     InStay() => _fixInStay(state, fix),
+    OnRide() => _fixOnRide(state, fix),
   };
   return (next, [...decisions, ...more]);
 }
@@ -332,15 +393,129 @@ DetectorState _onTick(DetectorState s, DateTime now) {
     );
   }
 
-  final roaming = s._with(
-    phase: Roaming(anchor: fix.point, since: fix.time),
+  return _endStay(
+    s._with(
+      phase: Roaming(anchor: fix.point, since: fix.time),
+    ),
+    phase.center,
+    fix.time,
   );
-  final isQuiet = s.quietPlaces.any(
-    (q) => q.point.distanceTo(phase.center) <= quietPlaceMeters,
-  );
-  if (isQuiet) return (roaming, const []);
+}
+
+bool _isQuiet(DetectorState s, GeoPoint point) =>
+    s.quietPlaces.any((q) => q.point.distanceTo(point) <= quietPlaceMeters);
+
+/// [after] already has the phase that follows the Stay.
+(DetectorState, List<Decision>) _endStay(
+  DetectorState after,
+  GeoPoint center,
+  DateTime time,
+) {
+  if (_isQuiet(after, center)) return (after, const []);
   return (
-    roaming._withReturnTo(phase.center),
-    [StartReminder(ReminderSource.stay, LastPlace(phase.center, fix.time))],
+    after._withReturnTo(center),
+    [StartReminder(ReminderSource.stay, LastPlace(center, time))],
+  );
+}
+
+(DetectorState, List<Decision>) _onActivity(
+  DetectorState s,
+  ActivityChanged e,
+) {
+  final phase = s.phase;
+  if (phase is OnRide) return _activityOnRide(s, phase, e);
+  if (e.kind != ActivityKind.inVehicle || e.confidence < rideStartConfidence) {
+    return (s, const []);
+  }
+  return switch (phase) {
+    InStay() => _endStay(
+      s._with(
+        phase: OnRide(movingAt: e.time, lastPoint: phase.center),
+      ),
+      phase.center,
+      e.time,
+    ),
+    Roaming() => (
+      s._with(
+        phase: OnRide(movingAt: e.time, lastPoint: phase.anchor),
+      ),
+      const [],
+    ),
+    OnRide() => (s, const []),
+  };
+}
+
+(DetectorState, List<Decision>) _activityOnRide(
+  DetectorState s,
+  OnRide phase,
+  ActivityChanged e,
+) {
+  if (e.confidence < activityMinConfidence) {
+    return _checkRideEnd(s, phase, e.time);
+  }
+  final OnRide next = switch (e.kind) {
+    ActivityKind.inVehicle => phase.stoppedWalking(movingAt: e.time),
+    ActivityKind.still => phase.stoppedWalking(),
+    ActivityKind.walking when phase.walkingSince == null => OnRide(
+      movingAt: phase.movingAt,
+      lastPoint: phase.lastPoint,
+      lastFixAt: phase.lastFixAt,
+      walkingSince: e.time,
+      gotOffPoint: phase.lastPoint,
+    ),
+    ActivityKind.walking || ActivityKind.unknown => phase,
+  };
+  return _checkRideEnd(s._with(phase: next), next, e.time);
+}
+
+(DetectorState, List<Decision>) _fixOnRide(DetectorState s, LocationFix fix) {
+  final phase = s.phase as OnRide;
+  final lastPoint = phase.lastPoint;
+  final lastFixAt = phase.lastFixAt;
+  var moving = false;
+  if (lastPoint != null && lastFixAt != null) {
+    final seconds = fix.time.difference(lastFixAt).inMilliseconds / 1000;
+    moving =
+        seconds > 0 &&
+        fix.point.distanceTo(lastPoint) / seconds > maxWalkingMetersPerSecond;
+  }
+  final next = OnRide(
+    movingAt: moving ? fix.time : phase.movingAt,
+    lastPoint: fix.point,
+    lastFixAt: fix.time,
+    walkingSince: moving ? null : phase.walkingSince,
+    gotOffPoint: moving ? null : phase.gotOffPoint ?? _ifWalking(phase, fix),
+  );
+  return _checkRideEnd(s._with(phase: next), next, fix.time);
+}
+
+GeoPoint? _ifWalking(OnRide phase, LocationFix fix) =>
+    phase.walkingSince == null ? null : fix.point;
+
+/// A missed bag is the worse mistake, so a Ride that timed out still reminds.
+/// With no reading at all there is no Last Place yet, so it waits for one.
+(DetectorState, List<Decision>) _checkRideEnd(
+  DetectorState s,
+  OnRide phase,
+  DateTime now,
+) {
+  final since = phase.walkingSince;
+  final confirmed = since != null && now.difference(since) >= walkingToEndRide;
+  final timedOut = now.difference(phase.movingAt) >= rideTimeLimit;
+  if (!confirmed && !timedOut) return (s, const []);
+
+  final point = confirmed ? phase.gotOffPoint : phase.lastPoint;
+  if (point == null) return (s, const []);
+
+  final roaming = s._with(phase: const Roaming());
+  if (_isQuiet(s, point)) return (roaming, const []);
+  return (
+    roaming,
+    [
+      StartReminder(
+        ReminderSource.ride,
+        LastPlace(point, confirmed ? since : phase.movingAt),
+      ),
+    ],
   );
 }

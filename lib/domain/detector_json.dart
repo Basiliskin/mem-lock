@@ -23,6 +23,14 @@ String encodeState(DetectorState s) => jsonEncode({
       'meters': meters,
       'outside': outsideReadings,
     },
+    OnRide() && final r => {
+      'type': 'onRide',
+      'movingAt': r.movingAt.toUtc().toIso8601String(),
+      'lastPoint': r.lastPoint == null ? null : _point(r.lastPoint!),
+      'lastFixAt': r.lastFixAt?.toUtc().toIso8601String(),
+      'walkingSince': r.walkingSince?.toUtc().toIso8601String(),
+      'gotOffPoint': r.gotOffPoint == null ? null : _point(r.gotOffPoint!),
+    },
   },
   'staySeconds': s.settings.stayTime.inSeconds,
   'stayMeters': s.settings.stayMeters,
@@ -51,6 +59,21 @@ DetectorState decodeState(String text) {
           // States saved by older versions don't have it.
           ((phase['meters'] ?? m['stayMeters']) as num).toDouble(),
           outsideReadings: phase['outside'] as int,
+        ),
+        'onRide' => OnRide(
+          movingAt: DateTime.parse(phase['movingAt'] as String),
+          lastPoint: phase['lastPoint'] == null
+              ? null
+              : _readPoint(phase['lastPoint']),
+          lastFixAt: phase['lastFixAt'] == null
+              ? null
+              : DateTime.parse(phase['lastFixAt'] as String),
+          walkingSince: phase['walkingSince'] == null
+              ? null
+              : DateTime.parse(phase['walkingSince'] as String),
+          gotOffPoint: phase['gotOffPoint'] == null
+              ? null
+              : _readPoint(phase['gotOffPoint']),
         ),
         _ => throw const FormatException('Unknown phase'),
       },

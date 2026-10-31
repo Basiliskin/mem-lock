@@ -88,9 +88,9 @@ abstract final class Strings {
       'Без этого напоминание не появится на экране.';
   static const setupActivityTitle = 'Разрешите данные о движении';
   static const setupActivityText =
-      'Так приложение понимает, что человек вышел из поезда или автобуса.';
+      'Так приложение сможет распознавать движение человека.';
   static const setupWhyActivity =
-      'Без этого приложение не заметит выход из транспорта.';
+      'Это разрешение нужно, чтобы продолжить настройку.';
   static const setupBatteryTitle = 'Отключите экономию заряда';
   static const setupBatteryText =
       'Разрешите приложению работать без ограничений.';

@@ -1,0 +1,81 @@
+{"time": "2026-11-01T10:00:00Z", "kind": "ride_start", "data": {"train": "synthetic"}}
+{"time": "2026-11-01T10:00:00Z", "kind": "heartbeat", "data": {}}
+{"time": "2026-11-01T10:00:00Z", "kind": "location", "data": {"lat": 10.0, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:00:05Z", "kind": "activity", "data": {"kind": "IN_VEHICLE", "confidence": 85}}
+{"time": "2026-11-01T10:00:05Z", "kind": "location", "data": {"lat": 10.0006745, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:00:10Z", "kind": "location", "data": {"lat": 10.001349, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:00:15Z", "kind": "location", "data": {"lat": 10.0020235, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:00:20Z", "kind": "location", "data": {"lat": 10.002698, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:00:25Z", "kind": "location", "data": {"lat": 10.0033725, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:00:30Z", "kind": "heartbeat", "data": {}}
+{"time": "2026-11-01T10:00:30Z", "kind": "location", "data": {"lat": 10.0040469, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:00:35Z", "kind": "location", "data": {"lat": 10.0047214, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:00:40Z", "kind": "location", "data": {"lat": 10.0053959, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:00:45Z", "kind": "location", "data": {"lat": 10.0060704, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:00:50Z", "kind": "location", "data": {"lat": 10.0067449, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:00:55Z", "kind": "location", "data": {"lat": 10.0074194, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:01:00Z", "kind": "heartbeat", "data": {}}
+{"time": "2026-11-01T10:01:00Z", "kind": "location", "data": {"lat": 10.0080939, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:01:05Z", "kind": "location", "data": {"lat": 10.0087684, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:01:10Z", "kind": "location", "data": {"lat": 10.0094429, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:01:15Z", "kind": "location", "data": {"lat": 10.0101174, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:01:20Z", "kind": "location", "data": {"lat": 10.0107919, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:01:25Z", "kind": "location", "data": {"lat": 10.0114663, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:01:30Z", "kind": "heartbeat", "data": {}}
+{"time": "2026-11-01T10:01:30Z", "kind": "location", "data": {"lat": 10.0121408, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:01:35Z", "kind": "location", "data": {"lat": 10.0128153, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:01:40Z", "kind": "location", "data": {"lat": 10.0134898, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:01:45Z", "kind": "location", "data": {"lat": 10.0141643, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:01:50Z", "kind": "location", "data": {"lat": 10.0148388, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:01:55Z", "kind": "location", "data": {"lat": 10.0155133, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:02:00Z", "kind": "heartbeat", "data": {}}
+{"time": "2026-11-01T10:02:00Z", "kind": "location", "data": {"lat": 10.0161878, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:02:05Z", "kind": "location", "data": {"lat": 10.0168623, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:02:10Z", "kind": "location", "data": {"lat": 10.0175368, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:02:15Z", "kind": "location", "data": {"lat": 10.0182113, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:02:20Z", "kind": "location", "data": {"lat": 10.0188857, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:02:25Z", "kind": "location", "data": {"lat": 10.0195602, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:02:30Z", "kind": "heartbeat", "data": {}}
+{"time": "2026-11-01T10:02:30Z", "kind": "location", "data": {"lat": 10.0202347, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:02:35Z", "kind": "location", "data": {"lat": 10.0209092, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:02:40Z", "kind": "location", "data": {"lat": 10.0215837, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:02:45Z", "kind": "location", "data": {"lat": 10.0222582, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:02:50Z", "kind": "location", "data": {"lat": 10.0229327, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:02:55Z", "kind": "location", "data": {"lat": 10.0236072, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:03:00Z", "kind": "heartbeat", "data": {}}
+{"time": "2026-11-01T10:03:00Z", "kind": "location", "data": {"lat": 10.0242817, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:03:05Z", "kind": "location", "data": {"lat": 10.0249562, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:03:10Z", "kind": "location", "data": {"lat": 10.0256306, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:03:15Z", "kind": "location", "data": {"lat": 10.0263051, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:03:20Z", "kind": "location", "data": {"lat": 10.0269796, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:03:25Z", "kind": "location", "data": {"lat": 10.0276541, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:03:30Z", "kind": "heartbeat", "data": {}}
+{"time": "2026-11-01T10:03:30Z", "kind": "location", "data": {"lat": 10.0283286, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:03:35Z", "kind": "location", "data": {"lat": 10.0290031, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:03:40Z", "kind": "location", "data": {"lat": 10.0296776, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:03:45Z", "kind": "location", "data": {"lat": 10.0303521, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:03:50Z", "kind": "location", "data": {"lat": 10.0310266, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:03:55Z", "kind": "location", "data": {"lat": 10.0317011, "lng": 20.0, "accuracy": 15, "speed": 15}}
+{"time": "2026-11-01T10:04:00Z", "kind": "heartbeat", "data": {}}
+{"time": "2026-11-01T10:04:00Z", "kind": "location", "data": {"lat": 10.0323756, "lng": 20.0, "accuracy": 15, "speed": 0}}
+{"time": "2026-11-01T10:04:05Z", "kind": "location", "data": {"lat": 10.0323756, "lng": 20.0, "accuracy": 15, "speed": 0}}
+{"time": "2026-11-01T10:04:10Z", "kind": "location", "data": {"lat": 10.0323756, "lng": 20.0, "accuracy": 15, "speed": 1.2}}
+{"time": "2026-11-01T10:04:10Z", "kind": "got_off", "data": {}}
+{"time": "2026-11-01T10:04:15Z", "kind": "location", "data": {"lat": 10.0324295, "lng": 20.0, "accuracy": 15, "speed": 1.2}}
+{"time": "2026-11-01T10:04:20Z", "kind": "location", "data": {"lat": 10.0324835, "lng": 20.0, "accuracy": 15, "speed": 1.2}}
+{"time": "2026-11-01T10:04:22Z", "kind": "activity", "data": {"kind": "WALKING", "confidence": 85}}
+{"time": "2026-11-01T10:04:25Z", "kind": "location", "data": {"lat": 10.0325374, "lng": 20.0, "accuracy": 15, "speed": 1.2}}
+{"time": "2026-11-01T10:04:30Z", "kind": "heartbeat", "data": {}}
+{"time": "2026-11-01T10:04:30Z", "kind": "location", "data": {"lat": 10.0325914, "lng": 20.0, "accuracy": 15, "speed": 1.2}}
+{"time": "2026-11-01T10:04:35Z", "kind": "location", "data": {"lat": 10.0326454, "lng": 20.0, "accuracy": 15, "speed": 1.2}}
+{"time": "2026-11-01T10:04:40Z", "kind": "location", "data": {"lat": 10.0326993, "lng": 20.0, "accuracy": 15, "speed": 1.2}}
+{"time": "2026-11-01T10:04:45Z", "kind": "location", "data": {"lat": 10.0327533, "lng": 20.0, "accuracy": 15, "speed": 1.2}}
+{"time": "2026-11-01T10:04:45Z", "kind": "activity", "data": {"kind": "WALKING", "confidence": 85}}
+{"time": "2026-11-01T10:04:50Z", "kind": "location", "data": {"lat": 10.0328072, "lng": 20.0, "accuracy": 15, "speed": 1.2}}
+{"time": "2026-11-01T10:04:55Z", "kind": "location", "data": {"lat": 10.0328612, "lng": 20.0, "accuracy": 15, "speed": 1.2}}
+{"time": "2026-11-01T10:05:00Z", "kind": "heartbeat", "data": {}}
+{"time": "2026-11-01T10:05:00Z", "kind": "location", "data": {"lat": 10.0329151, "lng": 20.0, "accuracy": 15, "speed": 1.2}}
+{"time": "2026-11-01T10:05:05Z", "kind": "location", "data": {"lat": 10.0329691, "lng": 20.0, "accuracy": 15, "speed": 1.2}}
+{"time": "2026-11-01T10:05:10Z", "kind": "location", "data": {"lat": 10.0330231, "lng": 20.0, "accuracy": 15, "speed": 1.2}}
+{"time": "2026-11-01T10:05:10Z", "kind": "activity", "data": {"kind": "WALKING", "confidence": 85}}
+{"time": "2026-11-01T10:05:15Z", "kind": "location", "data": {"lat": 10.033077, "lng": 20.0, "accuracy": 15, "speed": 1.2}}

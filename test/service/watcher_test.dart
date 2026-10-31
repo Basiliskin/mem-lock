@@ -167,21 +167,18 @@ void main() {
     expect(decodeState(store.text!).phase, isA<InStay>());
   });
 
-  test(
-    'AC-5.5: each Reminder saves the Last Place, replacing the old',
-    () async {
-      places.record = null;
-      await begin();
-      await settle();
-      await walkOut();
-      expect(places.record!.point, cafe);
-      expect(places.record!.time, at(6, 10));
-      await watcher.tick(at(12));
-      await send(LocationFix(at(13), north(600), 10));
-      await send(LocationFix(at(13, 10), north(620), 10));
-      expect(places.record!.time, at(13, 10));
-    },
-  );
+  test('AC-5.5: each Reminder saves its Last Place', () async {
+    places.record = null;
+    await begin();
+    await settle();
+    await walkOut();
+    expect(places.record!.point, cafe);
+    expect(places.record!.time, at(6, 10));
+    await watcher.tick(at(12));
+    await send(LocationFix(at(13), north(600), 10));
+    await send(LocationFix(at(13, 10), north(620), 10));
+    expect(places.record!.time, at(13, 10));
+  });
 
   test('the Last Place is saved before the Reminder starts', () async {
     final order = <String>[];

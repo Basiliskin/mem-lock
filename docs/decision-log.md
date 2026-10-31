@@ -50,3 +50,16 @@
 - **Low battery warning:** the service posts one notification per low-battery period, and the main screen shows a note while the battery is low. Low is 20% or under and not charging; a period ends on charging or above 25%. The "warned" flag is saved, so a service restart can't warn again. Files: `lib/domain/battery.dart`, `lib/service/battery_monitor.dart`, `lib/adapters/phone_battery.dart`, `lib/ui/main_screen.dart`, `pubspec.yaml` (battery_plus).
 - **Stay setting:** More often is 3 min / 75 m, Normal 5 min / 75 m, Less often 10 min / 100 m, to be tuned from the field tests. A Stay keeps the distance it began with, so changing the setting during a Stay can't start a false Reminder. Files: `lib/domain/detector.dart`, `lib/domain/detector_json.dart`, `lib/service/watcher.dart`, `lib/ui/stay_setting_screen.dart`.
 - **Two Last Places:** the previous place has its own map button, added to the wireframe's design. Saved under the same key, and text saved as one place still reads. Files: `lib/domain/last_place_record.dart`, `lib/adapters/prefs_last_place.dart`, `lib/ui/forgot_screen.dart`, `docs/design.md`, `GLOSSARY.md`.
+
+## 2026-10-31 · /qa
+
+- **Ride:** build S4 logic against synthetic rides in the S1 log format, then confirm with real rides and FT-2. Setup makes no train or bus claim until FT-2 passes. Files: `lib/l10n/strings.dart`, `docs/qa-report.md`.
+- **Fixes:** README, `pubspec.yaml` description and a stale test name corrected. Shared warning note and `_quietly` deferred. Files: `README.md`, `pubspec.yaml`, `test/service/watcher_test.dart`.
+
+## 2026-10-31 · /developer S4
+
+- **Ride rules, logic only:** built against synthetic rides in the S1 log format, because no real rides exist. S4's "done when" (real recorded rides) is still open. Files: `lib/domain/detector.dart`, `lib/domain/detector_json.dart`, `test/domain/ride_test.dart`, `test/domain/ride_replay_test.dart`, `test/fixtures/synthetic_ride_*.jsonl`.
+- **Placeholder values, to retune from real rides:** a Ride starts at 75% vehicle confidence, other signals count from 50%, 30 seconds of walking confirms getting off, over 4 m/s between readings means still in the vehicle.
+- **Missed ride ends:** with no sign of a vehicle for 15 minutes, the Ride ends with a Reminder, so Stay detection can't stay stuck. This may give a false Reminder on a long tunnel ride; check it in the logs.
+- **Quiet Places:** a Ride ending at one gives no Reminder, as in the settled decisions.
+- **Last Place:** the last trusted reading before walking began, which may be old after a tunnel. With no reading at all, the Reminder waits for the first one.
