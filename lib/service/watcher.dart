@@ -15,17 +15,20 @@ class Watcher {
     required ReminderPlayer reminders,
     required LastPlaceStore places,
     required QuietPlaceStore quiet,
+    required StayChoiceStore stayChoice,
   }) : _location = location,
        _store = store,
        _reminders = reminders,
        _places = places,
-       _quiet = quiet;
+       _quiet = quiet,
+       _stayChoice = stayChoice;
 
   final LocationSource _location;
   final StateStore _store;
   final ReminderPlayer _reminders;
   final LastPlaceStore _places;
   final QuietPlaceStore _quiet;
+  final StayChoiceStore _stayChoice;
 
   DetectorState state = DetectorState.initial();
   StreamSubscription<LocationFix>? _subscription;
@@ -34,8 +37,9 @@ class Watcher {
   Future<void> start() async {
     state = await _load();
     await _quietly(() => _location.setMode(state.locationMode));
-    // The list may have changed while the service wasn't running.
+    // These may have changed while the service wasn't running.
     await syncQuietPlaces();
+    await syncStaySetting();
     _subscription = _location.fixes.listen(handle, onError: (Object _) {});
   }
 
@@ -63,6 +67,18 @@ class Watcher {
     await _process(
       QuietPlacesChanged(DateTime.now(), [for (final r in records) r.place]),
     );
+  });
+
+  /// Reads the Helper's choice and passes it to the Detector, in turn with
+  /// other events. A failed read keeps the setting the Detector already has.
+  Future<void> syncStaySetting() => _queue = _queue.then((_) async {
+    final StayChoice choice;
+    try {
+      choice = await _stayChoice.read();
+    } on Object {
+      return;
+    }
+    await _process(SettingsChanged(DateTime.now(), choice.settings));
   });
 
   Future<void> handle(DetectorEvent event) =>

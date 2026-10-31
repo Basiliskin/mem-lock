@@ -42,6 +42,9 @@ class FakeLink implements WatcherLink {
     told++;
     if (fails) throw StateError('no service');
   }
+
+  @override
+  void staySettingChanged() {}
 }
 
 void main() {

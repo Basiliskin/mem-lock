@@ -26,6 +26,18 @@ class StaySettings {
   double get returnMeters => stayMeters / 2;
 }
 
+/// The Helper's choice of how often Reminders happen. Values are to be tuned
+/// from the field tests.
+enum StayChoice {
+  moreOften(StaySettings(stayTime: Duration(minutes: 3), stayMeters: 75)),
+  normal(StaySettings.normal),
+  lessOften(StaySettings(stayTime: Duration(minutes: 10), stayMeters: 100));
+
+  const StayChoice(this.settings);
+
+  final StaySettings settings;
+}
+
 class QuietPlace {
   const QuietPlace(this.id, this.point);
 
@@ -116,9 +128,13 @@ class Roaming extends Phase {
 }
 
 class InStay extends Phase {
-  const InStay(this.center, {this.outsideReadings = 0});
+  const InStay(this.center, this.meters, {this.outsideReadings = 0});
 
   final GeoPoint center;
+
+  /// The distance chosen when this Stay began. A changed setting applies only
+  /// to later Stays, so changing it can't end this one.
+  final double meters;
   final int outsideReadings;
 }
 
@@ -194,7 +210,7 @@ LocationMode _modeAfter(
   final phase = after.phase;
   if (phase is! InStay) return LocationMode.precise;
   if (event is LocationFix) {
-    return event.point.distanceTo(phase.center) > after.settings.stayMeters
+    return event.point.distanceTo(phase.center) > phase.meters
         ? LocationMode.precise
         : LocationMode.lowPower;
   }
@@ -236,7 +252,9 @@ bool _stayTimeReached(DetectorState s, DateTime since, DateTime now) =>
 
 DetectorState _beginStay(DetectorState s, GeoPoint center, int outside) => s
     ._withReturnTo(null)
-    ._with(phase: InStay(center, outsideReadings: outside));
+    ._with(
+      phase: InStay(center, s.settings.stayMeters, outsideReadings: outside),
+    );
 
 DetectorState _onTick(DetectorState s, DateTime now) {
   final phase = s.phase;
@@ -300,14 +318,16 @@ DetectorState _onTick(DetectorState s, DateTime now) {
 
 (DetectorState, List<Decision>) _fixInStay(DetectorState s, LocationFix fix) {
   final phase = s.phase as InStay;
-  if (fix.point.distanceTo(phase.center) <= s.settings.stayMeters) {
-    return (s._with(phase: InStay(phase.center)), const []);
+  if (fix.point.distanceTo(phase.center) <= phase.meters) {
+    return (s._with(phase: InStay(phase.center, phase.meters)), const []);
   }
 
   final outside = phase.outsideReadings + 1;
   if (outside < outsideReadingsToLeave) {
     return (
-      s._with(phase: InStay(phase.center, outsideReadings: outside)),
+      s._with(
+        phase: InStay(phase.center, phase.meters, outsideReadings: outside),
+      ),
       const [],
     );
   }

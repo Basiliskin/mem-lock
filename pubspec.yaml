@@ -43,6 +43,7 @@ dependencies:
   path_provider: ^2.1.6
   url_launcher: ^6.3.3
   record: ^7.1.2
+  battery_plus: ^7.1.2
 
 dev_dependencies:
   flutter_test:

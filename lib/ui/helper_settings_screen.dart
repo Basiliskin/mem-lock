@@ -6,10 +6,12 @@ class HelperSettingsScreen extends StatelessWidget {
   const HelperSettingsScreen({
     super.key,
     required this.reminderOptions,
+    required this.staySetting,
     required this.quietPlaces,
   });
 
   final WidgetBuilder reminderOptions;
+  final WidgetBuilder staySetting;
   final WidgetBuilder quietPlaces;
 
   Widget _link(BuildContext context, String text, WidgetBuilder builder) =>
@@ -33,6 +35,7 @@ class HelperSettingsScreen extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       children: [
         _link(context, Strings.reminderOptions, reminderOptions),
+        _link(context, Strings.staySetting, staySetting),
         _link(context, Strings.quietPlaces, quietPlaces),
       ],
     ),

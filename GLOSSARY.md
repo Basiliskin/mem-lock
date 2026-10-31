@@ -25,7 +25,7 @@ A place chosen by the Helper, such as the Wearer's home, that never produces a R
 _Avoid_: Home, safe zone, excluded zone
 
 **Last Place**:
-Where and when the most recent Stay or Ride ended, kept so the Wearer can go back or report a loss.
+Where and when a recent Stay or Ride ended, kept so the Wearer can go back or report a loss. The two most recent are kept.
 _Avoid_: History, track, log
 
 **Reminder**:

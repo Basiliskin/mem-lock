@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../domain/geo.dart';
 import '../domain/last_place_record.dart';
 import '../l10n/strings.dart';
 import '../ports/ports.dart';
@@ -8,11 +9,13 @@ class ForgotScreen extends StatefulWidget {
   const ForgotScreen({
     super.key,
     required this.place,
+    this.previous,
     required this.map,
     this.now = DateTime.now,
   });
 
   final LastPlaceRecord place;
+  final LastPlaceRecord? previous;
   final MapLauncher map;
   final DateTime Function() now;
 
@@ -21,21 +24,23 @@ class ForgotScreen extends StatefulWidget {
 }
 
 class _ForgotScreenState extends State<ForgotScreen> {
-  bool _noMap = false;
+  /// The place that no map app could open.
+  GeoPoint? _noMapFor;
 
-  Future<void> _open() async {
+  Future<void> _open(GeoPoint point) async {
     var opened = false;
     try {
-      opened = await widget.map.open(widget.place.point);
+      opened = await widget.map.open(point);
     } on Object {
       opened = false;
     }
-    if (mounted) setState(() => _noMap = !opened);
+    if (mounted) setState(() => _noMapFor = opened ? null : point);
   }
 
   @override
   Widget build(BuildContext context) {
-    final p = widget.place.point;
+    final p = _noMapFor;
+    final previous = widget.previous;
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -66,7 +71,26 @@ class _ForgotScreenState extends State<ForgotScreen> {
                       Strings.goBackAdvice,
                       style: TextStyle(fontSize: 20),
                     ),
-                    if (_noMap) ...[
+                    if (previous != null) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        Strings.previousWhen(previous.time, widget.now()),
+                        style: const TextStyle(fontSize: 20),
+                      ),
+                      const SizedBox(height: 8),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(minHeight: 64),
+                        child: OutlinedButton(
+                          onPressed: () => _open(previous.point),
+                          child: const Text(
+                            Strings.openPreviousMap,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 20),
+                          ),
+                        ),
+                      ),
+                    ],
+                    if (p != null) ...[
                       const SizedBox(height: 16),
                       Semantics(
                         liveRegion: true,
@@ -89,7 +113,7 @@ class _ForgotScreenState extends State<ForgotScreen> {
               SizedBox(
                 height: 64,
                 child: FilledButton(
-                  onPressed: _open,
+                  onPressed: () => _open(widget.place.point),
                   child: const Text(
                     Strings.openMap,
                     style: TextStyle(fontSize: 20),

@@ -42,7 +42,7 @@ class FakePlaces implements LastPlaceStore {
   bool fail = false;
   final log = <String>[];
   @override
-  Future<LastPlaceRecord?> read() async => record;
+  Future<List<LastPlaceRecord>> read() async => [?record];
   @override
   Future<void> save(LastPlaceRecord value) async {
     if (fail) throw StateError('disk');
@@ -63,6 +63,19 @@ class FakeQuiet implements QuietPlaceStore {
   Future<void> write(List<QuietPlaceRecord> places) async => saved = places;
 }
 
+class FakeChoice implements StayChoiceStore {
+  StayChoice saved = StayChoice.normal;
+  bool fail = false;
+  @override
+  Future<StayChoice> read() async {
+    if (fail) throw StateError('disk');
+    return saved;
+  }
+
+  @override
+  Future<void> write(StayChoice value) async => saved = value;
+}
+
 class FakeReminders implements ReminderPlayer {
   final started = <StartReminder>[];
   int stopped = 0;
@@ -79,8 +92,12 @@ void main() {
   late Watcher watcher;
   final places = FakePlaces();
   late FakeQuiet quiet;
+  late FakeChoice choice;
 
-  setUp(() => quiet = FakeQuiet());
+  setUp(() {
+    quiet = FakeQuiet();
+    choice = FakeChoice();
+  });
 
   Future<void> begin([String? saved]) async {
     location = FakeLocation();
@@ -92,6 +109,7 @@ void main() {
       reminders: reminders,
       places: places,
       quiet: quiet,
+      stayChoice: choice,
     );
     await watcher.start();
   }
@@ -118,6 +136,27 @@ void main() {
       LocationMode.lowPower,
       LocationMode.precise,
     ]);
+  });
+
+  test('AC-10.1: the saved Stay choice applies from the start', () async {
+    choice.saved = StayChoice.moreOften;
+    await begin();
+    expect(watcher.state.settings.stayTime, const Duration(minutes: 3));
+  });
+
+  test('AC-10.1: a changed choice reaches the Detector', () async {
+    await begin();
+    choice.saved = StayChoice.lessOften;
+    await watcher.syncStaySetting();
+    expect(watcher.state.settings.stayMeters, 100);
+  });
+
+  test('a failed read keeps the Stay setting', () async {
+    choice.saved = StayChoice.lessOften;
+    await begin();
+    choice.fail = true;
+    await watcher.syncStaySetting();
+    expect(watcher.state.settings.stayMeters, 100);
   });
 
   test('fixes arriving on the stream reach the Detector', () async {
@@ -155,6 +194,7 @@ void main() {
       reminders: _OrderReminders(order),
       places: p,
       quiet: quiet,
+      stayChoice: FakeChoice(),
     );
     await watcher.start();
     await settle();
@@ -223,6 +263,7 @@ void main() {
         reminders: reminders,
         places: places,
         quiet: quiet,
+        stayChoice: FakeChoice(),
       );
       await watcher.start();
       expect(watcher.state.phase, isA<Roaming>());
@@ -312,6 +353,7 @@ void main() {
       reminders: failing,
       places: places,
       quiet: quiet,
+      stayChoice: FakeChoice(),
     );
     await watcher.start();
     await settle();
@@ -354,7 +396,7 @@ class _OrderPlaces implements LastPlaceStore {
   _OrderPlaces(this.order);
   final List<String> order;
   @override
-  Future<LastPlaceRecord?> read() async => null;
+  Future<List<LastPlaceRecord>> read() async => const [];
   @override
   Future<void> save(LastPlaceRecord value) async => order.add('save');
 }

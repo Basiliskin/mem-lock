@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:geo_alert/domain/battery.dart';
 import 'package:geo_alert/domain/detector.dart';
 import 'package:geo_alert/domain/geo.dart';
 import 'package:geo_alert/domain/last_place_record.dart';
@@ -38,7 +39,7 @@ class FakePlaces implements LastPlaceStore {
   FakePlaces([this.record]);
   LastPlaceRecord? record;
   @override
-  Future<LastPlaceRecord?> read() async => record;
+  Future<List<LastPlaceRecord>> read() async => [?record];
   @override
   Future<void> save(LastPlaceRecord value) async => record = value;
 }
@@ -117,6 +118,61 @@ void main() {
     });
   });
 
+  group('previous place', () {
+    final previous = LastPlaceRecord(
+      const GeoPoint(55.8, 37.7),
+      DateTime(2026, 11, 1, 11, 5),
+      ReminderSource.stay,
+    );
+
+    Future<void> showBoth(WidgetTester t, MapLauncher map) => t.pumpWidget(
+      MaterialApp(
+        home: ForgotScreen(
+          place: place,
+          previous: previous,
+          map: map,
+          now: () => DateTime(2026, 11, 1, 18),
+        ),
+      ),
+    );
+
+    testWidgets('shows its time and its own map button', (t) async {
+      await showBoth(t, FakeMap());
+      expect(find.text('Вы были здесь до 14:32'), findsOneWidget);
+      expect(find.text('Предыдущее: до 11:05'), findsOneWidget);
+      expect(find.text(Strings.openPreviousMap), findsOneWidget);
+    });
+
+    testWidgets('each button opens its own place', (t) async {
+      final map = FakeMap();
+      await showBoth(t, map);
+      await t.tap(find.text(Strings.openPreviousMap));
+      await t.pumpAndSettle();
+      expect(map.opened, previous.point);
+      await t.tap(find.text(Strings.openMap));
+      await t.pumpAndSettle();
+      expect(map.opened, place.point);
+    });
+
+    testWidgets('no map app shows the coordinates of the tapped place', (
+      t,
+    ) async {
+      await showBoth(t, FakeMap(works: false));
+      await t.tap(find.text(Strings.openPreviousMap));
+      await t.pumpAndSettle();
+      expect(find.textContaining('55.80000, 37.70000'), findsOneWidget);
+    });
+
+    testWidgets('with one place there is no previous button', (t) async {
+      await t.pumpWidget(
+        MaterialApp(
+          home: ForgotScreen(place: place, map: FakeMap()),
+        ),
+      );
+      expect(find.text(Strings.openPreviousMap), findsNothing);
+    });
+  });
+
   group('MainScreen', () {
     Future<ValueNotifier<int>> show(WidgetTester t, FakePlaces places) async {
       final requests = ValueNotifier(0);
@@ -128,6 +184,7 @@ void main() {
             map: FakeMap(),
             forgotRequests: requests,
             health: FakeHealth(),
+            battery: FakeBattery(),
             helperSettings: (_) => const Text('helper-settings'),
           ),
         ),
@@ -167,6 +224,7 @@ void main() {
             map: FakeMap(),
             forgotRequests: requests,
             health: FakeHealth(),
+            battery: FakeBattery(),
             helperSettings: (_) => const Text('helper-settings'),
           ),
         ),
@@ -213,4 +271,15 @@ class FakeHealth implements HealthCheck {
 
   @override
   Future<void> fix(ProtectionProblem problem) async => fixed.add(problem);
+}
+
+class FakeBattery implements BatterySource {
+  FakeBattery([this.reading = const BatteryReading(80, charging: false)]);
+  BatteryReading reading;
+  bool fails = false;
+  @override
+  Future<BatteryReading> read() async {
+    if (fails) throw StateError('plugin');
+    return reading;
+  }
 }

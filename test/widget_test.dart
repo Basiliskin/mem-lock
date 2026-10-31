@@ -2,6 +2,7 @@ import 'dart:ui' show SemanticsAction;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:geo_alert/domain/battery.dart';
 import 'package:geo_alert/domain/geo.dart';
 import 'package:geo_alert/domain/last_place_record.dart';
 import 'package:geo_alert/l10n/strings.dart';
@@ -32,6 +33,7 @@ Future<void> show(WidgetTester t, BackgroundHost host) async {
         map: _NoMap(),
         forgotRequests: ValueNotifier(0),
         health: FakeHealth(),
+        battery: FakeBattery(),
         helperSettings: (_) => const Text('helper-settings'),
       ),
     ),
@@ -73,6 +75,7 @@ void main() {
             map: _NoMap(),
             forgotRequests: ValueNotifier(0),
             health: h,
+            battery: FakeBattery(),
             helperSettings: (_) => const Text('helper-settings'),
           ),
         ),
@@ -184,6 +187,54 @@ void main() {
     });
   });
 
+  group('LowBatteryNote', () {
+    Future<void> showBattery(WidgetTester t, FakeBattery battery) async {
+      await t.pumpWidget(
+        MaterialApp(
+          home: MainScreen(
+            host: FakeHost(running: true),
+            places: _NoPlaces(),
+            map: _NoMap(),
+            forgotRequests: ValueNotifier(0),
+            health: FakeHealth(),
+            battery: battery,
+            helperSettings: (_) => const Text('helper-settings'),
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+    }
+
+    testWidgets('shows while the battery is low', (t) async {
+      await showBattery(
+        t,
+        FakeBattery(const BatteryReading(15, charging: false)),
+      );
+      expect(find.text(Strings.lowBattery), findsOneWidget);
+      expect(find.text(Strings.protecting), findsOneWidget);
+    });
+
+    testWidgets('hidden when fine, and once charging', (t) async {
+      final b = FakeBattery();
+      await showBattery(t, b);
+      expect(find.text(Strings.lowBattery), findsNothing);
+      b.reading = const BatteryReading(15, charging: false);
+      await t.pump(const Duration(seconds: 6));
+      await t.pump();
+      expect(find.text(Strings.lowBattery), findsOneWidget);
+      b.reading = const BatteryReading(15, charging: true);
+      await t.pump(const Duration(seconds: 6));
+      await t.pump();
+      expect(find.text(Strings.lowBattery), findsNothing);
+    });
+
+    testWidgets('a failing reading leaves the screen working', (t) async {
+      await showBattery(t, FakeBattery()..fails = true);
+      expect(find.text(Strings.protecting), findsOneWidget);
+      expect(find.text(Strings.lowBattery), findsNothing);
+    });
+  });
+
   testWidgets('a failed start says so and still offers the button', (t) async {
     await show(t, FakeHost(startWorks: false));
     await t.tap(find.text(Strings.enable));
@@ -196,7 +247,7 @@ void main() {
 
 class _NoPlaces implements LastPlaceStore {
   @override
-  Future<LastPlaceRecord?> read() async => null;
+  Future<List<LastPlaceRecord>> read() async => const [];
   @override
   Future<void> save(LastPlaceRecord value) async {}
 }
@@ -219,4 +270,15 @@ class FakeHealth implements HealthCheck {
 
   @override
   Future<void> fix(ProtectionProblem problem) async => fixed.add(problem);
+}
+
+class FakeBattery implements BatterySource {
+  FakeBattery([this.reading = const BatteryReading(80, charging: false)]);
+  BatteryReading reading;
+  bool fails = false;
+  @override
+  Future<BatteryReading> read() async {
+    if (fails) throw StateError('plugin');
+    return reading;
+  }
 }

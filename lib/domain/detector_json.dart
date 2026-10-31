@@ -17,9 +17,10 @@ String encodeState(DetectorState s) => jsonEncode({
       'anchor': anchor == null ? null : _point(anchor),
       'since': since?.toUtc().toIso8601String(),
     },
-    InStay(:final center, :final outsideReadings) => {
+    InStay(:final center, :final meters, :final outsideReadings) => {
       'type': 'inStay',
       'center': _point(center),
+      'meters': meters,
       'outside': outsideReadings,
     },
   },
@@ -47,6 +48,8 @@ DetectorState decodeState(String text) {
         ),
         'inStay' => InStay(
           _readPoint(phase['center']),
+          // States saved by older versions don't have it.
+          ((phase['meters'] ?? m['stayMeters']) as num).toDouble(),
           outsideReadings: phase['outside'] as int,
         ),
         _ => throw const FormatException('Unknown phase'),

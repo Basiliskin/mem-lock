@@ -35,7 +35,7 @@ void main() {
   test('InStay, its outside count, settings and mode survive', () {
     final s = back(
       const DetectorState(
-        phase: InStay(cafe, outsideReadings: 1),
+        phase: InStay(cafe, 75, outsideReadings: 1),
         settings: StaySettings(
           stayTime: Duration(minutes: 15),
           stayMeters: 120,

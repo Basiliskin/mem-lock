@@ -44,3 +44,9 @@
 ## 2026-10-31 · /developer S11
 
 - **Warnings:** the service checks health every minute and rewrites its persistent notification; the main screen checks on resume and every 5 seconds. Recovery restarts location readings. Activity and battery optimisation aren't checked, because Stay detection works without the first and the second is not a permission. Files: `lib/service/protection_monitor.dart`, `lib/adapters/phone_health.dart`, `lib/ui/main_screen.dart`.
+
+## 2026-10-31 · /developer S12
+
+- **Low battery warning:** the service posts one notification per low-battery period, and the main screen shows a note while the battery is low. Low is 20% or under and not charging; a period ends on charging or above 25%. The "warned" flag is saved, so a service restart can't warn again. Files: `lib/domain/battery.dart`, `lib/service/battery_monitor.dart`, `lib/adapters/phone_battery.dart`, `lib/ui/main_screen.dart`, `pubspec.yaml` (battery_plus).
+- **Stay setting:** More often is 3 min / 75 m, Normal 5 min / 75 m, Less often 10 min / 100 m, to be tuned from the field tests. A Stay keeps the distance it began with, so changing the setting during a Stay can't start a false Reminder. Files: `lib/domain/detector.dart`, `lib/domain/detector_json.dart`, `lib/service/watcher.dart`, `lib/ui/stay_setting_screen.dart`.
+- **Two Last Places:** the previous place has its own map button, added to the wireframe's design. Saved under the same key, and text saved as one place still reads. Files: `lib/domain/last_place_record.dart`, `lib/adapters/prefs_last_place.dart`, `lib/ui/forgot_screen.dart`, `docs/design.md`, `GLOSSARY.md`.

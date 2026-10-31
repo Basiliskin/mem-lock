@@ -124,6 +124,22 @@ abstract final class Strings {
       'Нет разрешения на геолокацию. Выберите «Разрешить всегда».';
   static const problemNotifications = 'Уведомления запрещены';
 
+  static const openPreviousMap = 'Предыдущее место на карте';
+  static String previousWhen(DateTime time, DateTime now) =>
+      'Предыдущее: ${whenText(time, now).replaceFirst('Вы были здесь ', '')}';
+
+  static const lowBattery = 'Телефон скоро разрядится';
+  static const lowBatteryWhy =
+      'Поставьте его на зарядку, иначе защита отключится.';
+  static const lowBatteryChannel = 'Низкий заряд';
+
+  static const staySetting = 'Как часто напоминать';
+  static const stayMoreOften = 'Чаще';
+  static const stayNormal = 'Обычно';
+  static const stayLessOften = 'Реже';
+  static String stayHint(int minutes) =>
+      'Если человек пробыл на месте $minutes мин.';
+
   static const _months = [
     'января',
     'февраля',

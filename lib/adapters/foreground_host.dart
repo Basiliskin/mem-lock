@@ -9,6 +9,9 @@ class ForegroundHost implements BackgroundHost, WatcherLink {
   /// The message sent to the service when the Quiet Places list changes.
   static const quietPlacesMessage = 'quiet_places_changed';
 
+  /// The message sent to the service when the Stay setting changes.
+  static const staySettingMessage = 'stay_setting_changed';
+
   static const _tickMilliseconds = 60000;
 
   static void init() => FlutterForegroundTask.init(
@@ -31,6 +34,10 @@ class ForegroundHost implements BackgroundHost, WatcherLink {
   @override
   void quietPlacesChanged() =>
       FlutterForegroundTask.sendDataToTask(quietPlacesMessage);
+
+  @override
+  void staySettingChanged() =>
+      FlutterForegroundTask.sendDataToTask(staySettingMessage);
 
   /// Asks again for anything missing, because the main screen's button uses
   /// this after setup too. "Allow all the time" is required for the service to

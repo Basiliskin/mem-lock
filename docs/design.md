@@ -32,7 +32,7 @@ Reminder (notification)        "Я что-то забыл"
 
 The real Reminder is a standard Android high-priority notification with two action buttons. The prototype's lock screen card overstates its size. Its look is limited by Android, and it is confirmed in S6.
 
-The previous place appears only once the Should item for two Last Places is built (S12). It is not in the prototype.
+The previous place was built in S12, with its own map button below its time ("Предыдущее место на карте"). It is not in the prototype.
 
 ## Screens and components
 

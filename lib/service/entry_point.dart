@@ -5,13 +5,16 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
 import '../adapters/foreground_host.dart';
 import '../adapters/geolocator_location.dart';
+import '../adapters/phone_battery.dart';
 import '../adapters/phone_health.dart';
 import '../adapters/phone_reminder_output.dart';
 import '../adapters/prefs_last_place.dart';
 import '../adapters/prefs_quiet_places.dart';
 import '../adapters/prefs_reminder_options.dart';
 import '../adapters/prefs_state_store.dart';
+import '../adapters/prefs_stay_choice.dart';
 import '../adapters/reminder_actions.dart';
+import 'battery_monitor.dart';
 import 'protection_monitor.dart';
 import 'reminder_session.dart';
 import 'watcher.dart';
@@ -23,6 +26,7 @@ void watcherEntryPoint() => FlutterForegroundTask.setTaskHandler(_Handler());
 class _Handler extends TaskHandler {
   Watcher? _watcher;
   ProtectionMonitor? _monitor;
+  BatteryMonitor? _batteryMonitor;
   final _actions = ReceivePort();
 
   @override
@@ -42,11 +46,13 @@ class _Handler extends TaskHandler {
       reminders: session,
       places: PrefsLastPlace(),
       quiet: PrefsQuietPlaces(),
+      stayChoice: PrefsStayChoice(),
     );
     await watcher.start();
     _watcher = watcher;
     // A message sent before this point was dropped, so read once more.
     await watcher.syncQuietPlaces();
+    await watcher.syncStaySetting();
     final monitor = ProtectionMonitor(
       health: PhoneHealth(),
       notice: ServiceProtectionNotice(),
@@ -54,18 +60,27 @@ class _Handler extends TaskHandler {
     );
     _monitor = monitor;
     await monitor.check();
+    final batteryMonitor = BatteryMonitor(
+      battery: PhoneBattery(),
+      notice: PhoneLowBatteryNotice(),
+      store: PrefsLowBatteryStore(),
+    );
+    _batteryMonitor = batteryMonitor;
+    await batteryMonitor.check();
     debugPrint('Watcher started by ${starter.name}');
   }
 
   @override
   void onReceiveData(Object data) {
     if (data == ForegroundHost.quietPlacesMessage) _watcher?.syncQuietPlaces();
+    if (data == ForegroundHost.staySettingMessage) _watcher?.syncStaySetting();
   }
 
   @override
   void onRepeatEvent(DateTime timestamp) {
     _watcher?.tick(timestamp);
     _monitor?.check();
+    _batteryMonitor?.check();
   }
 
   @override

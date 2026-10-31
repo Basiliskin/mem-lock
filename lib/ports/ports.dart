@@ -1,3 +1,4 @@
+import '../domain/battery.dart';
 import '../domain/detector.dart';
 import '../domain/geo.dart';
 import '../domain/last_place_record.dart';
@@ -63,7 +64,10 @@ abstract interface class VoiceRecorder {
 }
 
 abstract interface class LastPlaceStore {
-  Future<LastPlaceRecord?> read();
+  /// Newest first.
+  Future<List<LastPlaceRecord>> read();
+
+  /// Adds [value] as the newest, deleting any beyond the kept limit.
   Future<void> save(LastPlaceRecord value);
 }
 
@@ -75,6 +79,26 @@ abstract interface class QuietPlaceStore {
 /// Lets the screens tell the running service something changed.
 abstract interface class WatcherLink {
   void quietPlacesChanged();
+  void staySettingChanged();
+}
+
+abstract interface class StayChoiceStore {
+  Future<StayChoice> read();
+  Future<void> write(StayChoice value);
+}
+
+abstract interface class BatterySource {
+  Future<BatteryReading> read();
+}
+
+abstract interface class LowBatteryNotice {
+  Future<void> show();
+}
+
+/// Whether the Wearer was already warned in this low-battery period.
+abstract interface class LowBatteryStore {
+  Future<bool> warned();
+  Future<void> setWarned(bool warned);
 }
 
 enum SetupPermission { location, notifications, activity, battery }
