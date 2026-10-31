@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +13,9 @@ const _ok = Color(0xFF0B6B2E);
 const _bad = Color(0xFFB3141C);
 const _helperPress = Duration(seconds: 2);
 
+/// Quick settings can change location without the app ever leaving the screen.
+const _statusRefresh = Duration(seconds: 5);
+
 class MainScreen extends StatefulWidget {
   const MainScreen({
     super.key,
@@ -18,12 +23,14 @@ class MainScreen extends StatefulWidget {
     required this.places,
     required this.map,
     required this.forgotRequests,
+    required this.health,
     required this.helperSettings,
   });
 
   final BackgroundHost host;
   final LastPlaceStore places;
   final MapLauncher map;
+  final HealthCheck health;
 
   /// Goes up each time the notification's "I forgot something" is tapped.
   final ValueListenable<int> forgotRequests;
@@ -38,6 +45,8 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   bool? _running;
   bool _failed = false;
+  ProtectionProblem? _problem;
+  Timer? _timer;
   LastPlaceRecord? _place;
   int _handledRequests = 0;
 
@@ -47,10 +56,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     widget.forgotRequests.addListener(_onForgotRequest);
     _refresh().then((_) => _onForgotRequest());
+    _timer = Timer.periodic(_statusRefresh, (_) => _refresh());
   }
 
   @override
   void dispose() {
+    _timer?.cancel();
     widget.forgotRequests.removeListener(_onForgotRequest);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -64,8 +75,16 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   Future<void> _refresh() async {
     final running = await widget.host.isRunning();
     final place = await _readPlace();
+    // A failed check keeps the last answer, so it can't clear a warning.
+    var problem = _problem;
+    try {
+      problem = await widget.health.check();
+    } on Object {
+      // Checked again shortly.
+    }
     if (mounted) {
       setState(() {
+        _problem = problem;
         _running = running;
         _place = place;
       });
@@ -125,6 +144,20 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     ),
   );
 
+  String _reason(ProtectionProblem problem) => switch (problem) {
+    ProtectionProblem.locationOff => Strings.problemLocationOff,
+    ProtectionProblem.locationPermission => Strings.problemLocationPermission,
+    ProtectionProblem.notifications => Strings.problemNotifications,
+  };
+
+  Future<void> _fix(ProtectionProblem problem) async {
+    try {
+      await widget.health.fix(problem);
+    } on Object {
+      // The warning stays until the problem is really gone.
+    }
+  }
+
   Future<void> _enable() async {
     final running = await widget.host.start();
     if (mounted) {
@@ -137,8 +170,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final running = _running;
-    if (running == null) return const Scaffold(body: SizedBox.shrink());
+    final serviceRunning = _running;
+    if (serviceRunning == null) {
+      return const Scaffold(body: SizedBox.shrink());
+    }
+    final problem = _problem;
+    final running = serviceRunning && problem == null;
     return Scaffold(
       backgroundColor: running ? _ok : _bad,
       body: SafeArea(
@@ -177,7 +214,16 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                           style: TextStyle(color: Colors.white, fontSize: 20),
                         ),
                       if (!running) ...[
-                        if (_failed)
+                        if (problem != null)
+                          Text(
+                            _reason(problem),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                            ),
+                          ),
+                        if (problem == null && _failed)
                           const Text(
                             Strings.startFailed,
                             textAlign: TextAlign.center,
@@ -192,10 +238,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                               backgroundColor: Colors.white,
                               foregroundColor: _bad,
                             ),
-                            onPressed: _enable,
-                            child: const Text(
-                              Strings.enable,
-                              style: TextStyle(fontSize: 20),
+                            onPressed: problem == null
+                                ? _enable
+                                : () => _fix(problem),
+                            child: Text(
+                              problem == null ? Strings.enable : Strings.fix,
+                              style: const TextStyle(fontSize: 20),
                             ),
                           ),
                         ),

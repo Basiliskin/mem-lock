@@ -40,3 +40,7 @@
 
 - **Protected settings:** the 2-second long press alone meets AC-7.5, so no code is added. Files: `lib/ui/main_screen.dart`.
 - **Setup:** all four permissions block Next, as in the chosen prototype. Watching starts on the last step's button. Files: `lib/ui/setup_screen.dart`, `lib/ui/app_root.dart`.
+
+## 2026-10-31 · /developer S11
+
+- **Warnings:** the service checks health every minute and rewrites its persistent notification; the main screen checks on resume and every 5 seconds. Recovery restarts location readings. Activity and battery optimisation aren't checked, because Stay detection works without the first and the second is not a permission. Files: `lib/service/protection_monitor.dart`, `lib/adapters/phone_health.dart`, `lib/ui/main_screen.dart`.

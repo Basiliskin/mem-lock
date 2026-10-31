@@ -117,6 +117,13 @@ abstract final class Strings {
 
   static String setupProgress(int step, int total) => 'Шаг $step из $total';
 
+  static const tapToFix = 'Нажмите, чтобы исправить';
+  static const fix = 'Исправить';
+  static const problemLocationOff = 'Геолокация выключена';
+  static const problemLocationPermission =
+      'Нет разрешения на геолокацию. Выберите «Разрешить всегда».';
+  static const problemNotifications = 'Уведомления запрещены';
+
   static const _months = [
     'января',
     'февраля',

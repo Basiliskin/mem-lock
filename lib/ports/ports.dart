@@ -92,6 +92,22 @@ abstract interface class SetupStore {
   Future<void> markDone();
 }
 
+/// Something stopping the app from protecting the Wearer.
+enum ProtectionProblem { locationOff, locationPermission, notifications }
+
+abstract interface class HealthCheck {
+  /// Returns null when all is well.
+  Future<ProtectionProblem?> check();
+
+  /// Takes the Helper to the place where it can be fixed.
+  Future<void> fix(ProtectionProblem problem);
+}
+
+/// The phone's persistent notification.
+abstract interface class ProtectionNotice {
+  Future<void> show({required bool protecting});
+}
+
 abstract interface class MapLauncher {
   /// Returns false when no map app could open it.
   Future<bool> open(GeoPoint point);

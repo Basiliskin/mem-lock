@@ -127,6 +127,7 @@ void main() {
             places: places,
             map: FakeMap(),
             forgotRequests: requests,
+            health: FakeHealth(),
             helperSettings: (_) => const Text('helper-settings'),
           ),
         ),
@@ -165,6 +166,7 @@ void main() {
             places: FakePlaces(place),
             map: FakeMap(),
             forgotRequests: requests,
+            health: FakeHealth(),
             helperSettings: (_) => const Text('helper-settings'),
           ),
         ),
@@ -196,4 +198,19 @@ void main() {
       expect(LastPlaceRecord.parse('{}'), isNull);
     });
   });
+}
+
+class FakeHealth implements HealthCheck {
+  FakeHealth([this.problem]);
+  ProtectionProblem? problem;
+  final fixed = <ProtectionProblem>[];
+  bool fails = false;
+  @override
+  Future<ProtectionProblem?> check() async {
+    if (fails) throw StateError('plugin');
+    return problem;
+  }
+
+  @override
+  Future<void> fix(ProtectionProblem problem) async => fixed.add(problem);
 }

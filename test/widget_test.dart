@@ -31,6 +31,7 @@ Future<void> show(WidgetTester t, BackgroundHost host) async {
         places: _NoPlaces(),
         map: _NoMap(),
         forgotRequests: ValueNotifier(0),
+        health: FakeHealth(),
         helperSettings: (_) => const Text('helper-settings'),
       ),
     ),
@@ -60,6 +61,86 @@ void main() {
     await t.pumpAndSettle();
     expect(host.starts, 1);
     expect(find.text(Strings.protecting), findsOneWidget);
+  });
+
+  group('warnings', () {
+    Future<void> showWith(WidgetTester t, FakeHost host, FakeHealth h) async {
+      await t.pumpWidget(
+        MaterialApp(
+          home: MainScreen(
+            host: host,
+            places: _NoPlaces(),
+            map: _NoMap(),
+            forgotRequests: ValueNotifier(0),
+            health: h,
+            helperSettings: (_) => const Text('helper-settings'),
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+    }
+
+    const reasons = {
+      ProtectionProblem.locationOff: Strings.problemLocationOff,
+      ProtectionProblem.locationPermission: Strings.problemLocationPermission,
+      ProtectionProblem.notifications: Strings.problemNotifications,
+    };
+    for (final e in reasons.entries) {
+      testWidgets('AC-8.2: ${e.key.name} warns with the reason and a fix', (
+        t,
+      ) async {
+        final h = FakeHealth(e.key);
+        await showWith(t, FakeHost(running: true), h);
+        expect(find.text(Strings.notProtecting), findsOneWidget);
+        expect(find.text(Strings.protecting), findsNothing);
+        expect(find.text(e.value), findsOneWidget);
+        await t.tap(find.text(Strings.fix));
+        await t.pump();
+        expect(h.fixed, [e.key]);
+      });
+    }
+
+    testWidgets('AC-8.3: returning after a fix clears the warning', (t) async {
+      final h = FakeHealth(ProtectionProblem.locationOff);
+      await showWith(t, FakeHost(running: true), h);
+      h.problem = null;
+      t.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      t.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await t.pumpAndSettle();
+      expect(find.text(Strings.protecting), findsOneWidget);
+      expect(find.text(Strings.fix), findsNothing);
+    });
+
+    testWidgets('a change is noticed while the screen stays open', (t) async {
+      final h = FakeHealth();
+      await showWith(t, FakeHost(running: true), h);
+      h.problem = ProtectionProblem.locationOff;
+      await t.pump(const Duration(seconds: 6));
+      await t.pump();
+      expect(find.text(Strings.notProtecting), findsOneWidget);
+    });
+
+    testWidgets('a stopped service with a problem offers the fix first', (
+      t,
+    ) async {
+      await showWith(
+        t,
+        FakeHost(),
+        FakeHealth(ProtectionProblem.locationPermission),
+      );
+      expect(find.text(Strings.fix), findsOneWidget);
+      expect(find.text(Strings.enable), findsNothing);
+    });
+
+    testWidgets('a failing check does not clear a warning', (t) async {
+      final h = FakeHealth(ProtectionProblem.locationOff);
+      await showWith(t, FakeHost(running: true), h);
+      h.fails = true;
+      await t.pump(const Duration(seconds: 6));
+      await t.pump();
+      expect(find.text(Strings.notProtecting), findsOneWidget);
+      expect(find.text(Strings.protecting), findsNothing);
+    });
   });
 
   group('Helper entry', () {
@@ -123,4 +204,19 @@ class _NoPlaces implements LastPlaceStore {
 class _NoMap implements MapLauncher {
   @override
   Future<bool> open(GeoPoint point) async => false;
+}
+
+class FakeHealth implements HealthCheck {
+  FakeHealth([this.problem]);
+  ProtectionProblem? problem;
+  final fixed = <ProtectionProblem>[];
+  bool fails = false;
+  @override
+  Future<ProtectionProblem?> check() async {
+    if (fails) throw StateError('plugin');
+    return problem;
+  }
+
+  @override
+  Future<void> fix(ProtectionProblem problem) async => fixed.add(problem);
 }

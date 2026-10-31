@@ -94,7 +94,7 @@ class ReminderSession implements ReminderPlayer, ReminderTester {
     try {
       await action();
     } on Object {
-      // Reported through the status warnings added in S11.
+      // Lost permissions show up in ProtectionMonitor's checks.
     }
   }
 }

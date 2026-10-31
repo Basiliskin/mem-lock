@@ -88,7 +88,8 @@ The Detector is one state machine: `step(state, event) → (newState, decisions)
 | `Store` | Settings, Quiet Places, Last Places, Detector state | shared_preferences |
 | `WatcherLink` | Tell the running service a list changed | flutter_foreground_task |
 | `MapLauncher` | Open a location in the map app | url_launcher |
-| `HealthCheck` | Location on, permissions, battery optimisation, battery level | geolocator, permission_handler, battery plugin |
+| `HealthCheck` | Location on, location and notification permissions | geolocator, permission_handler |
+| `ProtectionNotice` | Show the warning in the persistent notification | flutter_foreground_task |
 | `BackgroundHost` | Start and restart the foreground service | flutter_foreground_task |
 
 The service and screens run in separate isolates, so they share data through `Store` and the service's message channel. Only the screens write the Quiet Places list. The service re-reads it when told of a change and whenever it starts, and passes it to the Detector as `QuietPlacesChanged`.

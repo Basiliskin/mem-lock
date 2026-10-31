@@ -5,12 +5,14 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
 import '../adapters/foreground_host.dart';
 import '../adapters/geolocator_location.dart';
+import '../adapters/phone_health.dart';
 import '../adapters/phone_reminder_output.dart';
 import '../adapters/prefs_last_place.dart';
 import '../adapters/prefs_quiet_places.dart';
 import '../adapters/prefs_reminder_options.dart';
 import '../adapters/prefs_state_store.dart';
 import '../adapters/reminder_actions.dart';
+import 'protection_monitor.dart';
 import 'reminder_session.dart';
 import 'watcher.dart';
 
@@ -20,6 +22,7 @@ void watcherEntryPoint() => FlutterForegroundTask.setTaskHandler(_Handler());
 
 class _Handler extends TaskHandler {
   Watcher? _watcher;
+  ProtectionMonitor? _monitor;
   final _actions = ReceivePort();
 
   @override
@@ -44,6 +47,13 @@ class _Handler extends TaskHandler {
     _watcher = watcher;
     // A message sent before this point was dropped, so read once more.
     await watcher.syncQuietPlaces();
+    final monitor = ProtectionMonitor(
+      health: PhoneHealth(),
+      notice: ServiceProtectionNotice(),
+      onRecovered: watcher.restartLocation,
+    );
+    _monitor = monitor;
+    await monitor.check();
     debugPrint('Watcher started by ${starter.name}');
   }
 
@@ -53,7 +63,10 @@ class _Handler extends TaskHandler {
   }
 
   @override
-  void onRepeatEvent(DateTime timestamp) => _watcher?.tick(timestamp);
+  void onRepeatEvent(DateTime timestamp) {
+    _watcher?.tick(timestamp);
+    _monitor?.check();
+  }
 
   @override
   Future<void> onDestroy(DateTime timestamp, bool isTimeout) async {

@@ -4,6 +4,7 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'adapters/foreground_host.dart';
 import 'adapters/geolocator_location.dart';
 import 'adapters/prefs_last_place.dart';
+import 'adapters/phone_health.dart';
 import 'adapters/phone_reminder_output.dart';
 import 'adapters/prefs_quiet_places.dart';
 import 'adapters/prefs_reminder_options.dart';
@@ -67,6 +68,7 @@ Future<void> main() async {
           places: PrefsLastPlace(),
           map: UrlMapLauncher(),
           forgotRequests: forgotRequests,
+          health: PhoneHealth(),
           helperSettings: (_) => HelperSettingsScreen(
             reminderOptions: reminderOptions,
             quietPlaces: quietPlaces,

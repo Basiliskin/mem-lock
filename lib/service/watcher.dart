@@ -44,6 +44,11 @@ class Watcher {
     _subscription = null;
   }
 
+  /// Asks for readings again, in turn with other events.
+  Future<void> restartLocation() => _queue = _queue.then(
+    (_) => _quietly(() => _location.setMode(state.locationMode)),
+  );
+
   Future<void> tick(DateTime now) => handle(Tick(now));
 
   /// Reads the Helper's list and passes it to the Detector, in turn with other
@@ -103,7 +108,7 @@ class Watcher {
     try {
       await action();
     } on Object {
-      // Reported through the status warnings added in S11.
+      // Lost permissions and location show up in ProtectionMonitor's checks.
     }
   }
 }

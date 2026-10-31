@@ -320,6 +320,14 @@ void main() {
     expect(failing.calls, 2);
   });
 
+  test('restarting location asks again in the current mode', () async {
+    await begin();
+    await settle();
+    location.modes.clear();
+    await watcher.restartLocation();
+    expect(location.modes, [LocationMode.lowPower]);
+  });
+
   test('stop ends the location subscription', () async {
     await begin();
     await watcher.stop();
