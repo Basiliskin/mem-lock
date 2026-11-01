@@ -34,6 +34,11 @@ class ReminderSession implements ReminderPlayer, ReminderTester {
     } on Object {
       _options = const ReminderOptions();
     }
+    // A place's own message replaces the text only: the sound stays as chosen.
+    final message = reminder.placeMessage;
+    if (message != null) {
+      _options = _options.copyWith(body: () => message);
+    }
     if (run == _run) await _fire(run);
   }
 

@@ -203,6 +203,44 @@ void main() {
     });
   });
 
+  test(
+    'a place message replaces the text, not the sound or the saved options',
+    () {
+      fakeAsync((f) {
+        setup();
+        options.options = const ReminderOptions(
+          voicePath: 'v.m4a',
+          body: 'Mine',
+        );
+        session.start(
+          StartReminder(
+            ReminderSource.reminderPlace,
+            LastPlace(const GeoPoint(1, 2), DateTime.utc(2026)),
+            placeMessage: 'Take your towel',
+          ),
+        );
+        f.flushMicrotasks();
+        expect(out.shown!.body, 'Take your towel');
+        expect(out.shown!.voicePath, 'v.m4a');
+        expect(options.options.body, 'Mine');
+        f.elapse(reminderInterval * reminderTries);
+        expect(out.shown!.body, 'Take your towel');
+        session.stop();
+      });
+    },
+  );
+
+  test('without a place message the chosen text stays', () {
+    fakeAsync((f) {
+      setup();
+      options.options = const ReminderOptions(body: 'Mine');
+      session.start(reminder);
+      f.flushMicrotasks();
+      expect(out.shown!.body, 'Mine');
+      session.stop();
+    });
+  });
+
   test('all sounds failing still shows the notification, without error', () {
     fakeAsync((f) {
       setup();

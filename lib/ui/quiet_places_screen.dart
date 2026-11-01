@@ -2,19 +2,23 @@ import 'package:flutter/material.dart';
 
 import '../domain/detector.dart';
 import '../domain/quiet_place_record.dart';
+import '../domain/reminder_place_record.dart';
 import '../l10n/l10n.dart';
 import '../ports/ports.dart';
+import 'usable_fix.dart';
 
 class QuietPlacesScreen extends StatefulWidget {
   const QuietPlacesScreen({
     super.key,
     required this.store,
+    required this.reminderPlaces,
     required this.location,
     required this.link,
     this.now = DateTime.now,
   });
 
   final QuietPlaceStore store;
+  final ReminderPlaceStore reminderPlaces;
   final CurrentFixSource location;
   final WatcherLink link;
   final DateTime Function() now;
@@ -40,19 +44,6 @@ class _QuietPlacesScreenState extends State<QuietPlacesScreen> {
       if (mounted) setState(() => _places = places);
     } on Object {
       if (mounted) setState(() => _message = context.l10n.saveFailed);
-    }
-  }
-
-  /// Marked only from a fresh, trustworthy reading, because the Helper is
-  /// standing there now and a wrong place would silence the wrong Reminders.
-  Future<LocationFix?> _usableFix() async {
-    try {
-      final fix = await widget.location.currentFix();
-      return fix != null && fix.accuracyMeters <= maxAccuracyMeters
-          ? fix
-          : null;
-    } on Object {
-      return null;
     }
   }
 
@@ -89,10 +80,26 @@ class _QuietPlacesScreenState extends State<QuietPlacesScreen> {
   Future<void> _mark() {
     final text = context.l10n;
     return _run(() async {
-      final fix = await _usableFix();
+      final fix = await usableFix(widget.location);
       if (fix == null) return text.noFixToMark;
       final current = await widget.store.read();
       if (coversPoint(current, fix.point)) return text.alreadyQuiet;
+      final others = await widget.reminderPlaces.read();
+      final clashing = reminderPlacesClashing(others, fix.point);
+      if (clashing.isNotEmpty) {
+        if (!await _askMakeQuiet()) return text.keptReminderPlace;
+        // Given up first: a failure here can't leave the place as both, and
+        // trying again still works.
+        await widget.reminderPlaces.write([
+          for (final r in others)
+            if (!clashing.contains(r)) r,
+        ]);
+        try {
+          widget.link.reminderPlacesChanged();
+        } on Object {
+          // The service reads the saved list again whenever it starts.
+        }
+      }
       final now = widget.now();
       await _save([
         ...current,
@@ -103,6 +110,37 @@ class _QuietPlacesScreenState extends State<QuietPlacesScreen> {
       ]);
       return null;
     });
+  }
+
+  /// True when the Helper chose to make it quiet. Back keeps it as it is,
+  /// because nothing should change without a clear answer.
+  Future<bool> _askMakeQuiet() async {
+    final answer = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: Text(
+          context.l10n.clashIsReminderPlace,
+          style: const TextStyle(fontSize: 20),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(
+              context.l10n.keepReminderPlace,
+              style: const TextStyle(fontSize: 20),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(
+              context.l10n.makeQuiet,
+              style: const TextStyle(fontSize: 20),
+            ),
+          ),
+        ],
+      ),
+    );
+    return answer == true;
   }
 
   Future<void> _remove(QuietPlaceRecord record) async {

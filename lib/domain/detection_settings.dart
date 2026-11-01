@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+/// One value the Helper can set in advanced settings.
+enum DetectionValue { stayTime, stayArea, vehicleSpeed, walkingTime }
+
 /// The values the Helper can change, always within the limits below when read
 /// from storage. The Ride time limit is deliberately not one of them.
 class DetectionSettings {
@@ -31,6 +34,13 @@ class DetectionSettings {
   static const minWalkingAfterRide = Duration(seconds: 10);
   static const maxWalkingAfterRide = Duration(seconds: 120);
 
+  // Past these, Reminders may be missed, so the Helper is warned before saving.
+  // Starting points, to be retuned from the field tests.
+  static const riskyStayTime = Duration(minutes: 15);
+  static const riskyStayMeters = 150.0;
+  static const riskyVehicleKmh = 20.0;
+  static const riskyWalkingAfterRide = Duration(seconds: 60);
+
   final Duration stayTime;
   final double stayMeters;
 
@@ -57,6 +67,13 @@ class DetectionSettings {
       walkingAfterRide >= minWalkingAfterRide &&
       walkingAfterRide <= maxWalkingAfterRide;
 
+  List<DetectionValue> get risks => [
+    if (stayTime > riskyStayTime) DetectionValue.stayTime,
+    if (stayMeters > riskyStayMeters) DetectionValue.stayArea,
+    if (vehicleKmh > riskyVehicleKmh) DetectionValue.vehicleSpeed,
+    if (walkingAfterRide > riskyWalkingAfterRide) DetectionValue.walkingTime,
+  ];
+
   /// The choice whose Stay values these are, or null for advanced Stay values.
   StayChoice? get choice {
     for (final c in StayChoice.values) {
@@ -67,6 +84,13 @@ class DetectionSettings {
     }
     return null;
   }
+
+  /// The choice these settings are in full, or null if any value is custom.
+  StayChoice? get exactChoice =>
+      vehicleKmh == recommendedVehicleKmh &&
+          walkingAfterRide == recommendedWalkingAfterRide
+      ? choice
+      : null;
 
   /// A choice replaces only the Stay values (AC-12.5).
   DetectionSettings withChoice(StayChoice choice) => DetectionSettings(

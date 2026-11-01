@@ -410,4 +410,182 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languagePreview => 'Next Reminder';
+
+  @override
+  String get advancedSettings => 'Exact values';
+
+  @override
+  String advancedNow(String name) {
+    return 'Now: $name';
+  }
+
+  @override
+  String get advancedCustom => 'Custom values';
+
+  @override
+  String get advancedPresetHelp =>
+      'Choosing one replaces the time and place size.';
+
+  @override
+  String get advancedStayTime => 'Time to count as a stay';
+
+  @override
+  String get advancedStayArea => 'Size of the place';
+
+  @override
+  String get advancedSpeed => 'Vehicle speed';
+
+  @override
+  String get advancedWalking => 'Walking time after a ride';
+
+  @override
+  String get unitMinutes => 'min';
+
+  @override
+  String get unitMeters => 'm';
+
+  @override
+  String get unitKmh => 'km/h';
+
+  @override
+  String get unitSeconds => 'sec';
+
+  @override
+  String advancedRange(
+    String min,
+    String max,
+    String unit,
+    String recommended,
+  ) {
+    return 'from $min to $max $unit, recommended $recommended';
+  }
+
+  @override
+  String advancedLimit(String label, String min, String max, String unit) {
+    return '$label: must be $min to $max $unit. Not saved.';
+  }
+
+  @override
+  String increaseValue(String label) {
+    return 'Increase: $label';
+  }
+
+  @override
+  String decreaseValue(String label) {
+    return 'Decrease: $label';
+  }
+
+  @override
+  String get saveValues => 'Save';
+
+  @override
+  String get resetToRecommended => 'Reset to recommended';
+
+  @override
+  String get valuesSaved => 'Values saved';
+
+  @override
+  String get valuesReset => 'Recommended values restored';
+
+  @override
+  String get riskTitle => 'Reminders may be missed:';
+
+  @override
+  String get riskStayTime => 'short stops will give no Reminder.';
+
+  @override
+  String get riskStayArea => 'leaving will be noticed later.';
+
+  @override
+  String get riskSpeed => 'a slow vehicle could be mistaken for walking.';
+
+  @override
+  String get riskWalking =>
+      'the Reminder after a ride will take over a minute.';
+
+  @override
+  String get saveAnyway => 'Save anyway';
+
+  @override
+  String get changeValues => 'Change';
+
+  @override
+  String get stayCustomNote =>
+      'Custom values are in use. Choosing one replaces the time and place size.';
+
+  @override
+  String get reminderPlaces => 'Reminder Places';
+
+  @override
+  String get reminderPlacesHelp =>
+      'Reminds on leaving, even after a short visit (1 minute or more).';
+
+  @override
+  String get noReminderPlaces => 'No places yet.';
+
+  @override
+  String get markReminderPlace => 'Mark this place';
+
+  @override
+  String get reminderPlaceName => 'Name';
+
+  @override
+  String get reminderPlaceNameHint => 'For example, pool';
+
+  @override
+  String get reminderPlaceMessage => 'Message';
+
+  @override
+  String get reminderPlaceMessageHint => 'For example, take your towel';
+
+  @override
+  String get reminderPlaceNeedsText => 'Enter a name and message first.';
+
+  @override
+  String get reminderPlaceNoFix =>
+      'Could not find your location, so nothing was saved. Go outside and try again.';
+
+  @override
+  String get alreadyReminderPlace => 'This place is already marked.';
+
+  @override
+  String get reminderPlaceSaved => 'Place saved';
+
+  @override
+  String get reminderPlaceRemoved => 'Place removed';
+
+  @override
+  String get removeReminderPlaceQuestion =>
+      'Remove this place? Its Reminders will stop.';
+
+  @override
+  String removeNamed(String name) {
+    return 'Remove: $name';
+  }
+
+  @override
+  String get clashIsQuiet =>
+      'This place is already a Quiet Place. A place cannot be both. Which should it be?';
+
+  @override
+  String get keepQuiet => 'Keep it quiet';
+
+  @override
+  String get makeReminderPlace => 'Make it a Reminder Place';
+
+  @override
+  String get keptQuiet => 'Kept as a Quiet Place';
+
+  @override
+  String get clashIsReminderPlace =>
+      'This place is already a Reminder Place. A place cannot be both. Which should it be?';
+
+  @override
+  String get keepReminderPlace => 'Keep the Reminder Place';
+
+  @override
+  String get makeQuiet => 'Make it quiet';
+
+  @override
+  String get keptReminderPlace => 'Kept as a Reminder Place';
 }

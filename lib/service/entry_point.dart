@@ -13,6 +13,7 @@ import '../adapters/prefs_detection_settings.dart';
 import '../adapters/prefs_last_place.dart';
 import '../adapters/prefs_quiet_places.dart';
 import '../adapters/prefs_reminder_options.dart';
+import '../adapters/prefs_reminder_places.dart';
 import '../adapters/prefs_state_store.dart';
 import '../adapters/reminder_actions.dart';
 import 'battery_monitor.dart';
@@ -49,12 +50,14 @@ class _Handler extends TaskHandler {
       reminders: session,
       places: PrefsLastPlace(),
       quiet: PrefsQuietPlaces(),
+      reminderPlaces: PrefsReminderPlaces(),
       detectionSettings: PrefsDetectionSettings(),
     );
     await watcher.start();
     _watcher = watcher;
     // A message sent before this point was dropped, so read once more.
     await watcher.syncQuietPlaces();
+    await watcher.syncReminderPlaces();
     await watcher.syncDetectionSettings();
     final monitor = ProtectionMonitor(
       health: PhoneHealth(),
@@ -81,6 +84,9 @@ class _Handler extends TaskHandler {
     if (data == ForegroundHost.quietPlacesMessage) _watcher?.syncQuietPlaces();
     if (data == ForegroundHost.detectionSettingsMessage) {
       _watcher?.syncDetectionSettings();
+    }
+    if (data == ForegroundHost.reminderPlacesMessage) {
+      _watcher?.syncReminderPlaces();
     }
     if (data == ForegroundHost.languageMessage) _monitor?.refreshNotice();
   }

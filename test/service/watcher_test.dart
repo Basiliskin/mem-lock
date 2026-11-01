@@ -6,6 +6,7 @@ import 'package:geo_alert/domain/detector_json.dart';
 import 'package:geo_alert/domain/geo.dart';
 import 'package:geo_alert/domain/last_place_record.dart';
 import 'package:geo_alert/domain/quiet_place_record.dart';
+import 'package:geo_alert/domain/reminder_place_record.dart';
 import 'package:geo_alert/ports/ports.dart';
 import 'package:geo_alert/service/watcher.dart';
 
@@ -75,6 +76,19 @@ class FakeQuiet implements QuietPlaceStore {
   Future<void> write(List<QuietPlaceRecord> places) async => saved = places;
 }
 
+class FakeReminderPlaces implements ReminderPlaceStore {
+  List<ReminderPlaceRecord> saved = [];
+  bool fail = false;
+  @override
+  Future<List<ReminderPlaceRecord>> read() async {
+    if (fail) throw StateError('disk');
+    return saved;
+  }
+
+  @override
+  Future<void> write(List<ReminderPlaceRecord> places) async => saved = places;
+}
+
 class FakeChoice implements DetectionSettingsStore {
   DetectionSettings saved = DetectionSettings.normal;
   bool fail = false;
@@ -108,11 +122,13 @@ void main() {
   final places = FakePlaces();
   late FakeQuiet quiet;
   late FakeChoice choice;
+  late FakeReminderPlaces reminderPlaces;
 
   setUp(() {
     activity = FakeActivity();
     quiet = FakeQuiet();
     choice = FakeChoice();
+    reminderPlaces = FakeReminderPlaces();
   });
 
   Future<void> begin([String? saved]) async {
@@ -128,6 +144,7 @@ void main() {
       places: places,
       quiet: quiet,
       detectionSettings: choice,
+      reminderPlaces: reminderPlaces,
     );
     await watcher.start();
   }
@@ -270,6 +287,65 @@ void main() {
     expect(watcher.state.settings.stayMeters, 100);
   });
 
+  group('Reminder Places', () {
+    const point = GeoPoint(55.75, 37.61);
+    GeoPoint away(double m) => GeoPoint(point.lat + m / 111195, point.lng);
+    final t0 = DateTime.utc(2026, 11, 1, 10);
+    const record = ReminderPlaceRecord(
+      ReminderPlace('p', point, 'Take your towel'),
+      'Pool',
+    );
+
+    Future<void> visitAndLeave() async {
+      await send(LocationFix(t0, point, 10));
+      await send(
+        LocationFix(t0.add(const Duration(seconds: 70)), away(100), 10),
+      );
+      await send(
+        LocationFix(t0.add(const Duration(seconds: 80)), away(120), 10),
+      );
+    }
+
+    test('the saved list applies from the start', () async {
+      reminderPlaces.saved = [record];
+      await begin();
+      expect(watcher.state.reminderPlaces.single.message, 'Take your towel');
+    });
+
+    test('AC-11.2: leaving starts a Reminder with the message', () async {
+      reminderPlaces.saved = [record];
+      await begin();
+      await visitAndLeave();
+      expect(reminders.started.single.placeMessage, 'Take your towel');
+    });
+
+    test('AC-11.8: its Last Place is saved', () async {
+      reminderPlaces.saved = [record];
+      await begin();
+      places.record = null;
+      await visitAndLeave();
+      expect(places.record!.source, ReminderSource.reminderPlace);
+      expect(places.record!.point, point);
+    });
+
+    test('AC-11.7: a removed place gives no Reminder', () async {
+      reminderPlaces.saved = [record];
+      await begin();
+      reminderPlaces.saved = [];
+      await watcher.syncReminderPlaces();
+      await visitAndLeave();
+      expect(reminders.started, isEmpty);
+    });
+
+    test('a failed read keeps the list', () async {
+      reminderPlaces.saved = [record];
+      await begin();
+      reminderPlaces.fail = true;
+      await watcher.syncReminderPlaces();
+      expect(watcher.state.reminderPlaces, hasLength(1));
+    });
+  });
+
   test('fixes arriving on the stream reach the Detector', () async {
     await begin();
     location.controller.add(LocationFix(at(0), cafe, 10));
@@ -305,6 +381,7 @@ void main() {
       places: p,
       quiet: quiet,
       detectionSettings: FakeChoice(),
+      reminderPlaces: FakeReminderPlaces(),
     );
     await watcher.start();
     await settle();
@@ -376,6 +453,7 @@ void main() {
         places: places,
         quiet: quiet,
         detectionSettings: FakeChoice(),
+        reminderPlaces: FakeReminderPlaces(),
       );
       await watcher.start();
       expect(watcher.state.phase, isA<Roaming>());
@@ -468,6 +546,7 @@ void main() {
       places: places,
       quiet: quiet,
       detectionSettings: FakeChoice(),
+      reminderPlaces: FakeReminderPlaces(),
     );
     await watcher.start();
     await settle();
@@ -505,6 +584,7 @@ void main() {
         places: FakePlaces(),
         quiet: FakeQuiet(),
         detectionSettings: FakeChoice(),
+        reminderPlaces: FakeReminderPlaces(),
       );
       await failing.start();
       await Future<void>.delayed(Duration.zero);

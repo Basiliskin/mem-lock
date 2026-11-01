@@ -10,6 +10,20 @@ GeoPoint _readPoint(Object? value) {
   return GeoPoint((m['lat'] as num).toDouble(), (m['lng'] as num).toDouble());
 }
 
+PlaceVisit? _readVisit(Object? value) {
+  if (value == null) return null;
+  final m = value as Map<String, dynamic>;
+  final firstOutsideAt = m['firstOutsideAt'] as String?;
+  return PlaceVisit(
+    placeId: m['placeId'] as String,
+    since: DateTime.parse(m['since'] as String),
+    outsideReadings: m['outside'] as int,
+    firstOutsideAt: firstOutsideAt == null
+        ? null
+        : DateTime.parse(firstOutsideAt),
+  );
+}
+
 String encodeState(DetectorState s) => jsonEncode({
   'phase': switch (s.phase) {
     Roaming(:final anchor, :final since) => {
@@ -36,6 +50,19 @@ String encodeState(DetectorState s) => jsonEncode({
   'quiet': [
     for (final q in s.quietPlaces) {'id': q.id, 'point': _point(q.point)},
   ],
+  'reminderPlaces': [
+    for (final p in s.reminderPlaces)
+      {'id': p.id, 'point': _point(p.point), 'message': p.message},
+  ],
+  'visit': switch (s.visit) {
+    null => null,
+    final v => {
+      'placeId': v.placeId,
+      'since': v.since.toUtc().toIso8601String(),
+      'outside': v.outsideReadings,
+      'firstOutsideAt': v.firstOutsideAt?.toUtc().toIso8601String(),
+    },
+  },
   'returnTo': s.returnTo == null ? null : _point(s.returnTo!),
   'mode': s.locationMode.name,
 });
@@ -84,6 +111,16 @@ DetectorState decodeState(String text) {
             _readPoint(q['point']),
           ),
       ],
+      // States saved by older versions don't have these.
+      reminderPlaces: [
+        for (final p in (m['reminderPlaces'] ?? const []) as List<dynamic>)
+          ReminderPlace(
+            (p as Map<String, dynamic>)['id'] as String,
+            _readPoint(p['point']),
+            p['message'] as String,
+          ),
+      ],
+      visit: _readVisit(m['visit']),
       returnTo: m['returnTo'] == null ? null : _readPoint(m['returnTo']),
       locationMode: LocationMode.values.byName(m['mode'] as String),
     );

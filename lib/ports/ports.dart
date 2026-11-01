@@ -5,6 +5,7 @@ import '../domain/language.dart';
 import '../domain/last_place_record.dart';
 import '../domain/quiet_place_record.dart';
 import '../domain/reminder_options.dart';
+import '../domain/reminder_place_record.dart';
 
 abstract interface class LocationSource {
   Stream<LocationFix> get fixes;
@@ -92,9 +93,15 @@ abstract interface class QuietPlaceStore {
   Future<void> write(List<QuietPlaceRecord> places);
 }
 
+abstract interface class ReminderPlaceStore {
+  Future<List<ReminderPlaceRecord>> read();
+  Future<void> write(List<ReminderPlaceRecord> places);
+}
+
 /// Lets the screens tell the running service something changed.
 abstract interface class WatcherLink {
   void quietPlacesChanged();
+  void reminderPlacesChanged();
   void detectionSettingsChanged();
   void languageChanged();
 }

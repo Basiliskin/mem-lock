@@ -411,4 +411,184 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get languagePreview => 'Следующее напоминание';
+
+  @override
+  String get advancedSettings => 'Точные значения';
+
+  @override
+  String advancedNow(String name) {
+    return 'Сейчас: $name';
+  }
+
+  @override
+  String get advancedCustom => 'Свои значения';
+
+  @override
+  String get advancedPresetHelp =>
+      'Выбор варианта заменит время и размер места.';
+
+  @override
+  String get advancedStayTime => 'Сколько пробыть на месте';
+
+  @override
+  String get advancedStayArea => 'Размер места';
+
+  @override
+  String get advancedSpeed => 'Скорость транспорта';
+
+  @override
+  String get advancedWalking => 'Сколько идти после поездки';
+
+  @override
+  String get unitMinutes => 'мин';
+
+  @override
+  String get unitMeters => 'м';
+
+  @override
+  String get unitKmh => 'км/ч';
+
+  @override
+  String get unitSeconds => 'сек';
+
+  @override
+  String advancedRange(
+    String min,
+    String max,
+    String unit,
+    String recommended,
+  ) {
+    return 'от $min до $max $unit, рекомендуем $recommended';
+  }
+
+  @override
+  String advancedLimit(String label, String min, String max, String unit) {
+    return '$label: можно от $min до $max $unit. Не сохранено.';
+  }
+
+  @override
+  String increaseValue(String label) {
+    return 'Больше: $label';
+  }
+
+  @override
+  String decreaseValue(String label) {
+    return 'Меньше: $label';
+  }
+
+  @override
+  String get saveValues => 'Сохранить';
+
+  @override
+  String get resetToRecommended => 'Вернуть рекомендуемые';
+
+  @override
+  String get valuesSaved => 'Значения сохранены';
+
+  @override
+  String get valuesReset => 'Рекомендуемые значения возвращены';
+
+  @override
+  String get riskTitle => 'Напоминания могут не прийти:';
+
+  @override
+  String get riskStayTime =>
+      'при таком времени короткие остановки останутся без напоминания.';
+
+  @override
+  String get riskStayArea =>
+      'при таком размере уход с места будет замечен позже.';
+
+  @override
+  String get riskSpeed => 'медленный транспорт может быть принят за ходьбу.';
+
+  @override
+  String get riskWalking =>
+      'напоминание после поездки придёт позже чем через минуту.';
+
+  @override
+  String get saveAnyway => 'Всё равно сохранить';
+
+  @override
+  String get changeValues => 'Изменить';
+
+  @override
+  String get stayCustomNote =>
+      'Сейчас действуют свои значения. Выбор варианта заменит время и размер места.';
+
+  @override
+  String get reminderPlaces => 'Места с напоминанием';
+
+  @override
+  String get reminderPlacesHelp =>
+      'Напомним при уходе отсюда, даже после короткого визита (от 1 минуты).';
+
+  @override
+  String get noReminderPlaces => 'Мест пока нет.';
+
+  @override
+  String get markReminderPlace => 'Отметить это место';
+
+  @override
+  String get reminderPlaceName => 'Название';
+
+  @override
+  String get reminderPlaceNameHint => 'Например, бассейн';
+
+  @override
+  String get reminderPlaceMessage => 'Сообщение';
+
+  @override
+  String get reminderPlaceMessageHint => 'Например, возьмите полотенце';
+
+  @override
+  String get reminderPlaceNeedsText => 'Сначала введите название и сообщение.';
+
+  @override
+  String get reminderPlaceNoFix =>
+      'Не удалось определить, где вы. Место не сохранено. Выйдите на улицу и попробуйте снова.';
+
+  @override
+  String get alreadyReminderPlace => 'Это место уже отмечено.';
+
+  @override
+  String get reminderPlaceSaved => 'Место сохранено';
+
+  @override
+  String get reminderPlaceRemoved => 'Место удалено';
+
+  @override
+  String get removeReminderPlaceQuestion =>
+      'Удалить это место? Напоминаний с этим сообщением больше не будет.';
+
+  @override
+  String removeNamed(String name) {
+    return 'Удалить: $name';
+  }
+
+  @override
+  String get clashIsQuiet =>
+      'Это место уже отмечено как тихое. Одно место не может быть и тихим, и с напоминанием. Что оставить?';
+
+  @override
+  String get keepQuiet => 'Оставить тихим';
+
+  @override
+  String get makeReminderPlace => 'Сделать местом с напоминанием';
+
+  @override
+  String get keptQuiet => 'Оставили тихим местом';
+
+  @override
+  String get clashIsReminderPlace =>
+      'Здесь уже есть место с напоминанием. Одно место не может быть и тихим, и с напоминанием. Что оставить?';
+
+  @override
+  String get keepReminderPlace => 'Оставить с напоминанием';
+
+  @override
+  String get makeQuiet => 'Сделать тихим';
+
+  @override
+  String get keptReminderPlace => 'Оставили место с напоминанием';
 }

@@ -13,6 +13,12 @@ const outsideReadingsToLeave = 2;
 /// How close a Stay must be to a Quiet Place to count as being at it.
 const quietPlaceMeters = 100.0;
 
+/// How close the Wearer must be to count as inside a Reminder Place.
+const reminderPlaceMeters = 75.0;
+
+/// Time inside a Reminder Place needed before leaving gives a Reminder.
+const reminderPlaceMinVisit = Duration(minutes: 1);
+
 // Ride thresholds are placeholders, set without real rides. Retune them from
 // the S1 logs before trusting them.
 
@@ -32,6 +38,32 @@ class QuietPlace {
 
   final String id;
   final GeoPoint point;
+}
+
+class ReminderPlace {
+  const ReminderPlace(this.id, this.point, this.message);
+
+  final String id;
+  final GeoPoint point;
+  final String message;
+}
+
+/// Time inside one Reminder Place, tracked alongside Stays and Rides so that
+/// it can't disturb them.
+class PlaceVisit {
+  const PlaceVisit({
+    required this.placeId,
+    required this.since,
+    this.outsideReadings = 0,
+    this.firstOutsideAt,
+  });
+
+  final String placeId;
+  final DateTime since;
+  final int outsideReadings;
+
+  /// The best known end of the time inside, while readings look outside.
+  final DateTime? firstOutsideAt;
 }
 
 class LastPlace {
@@ -76,6 +108,12 @@ class QuietPlacesChanged extends DetectorEvent {
   final List<QuietPlace> places;
 }
 
+class ReminderPlacesChanged extends DetectorEvent {
+  const ReminderPlacesChanged(super.time, this.places);
+
+  final List<ReminderPlace> places;
+}
+
 class SettingsChanged extends DetectorEvent {
   const SettingsChanged(super.time, this.settings);
 
@@ -84,7 +122,7 @@ class SettingsChanged extends DetectorEvent {
 
 // Decisions -----------------------------------------------------------------
 
-enum ReminderSource { stay, ride }
+enum ReminderSource { stay, ride, reminderPlace }
 
 enum LocationMode { precise, lowPower }
 
@@ -93,10 +131,13 @@ sealed class Decision {
 }
 
 class StartReminder extends Decision {
-  const StartReminder(this.source, this.lastPlace);
+  const StartReminder(this.source, this.lastPlace, {this.placeMessage});
 
   final ReminderSource source;
   final LastPlace lastPlace;
+
+  /// The Reminder Place's own message, when one was left.
+  final String? placeMessage;
 }
 
 /// The Wearer came back to where the Stay ended.
@@ -168,6 +209,8 @@ class DetectorState {
     required this.phase,
     required this.settings,
     required this.quietPlaces,
+    this.reminderPlaces = const [],
+    this.visit,
     this.returnTo,
     this.locationMode = LocationMode.precise,
   });
@@ -181,6 +224,8 @@ class DetectorState {
   final Phase phase;
   final DetectionSettings settings;
   final List<QuietPlace> quietPlaces;
+  final List<ReminderPlace> reminderPlaces;
+  final PlaceVisit? visit;
 
   /// Where the last Reminder's Stay was, until the Wearer returns or a new
   /// Stay begins.
@@ -188,19 +233,41 @@ class DetectorState {
 
   final LocationMode locationMode;
 
-  DetectorState _with({Phase? phase}) => DetectorState(
+  DetectorState _copy({
+    Phase? phase,
+    DetectionSettings? settings,
+    List<QuietPlace>? quietPlaces,
+    List<ReminderPlace>? reminderPlaces,
+    LocationMode? locationMode,
+  }) => DetectorState(
     phase: phase ?? this.phase,
-    settings: settings,
-    quietPlaces: quietPlaces,
+    settings: settings ?? this.settings,
+    quietPlaces: quietPlaces ?? this.quietPlaces,
+    reminderPlaces: reminderPlaces ?? this.reminderPlaces,
+    visit: visit,
     returnTo: returnTo,
-    locationMode: locationMode,
+    locationMode: locationMode ?? this.locationMode,
   );
+
+  DetectorState _with({Phase? phase}) => _copy(phase: phase);
 
   DetectorState _withReturnTo(GeoPoint? point) => DetectorState(
     phase: phase,
     settings: settings,
     quietPlaces: quietPlaces,
+    reminderPlaces: reminderPlaces,
+    visit: visit,
     returnTo: point,
+    locationMode: locationMode,
+  );
+
+  DetectorState _withVisit(PlaceVisit? value) => DetectorState(
+    phase: phase,
+    settings: settings,
+    quietPlaces: quietPlaces,
+    reminderPlaces: reminderPlaces,
+    visit: value,
+    returnTo: returnTo,
     locationMode: locationMode,
   );
 }
@@ -214,13 +281,7 @@ class DetectorState {
   final mode = _modeAfter(state, next, event);
   if (mode == state.locationMode) return (next, decisions);
   return (
-    DetectorState(
-      phase: next.phase,
-      settings: next.settings,
-      quietPlaces: next.quietPlaces,
-      returnTo: next.returnTo,
-      locationMode: mode,
-    ),
+    next._copy(locationMode: mode),
     [...decisions, SetLocationMode(mode)],
   );
 }
@@ -250,26 +311,12 @@ LocationMode _modeAfter(
     LocationFix() => _onFix(state, event),
     Tick() => _onTick(state, event.time),
     ActivityChanged() => _onActivity(state, event),
-    QuietPlacesChanged() => (
-      DetectorState(
-        phase: state.phase,
-        settings: state.settings,
-        quietPlaces: event.places,
-        returnTo: state.returnTo,
-        locationMode: state.locationMode,
-      ),
+    QuietPlacesChanged() => (state._copy(quietPlaces: event.places), const []),
+    ReminderPlacesChanged() => (
+      state._copy(reminderPlaces: event.places),
       const [],
     ),
-    SettingsChanged() => (
-      DetectorState(
-        phase: state.phase,
-        settings: event.settings,
-        quietPlaces: state.quietPlaces,
-        returnTo: state.returnTo,
-        locationMode: state.locationMode,
-      ),
-      const [],
-    ),
+    SettingsChanged() => (state._copy(settings: event.settings), const []),
   };
 }
 
@@ -310,8 +357,102 @@ DetectorState _beginStay(DetectorState s, GeoPoint center, int outside) => s
     InStay() => _fixInStay(state, fix),
     OnRide() => _fixOnRide(state, fix),
   };
-  return (next, [...decisions, ...more]);
+  return _trackVisit(next, fix, [...decisions, ...more]);
 }
+
+/// Places that count. If stored data ever disagrees, Quiet Place wins.
+Iterable<ReminderPlace> _activePlaces(DetectorState s) =>
+    s.reminderPlaces.where((p) => !_isQuiet(s, p.point));
+
+ReminderPlace? _activePlaceById(DetectorState s, String id) {
+  for (final p in _activePlaces(s)) {
+    if (p.id == id) return p;
+  }
+  return null;
+}
+
+/// The nearest place whose area holds [point].
+ReminderPlace? _placeAt(DetectorState s, GeoPoint point) {
+  ReminderPlace? nearest;
+  var best = reminderPlaceMeters;
+  for (final p in _activePlaces(s)) {
+    final distance = p.point.distanceTo(point);
+    if (distance <= best) {
+      nearest = p;
+      best = distance;
+    }
+  }
+  return nearest;
+}
+
+bool _visitLongEnough(PlaceVisit v, DateTime end) =>
+    end.difference(v.since) >= reminderPlaceMinVisit;
+
+/// Runs after the phase has handled [fix]. One fix gives at most one Reminder,
+/// and a Stay at the place leaves the Reminder to the end of that Stay.
+(DetectorState, List<Decision>) _trackVisit(
+  DetectorState s,
+  LocationFix fix,
+  List<Decision> decisions,
+) {
+  if (s.phase is OnRide) return (s._withVisit(null), decisions);
+
+  DetectorState entering(DetectorState from) {
+    final place = _placeAt(from, fix.point);
+    return from._withVisit(
+      place == null ? null : PlaceVisit(placeId: place.id, since: fix.time),
+    );
+  }
+
+  if (decisions.any((d) => d is StartReminder)) {
+    return (entering(s), decisions);
+  }
+  final visit = s.visit;
+  final place = visit == null ? null : _activePlaceById(s, visit.placeId);
+  if (visit == null || place == null) return (entering(s), decisions);
+
+  if (place.point.distanceTo(fix.point) <= reminderPlaceMeters) {
+    return (
+      s._withVisit(PlaceVisit(placeId: visit.placeId, since: visit.since)),
+      decisions,
+    );
+  }
+
+  final outside = visit.outsideReadings + 1;
+  final firstOutsideAt = visit.firstOutsideAt ?? fix.time;
+  if (outside < outsideReadingsToLeave) {
+    return (
+      s._withVisit(
+        PlaceVisit(
+          placeId: visit.placeId,
+          since: visit.since,
+          outsideReadings: outside,
+          firstOutsideAt: firstOutsideAt,
+        ),
+      ),
+      decisions,
+    );
+  }
+
+  final next = entering(s);
+  final phase = s.phase;
+  final stayHere = phase is InStay && _placeAt(s, phase.center)?.id == place.id;
+  final ended = PlaceVisit(placeId: visit.placeId, since: visit.since);
+  if (stayHere || !_visitLongEnough(ended, firstOutsideAt)) {
+    return (next, decisions);
+  }
+  return (
+    next._withReturnTo(place.point),
+    [...decisions, _placeReminder(place, fix.time)],
+  );
+}
+
+StartReminder _placeReminder(ReminderPlace place, DateTime time) =>
+    StartReminder(
+      ReminderSource.reminderPlace,
+      LastPlace(place.point, time),
+      placeMessage: place.message,
+    );
 
 (DetectorState, List<Decision>) _fixWhileRoaming(
   DetectorState s,
@@ -381,7 +522,13 @@ bool _isQuiet(DetectorState s, GeoPoint point) =>
   if (_isQuiet(after, center)) return (after, const []);
   return (
     after._withReturnTo(center),
-    [StartReminder(ReminderSource.stay, LastPlace(center, time))],
+    [
+      StartReminder(
+        ReminderSource.stay,
+        LastPlace(center, time),
+        placeMessage: _placeAt(after, center)?.message,
+      ),
+    ],
   );
 }
 
@@ -396,20 +543,39 @@ bool _isQuiet(DetectorState s, GeoPoint point) =>
   }
   return switch (phase) {
     InStay() => _endStay(
-      s._with(
-        phase: OnRide(movingAt: e.time, lastPoint: phase.center),
-      ),
+      s
+          ._with(
+            phase: OnRide(movingAt: e.time, lastPoint: phase.center),
+          )
+          ._withVisit(null),
       phase.center,
       e.time,
     ),
-    Roaming() => (
+    Roaming() => _leaveVisitForRide(
       s._with(
         phase: OnRide(movingAt: e.time, lastPoint: phase.anchor),
       ),
-      const [],
+      e.time,
     ),
     OnRide() => (s, const []),
   };
+}
+
+/// Getting in a vehicle is a departure too. A Ride that merely passes a place
+/// has no visit, because visits aren't tracked during a Ride.
+(DetectorState, List<Decision>) _leaveVisitForRide(
+  DetectorState s,
+  DateTime time,
+) {
+  final visit = s.visit;
+  final place = visit == null ? null : _activePlaceById(s, visit.placeId);
+  final cleared = s._withVisit(null);
+  if (visit == null ||
+      place == null ||
+      !_visitLongEnough(visit, visit.firstOutsideAt ?? time)) {
+    return (cleared, const []);
+  }
+  return (cleared._withReturnTo(place.point), [_placeReminder(place, time)]);
 }
 
 (DetectorState, List<Decision>) _activityOnRide(

@@ -25,6 +25,8 @@ class FakeLink implements WatcherLink {
   @override
   void detectionSettingsChanged() {}
   @override
+  void reminderPlacesChanged() {}
+  @override
   void languageChanged() => told++;
 }
 

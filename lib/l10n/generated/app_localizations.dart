@@ -799,6 +799,312 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Следующее напоминание'**
   String get languagePreview;
+
+  /// No description provided for @advancedSettings.
+  ///
+  /// In ru, this message translates to:
+  /// **'Точные значения'**
+  String get advancedSettings;
+
+  /// No description provided for @advancedNow.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сейчас: {name}'**
+  String advancedNow(String name);
+
+  /// No description provided for @advancedCustom.
+  ///
+  /// In ru, this message translates to:
+  /// **'Свои значения'**
+  String get advancedCustom;
+
+  /// No description provided for @advancedPresetHelp.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выбор варианта заменит время и размер места.'**
+  String get advancedPresetHelp;
+
+  /// No description provided for @advancedStayTime.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сколько пробыть на месте'**
+  String get advancedStayTime;
+
+  /// No description provided for @advancedStayArea.
+  ///
+  /// In ru, this message translates to:
+  /// **'Размер места'**
+  String get advancedStayArea;
+
+  /// No description provided for @advancedSpeed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Скорость транспорта'**
+  String get advancedSpeed;
+
+  /// No description provided for @advancedWalking.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сколько идти после поездки'**
+  String get advancedWalking;
+
+  /// No description provided for @unitMinutes.
+  ///
+  /// In ru, this message translates to:
+  /// **'мин'**
+  String get unitMinutes;
+
+  /// No description provided for @unitMeters.
+  ///
+  /// In ru, this message translates to:
+  /// **'м'**
+  String get unitMeters;
+
+  /// No description provided for @unitKmh.
+  ///
+  /// In ru, this message translates to:
+  /// **'км/ч'**
+  String get unitKmh;
+
+  /// No description provided for @unitSeconds.
+  ///
+  /// In ru, this message translates to:
+  /// **'сек'**
+  String get unitSeconds;
+
+  /// No description provided for @advancedRange.
+  ///
+  /// In ru, this message translates to:
+  /// **'от {min} до {max} {unit}, рекомендуем {recommended}'**
+  String advancedRange(String min, String max, String unit, String recommended);
+
+  /// No description provided for @advancedLimit.
+  ///
+  /// In ru, this message translates to:
+  /// **'{label}: можно от {min} до {max} {unit}. Не сохранено.'**
+  String advancedLimit(String label, String min, String max, String unit);
+
+  /// No description provided for @increaseValue.
+  ///
+  /// In ru, this message translates to:
+  /// **'Больше: {label}'**
+  String increaseValue(String label);
+
+  /// No description provided for @decreaseValue.
+  ///
+  /// In ru, this message translates to:
+  /// **'Меньше: {label}'**
+  String decreaseValue(String label);
+
+  /// No description provided for @saveValues.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сохранить'**
+  String get saveValues;
+
+  /// No description provided for @resetToRecommended.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вернуть рекомендуемые'**
+  String get resetToRecommended;
+
+  /// No description provided for @valuesSaved.
+  ///
+  /// In ru, this message translates to:
+  /// **'Значения сохранены'**
+  String get valuesSaved;
+
+  /// No description provided for @valuesReset.
+  ///
+  /// In ru, this message translates to:
+  /// **'Рекомендуемые значения возвращены'**
+  String get valuesReset;
+
+  /// No description provided for @riskTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Напоминания могут не прийти:'**
+  String get riskTitle;
+
+  /// No description provided for @riskStayTime.
+  ///
+  /// In ru, this message translates to:
+  /// **'при таком времени короткие остановки останутся без напоминания.'**
+  String get riskStayTime;
+
+  /// No description provided for @riskStayArea.
+  ///
+  /// In ru, this message translates to:
+  /// **'при таком размере уход с места будет замечен позже.'**
+  String get riskStayArea;
+
+  /// No description provided for @riskSpeed.
+  ///
+  /// In ru, this message translates to:
+  /// **'медленный транспорт может быть принят за ходьбу.'**
+  String get riskSpeed;
+
+  /// No description provided for @riskWalking.
+  ///
+  /// In ru, this message translates to:
+  /// **'напоминание после поездки придёт позже чем через минуту.'**
+  String get riskWalking;
+
+  /// No description provided for @saveAnyway.
+  ///
+  /// In ru, this message translates to:
+  /// **'Всё равно сохранить'**
+  String get saveAnyway;
+
+  /// No description provided for @changeValues.
+  ///
+  /// In ru, this message translates to:
+  /// **'Изменить'**
+  String get changeValues;
+
+  /// No description provided for @stayCustomNote.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сейчас действуют свои значения. Выбор варианта заменит время и размер места.'**
+  String get stayCustomNote;
+
+  /// No description provided for @reminderPlaces.
+  ///
+  /// In ru, this message translates to:
+  /// **'Места с напоминанием'**
+  String get reminderPlaces;
+
+  /// No description provided for @reminderPlacesHelp.
+  ///
+  /// In ru, this message translates to:
+  /// **'Напомним при уходе отсюда, даже после короткого визита (от 1 минуты).'**
+  String get reminderPlacesHelp;
+
+  /// No description provided for @noReminderPlaces.
+  ///
+  /// In ru, this message translates to:
+  /// **'Мест пока нет.'**
+  String get noReminderPlaces;
+
+  /// No description provided for @markReminderPlace.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отметить это место'**
+  String get markReminderPlace;
+
+  /// No description provided for @reminderPlaceName.
+  ///
+  /// In ru, this message translates to:
+  /// **'Название'**
+  String get reminderPlaceName;
+
+  /// No description provided for @reminderPlaceNameHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, бассейн'**
+  String get reminderPlaceNameHint;
+
+  /// No description provided for @reminderPlaceMessage.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сообщение'**
+  String get reminderPlaceMessage;
+
+  /// No description provided for @reminderPlaceMessageHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, возьмите полотенце'**
+  String get reminderPlaceMessageHint;
+
+  /// No description provided for @reminderPlaceNeedsText.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сначала введите название и сообщение.'**
+  String get reminderPlaceNeedsText;
+
+  /// No description provided for @reminderPlaceNoFix.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось определить, где вы. Место не сохранено. Выйдите на улицу и попробуйте снова.'**
+  String get reminderPlaceNoFix;
+
+  /// No description provided for @alreadyReminderPlace.
+  ///
+  /// In ru, this message translates to:
+  /// **'Это место уже отмечено.'**
+  String get alreadyReminderPlace;
+
+  /// No description provided for @reminderPlaceSaved.
+  ///
+  /// In ru, this message translates to:
+  /// **'Место сохранено'**
+  String get reminderPlaceSaved;
+
+  /// No description provided for @reminderPlaceRemoved.
+  ///
+  /// In ru, this message translates to:
+  /// **'Место удалено'**
+  String get reminderPlaceRemoved;
+
+  /// No description provided for @removeReminderPlaceQuestion.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить это место? Напоминаний с этим сообщением больше не будет.'**
+  String get removeReminderPlaceQuestion;
+
+  /// No description provided for @removeNamed.
+  ///
+  /// In ru, this message translates to:
+  /// **'Удалить: {name}'**
+  String removeNamed(String name);
+
+  /// No description provided for @clashIsQuiet.
+  ///
+  /// In ru, this message translates to:
+  /// **'Это место уже отмечено как тихое. Одно место не может быть и тихим, и с напоминанием. Что оставить?'**
+  String get clashIsQuiet;
+
+  /// No description provided for @keepQuiet.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оставить тихим'**
+  String get keepQuiet;
+
+  /// No description provided for @makeReminderPlace.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сделать местом с напоминанием'**
+  String get makeReminderPlace;
+
+  /// No description provided for @keptQuiet.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оставили тихим местом'**
+  String get keptQuiet;
+
+  /// No description provided for @clashIsReminderPlace.
+  ///
+  /// In ru, this message translates to:
+  /// **'Здесь уже есть место с напоминанием. Одно место не может быть и тихим, и с напоминанием. Что оставить?'**
+  String get clashIsReminderPlace;
+
+  /// No description provided for @keepReminderPlace.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оставить с напоминанием'**
+  String get keepReminderPlace;
+
+  /// No description provided for @makeQuiet.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сделать тихим'**
+  String get makeQuiet;
+
+  /// No description provided for @keptReminderPlace.
+  ///
+  /// In ru, this message translates to:
+  /// **'Оставили место с напоминанием'**
+  String get keptReminderPlace;
 }
 
 class _AppLocalizationsDelegate

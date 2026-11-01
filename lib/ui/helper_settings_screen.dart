@@ -7,13 +7,17 @@ class HelperSettingsScreen extends StatelessWidget {
     super.key,
     required this.reminderOptions,
     required this.staySetting,
+    required this.advancedSettings,
     required this.quietPlaces,
+    required this.reminderPlaces,
     required this.language,
   });
 
   final WidgetBuilder reminderOptions;
   final WidgetBuilder staySetting;
+  final WidgetBuilder advancedSettings;
   final WidgetBuilder quietPlaces;
+  final WidgetBuilder reminderPlaces;
   final WidgetBuilder language;
 
   Widget _link(BuildContext context, String text, WidgetBuilder builder) =>
@@ -38,7 +42,9 @@ class HelperSettingsScreen extends StatelessWidget {
       children: [
         _link(context, context.l10n.reminderOptions, reminderOptions),
         _link(context, context.l10n.staySetting, staySetting),
+        _link(context, context.l10n.advancedSettings, advancedSettings),
         _link(context, context.l10n.quietPlaces, quietPlaces),
+        _link(context, context.l10n.reminderPlaces, reminderPlaces),
         _link(context, context.l10n.languageSetting, language),
       ],
     ),

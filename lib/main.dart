@@ -12,6 +12,7 @@ import 'adapters/plugin_activity.dart';
 import 'adapters/prefs_language.dart';
 import 'adapters/prefs_quiet_places.dart';
 import 'adapters/prefs_reminder_options.dart';
+import 'adapters/prefs_reminder_places.dart';
 import 'adapters/reminder_actions.dart';
 import 'adapters/setup_adapters.dart';
 import 'adapters/url_map_launcher.dart';
@@ -20,12 +21,14 @@ import 'domain/language.dart';
 import 'ports/ports.dart';
 import 'service/reminder_session.dart';
 import 'ui/app_root.dart';
+import 'ui/advanced_settings_screen.dart';
 import 'ui/helper_settings_screen.dart';
 import 'ui/language_screen.dart';
 import 'ui/localized_app.dart';
 import 'ui/main_screen.dart';
 import 'ui/quiet_places_screen.dart';
 import 'ui/reminder_options_screen.dart';
+import 'ui/reminder_places_screen.dart';
 import 'ui/setup_screen.dart';
 import 'ui/stay_setting_screen.dart';
 
@@ -58,6 +61,7 @@ Future<void> main() async {
 
   Widget quietPlaces(BuildContext _) => QuietPlacesScreen(
     store: PrefsQuietPlaces(),
+    reminderPlaces: PrefsReminderPlaces(),
     location: GeolocatorLocation(),
     link: host,
   );
@@ -87,7 +91,17 @@ Future<void> main() async {
             reminderOptions: reminderOptions,
             staySetting: (_) =>
                 StaySettingScreen(store: PrefsDetectionSettings(), link: host),
+            advancedSettings: (_) => AdvancedSettingsScreen(
+              store: PrefsDetectionSettings(),
+              link: host,
+            ),
             quietPlaces: quietPlaces,
+            reminderPlaces: (_) => ReminderPlacesScreen(
+              store: PrefsReminderPlaces(),
+              quiet: PrefsQuietPlaces(),
+              location: GeolocatorLocation(),
+              link: host,
+            ),
             language: (_) => LanguageScreen(
               store: languageStore,
               link: host,

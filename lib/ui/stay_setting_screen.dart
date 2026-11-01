@@ -93,6 +93,14 @@ class _StaySettingScreenState extends State<StaySettingScreen> {
         : ListView(
             padding: const EdgeInsets.all(20),
             children: [
+              if (_settings!.choice == null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    context.l10n.stayCustomNote,
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                ),
               for (final c in StayChoice.values) _option(c),
               if (_failed)
                 Semantics(

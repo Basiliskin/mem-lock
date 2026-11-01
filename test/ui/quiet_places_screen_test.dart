@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:geo_alert/domain/detector.dart';
 import 'package:geo_alert/domain/geo.dart';
 import 'package:geo_alert/domain/quiet_place_record.dart';
+import 'package:geo_alert/domain/reminder_place_record.dart';
 import 'package:geo_alert/l10n/l10n.dart';
 
 import '../support/l10n.dart';
@@ -47,9 +48,18 @@ class FakeLink implements WatcherLink {
   }
 
   @override
+  void reminderPlacesChanged() {}
+  @override
   void languageChanged() {}
   @override
   void detectionSettingsChanged() {}
+}
+
+class _NoReminderPlaces implements ReminderPlaceStore {
+  @override
+  Future<List<ReminderPlaceRecord>> read() async => const [];
+  @override
+  Future<void> write(List<ReminderPlaceRecord> places) async {}
 }
 
 void main() {
@@ -72,6 +82,7 @@ void main() {
 
         home: QuietPlacesScreen(
           store: quiet,
+          reminderPlaces: _NoReminderPlaces(),
           location: location,
           link: link,
           now: () => now,

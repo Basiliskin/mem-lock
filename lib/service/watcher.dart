@@ -4,6 +4,7 @@ import '../domain/detector.dart';
 import '../domain/detector_json.dart';
 import '../domain/last_place_record.dart';
 import '../domain/quiet_place_record.dart';
+import '../domain/reminder_place_record.dart';
 import '../ports/ports.dart';
 
 /// Connects the ports to the Detector. Events run strictly one at a time, and
@@ -17,6 +18,7 @@ class Watcher {
     required ReminderPlayer reminders,
     required LastPlaceStore places,
     required QuietPlaceStore quiet,
+    required ReminderPlaceStore reminderPlaces,
     required DetectionSettingsStore detectionSettings,
   }) : _location = location,
        _locationStatus = locationStatus,
@@ -25,6 +27,7 @@ class Watcher {
        _reminders = reminders,
        _places = places,
        _quiet = quiet,
+       _reminderPlaces = reminderPlaces,
        _detectionSettings = detectionSettings;
 
   final LocationSource _location;
@@ -34,6 +37,7 @@ class Watcher {
   final ReminderPlayer _reminders;
   final LastPlaceStore _places;
   final QuietPlaceStore _quiet;
+  final ReminderPlaceStore _reminderPlaces;
   final DetectionSettingsStore _detectionSettings;
 
   DetectorState state = DetectorState.initial();
@@ -54,6 +58,7 @@ class Watcher {
     await _quietly(() => _location.setMode(state.locationMode));
     // These may have changed while the service wasn't running.
     await syncQuietPlaces();
+    await syncReminderPlaces();
     await syncDetectionSettings();
     _listenToActivity();
   }
@@ -114,6 +119,20 @@ class Watcher {
     }
     await _process(
       QuietPlacesChanged(DateTime.now(), [for (final r in records) r.place]),
+    );
+  });
+
+  /// Reads the Helper's Reminder Places, in turn with other events. A failed
+  /// read keeps the list the Detector already has.
+  Future<void> syncReminderPlaces() => _queue = _queue.then((_) async {
+    final List<ReminderPlaceRecord> records;
+    try {
+      records = await _reminderPlaces.read();
+    } on Object {
+      return;
+    }
+    await _process(
+      ReminderPlacesChanged(DateTime.now(), [for (final r in records) r.place]),
     );
   });
 

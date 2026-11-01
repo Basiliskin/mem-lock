@@ -109,6 +109,49 @@ void main() {
     });
   });
 
+  group('exact choice', () {
+    test('needs recommended Ride values too', () {
+      expect(StayChoice.lessOften.settings.exactChoice, StayChoice.lessOften);
+      expect(custom(vehicleKmh: 20).exactChoice, isNull);
+      expect(
+        custom(walkingAfterRide: const Duration(seconds: 60)).exactChoice,
+        isNull,
+      );
+      expect(custom(stayMeters: 120).exactChoice, isNull);
+    });
+  });
+
+  group('AC-12.3: risks', () {
+    test('recommended values and presets have none', () {
+      for (final c in StayChoice.values) {
+        expect(c.settings.risks, isEmpty, reason: c.name);
+      }
+    });
+
+    test('values at the thresholds have none', () {
+      expect(
+        custom(
+          stayTime: const Duration(minutes: 15),
+          stayMeters: 150,
+          vehicleKmh: 20,
+          walkingAfterRide: const Duration(seconds: 60),
+        ).risks,
+        isEmpty,
+      );
+    });
+
+    test('each value over its threshold is named', () {
+      expect(custom(stayTime: const Duration(minutes: 16)).risks, [
+        DetectionValue.stayTime,
+      ]);
+      expect(custom(stayMeters: 151).risks, [DetectionValue.stayArea]);
+      expect(custom(vehicleKmh: 20.5).risks, [DetectionValue.vehicleSpeed]);
+      expect(custom(walkingAfterRide: const Duration(seconds: 61)).risks, [
+        DetectionValue.walkingTime,
+      ]);
+    });
+  });
+
   group('saved text', () {
     test('survives saving', () {
       final s = parseDetectionSettings(

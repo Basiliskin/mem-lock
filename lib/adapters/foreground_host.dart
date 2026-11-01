@@ -9,6 +9,9 @@ class ForegroundHost implements BackgroundHost, WatcherLink {
   /// The message sent to the service when the Quiet Places list changes.
   static const quietPlacesMessage = 'quiet_places_changed';
 
+  /// The message sent to the service when the Reminder Places list changes.
+  static const reminderPlacesMessage = 'reminder_places_changed';
+
   /// The message sent to the service when the Stay setting changes.
   static const detectionSettingsMessage = 'detection_settings_changed';
 
@@ -37,6 +40,10 @@ class ForegroundHost implements BackgroundHost, WatcherLink {
   @override
   void quietPlacesChanged() =>
       FlutterForegroundTask.sendDataToTask(quietPlacesMessage);
+
+  @override
+  void reminderPlacesChanged() =>
+      FlutterForegroundTask.sendDataToTask(reminderPlacesMessage);
 
   @override
   void detectionSettingsChanged() =>
