@@ -118,3 +118,11 @@
 ## 2026-11-01 · /designer
 
 - **Variant A for the new screens:** separate screens with typed values and − and + buttons. Files: `docs/design.md`, `prototypes/release-variant-a.html`, `prototypes/release-variant-b.html`.
+
+## 2026-11-01 · /developer S15
+
+- **`LocationManager` fallback built before the real Walk test,** because the owner can't do a real walk soon. Each service start tries fused location first and moves to `LocationManager` only when it reports location as disabled. S15 stays open until a real walk gives a Reminder. Files: `lib/adapters/geolocator_location.dart`, `test/adapters/geolocator_location_test.dart`, `docs/qa-report.md`.
+
+## 2026-11-01 · /developer S16
+
+- **Translation files with the language read at each use.** `app_ru.arb` and `app_en.arb` replace `lib/l10n/strings.dart`. The service looks up the saved language each time it shows text. The first phone language alone decides when nothing is chosen. English text is a draft until the AC-13.5 check. Times stay 24-hour in both languages. Files: `lib/l10n/`, `lib/domain/language.dart`, `lib/adapters/prefs_language.dart`, `lib/ui/language_screen.dart`, `lib/ui/localized_app.dart`, the screens and adapters that show text, and their tests.

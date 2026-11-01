@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geo_alert/domain/reminder_options.dart';
-import 'package:geo_alert/l10n/strings.dart';
+import 'package:geo_alert/l10n/l10n.dart';
+
+import '../support/l10n.dart';
+
 import 'package:geo_alert/ports/ports.dart';
 import 'package:geo_alert/ui/reminder_options_screen.dart';
 
@@ -62,6 +65,10 @@ void main() {
     addTearDown(t.view.resetPhysicalSize);
     await t.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: testLocale,
+
         home: ReminderOptionsScreen(
           store: store,
           tester: tester,
@@ -80,9 +87,9 @@ void main() {
 
   testWidgets('AC-4.1: choices are saved as they are made', (t) async {
     await show(t);
-    await tap(t, Strings.toneBell);
-    await tap(t, Strings.vibrationStrong);
-    await tap(t, Strings.silentVibrate);
+    await tap(t, l10n.toneBell);
+    await tap(t, l10n.vibrationStrong);
+    await tap(t, l10n.silentVibrate);
     expect(store.saved.tone, ReminderTone.bell);
     expect(store.saved.vibration, VibrationChoice.strong);
     expect(store.saved.silent, SilentChoice.vibrate);
@@ -92,7 +99,7 @@ void main() {
     t,
   ) async {
     await show(t);
-    final title = find.widgetWithText(TextField, Strings.reminderTitleLabel);
+    final title = find.widgetWithText(TextField, l10n.reminderTitleLabel);
     await t.enterText(title, 'Папа, сумка?');
     await t.pumpAndSettle();
     expect(store.saved.title, 'Папа, сумка?');
@@ -103,11 +110,11 @@ void main() {
 
   testWidgets('recording saves the voice and shows it is in use', (t) async {
     await show(t);
-    await tap(t, Strings.recordVoice);
-    expect(find.text(Strings.stopRecording), findsOneWidget);
-    await tap(t, Strings.stopRecording);
+    await tap(t, l10n.recordVoice);
+    expect(find.text(l10n.stopRecording), findsOneWidget);
+    await tap(t, l10n.stopRecording);
     expect(store.saved.voicePath, 'new.m4a');
-    expect(find.text(Strings.voiceInUse), findsOneWidget);
+    expect(find.text(l10n.voiceInUse), findsOneWidget);
   });
 
   testWidgets('a refused microphone says so and keeps the old sound', (
@@ -115,9 +122,9 @@ void main() {
   ) async {
     recorder.allowed = false;
     await show(t);
-    await tap(t, Strings.recordVoice);
-    expect(find.text(Strings.micRefused), findsOneWidget);
-    expect(find.text(Strings.stopRecording), findsNothing);
+    await tap(t, l10n.recordVoice);
+    expect(find.text(l10n.micRefused), findsOneWidget);
+    expect(find.text(l10n.stopRecording), findsNothing);
     expect(store.saved.voicePath, isNull);
   });
 
@@ -125,15 +132,15 @@ void main() {
     store.saved = const ReminderOptions(voicePath: 'old.m4a');
     recorder.result = null;
     await show(t);
-    await tap(t, Strings.recordVoice);
-    await tap(t, Strings.stopRecording);
+    await tap(t, l10n.recordVoice);
+    await tap(t, l10n.stopRecording);
     expect(store.saved.voicePath, 'old.m4a');
-    expect(find.text(Strings.recordFailed), findsOneWidget);
+    expect(find.text(l10n.recordFailed), findsOneWidget);
   });
 
   testWidgets('recording stops by itself at the limit', (t) async {
     await show(t);
-    await tap(t, Strings.recordVoice);
+    await tap(t, l10n.recordVoice);
     await t.pump(maxRecording);
     await t.pumpAndSettle();
     expect(recorder.stops, 1);
@@ -143,33 +150,33 @@ void main() {
   testWidgets('choosing a tone stops using the voice', (t) async {
     store.saved = const ReminderOptions(voicePath: 'old.m4a');
     await show(t);
-    await tap(t, Strings.toneBell);
+    await tap(t, l10n.toneBell);
     expect(store.saved.voicePath, isNull);
-    expect(find.text(Strings.voiceInUse), findsNothing);
+    expect(find.text(l10n.voiceInUse), findsNothing);
   });
 
   testWidgets('AC-4.5: test plays the current choices', (t) async {
     await show(t);
-    await tap(t, Strings.toneBell);
-    await tap(t, Strings.testReminder);
+    await tap(t, l10n.toneBell);
+    await tap(t, l10n.testReminder);
     expect(tester.tested!.tone, ReminderTone.bell);
-    await tap(t, Strings.stopTest);
+    await tap(t, l10n.stopTest);
     expect(tester.stops, greaterThan(0));
   });
 
   testWidgets('a failed save is reported', (t) async {
     await show(t);
     store.failWrites = true;
-    await tap(t, Strings.toneBell);
-    expect(find.text(Strings.saveFailed), findsOneWidget);
+    await tap(t, l10n.toneBell);
+    expect(find.text(l10n.saveFailed), findsOneWidget);
   });
 
   testWidgets('no vibration with vibrate-only warns of no signal', (t) async {
     await show(t);
-    await tap(t, Strings.silentVibrate);
-    expect(find.text(Strings.nothingOnSilent), findsNothing);
-    await tap(t, Strings.vibrationOff);
-    expect(find.text(Strings.nothingOnSilent), findsOneWidget);
+    await tap(t, l10n.silentVibrate);
+    expect(find.text(l10n.nothingOnSilent), findsNothing);
+    await tap(t, l10n.vibrationOff);
+    expect(find.text(l10n.nothingOnSilent), findsOneWidget);
   });
 
   testWidgets('leaving stops a test in progress', (t) async {

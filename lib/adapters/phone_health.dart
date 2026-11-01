@@ -3,8 +3,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../l10n/strings.dart';
 import '../ports/ports.dart';
+import 'prefs_language.dart';
 
 class PrefsLocationStatus implements LocationStatusStore {
   static const _key = 'location_failing';
@@ -56,11 +56,11 @@ class PhoneHealth implements HealthCheck {
 /// Tapping the service's notification opens the app, which offers the fix.
 class ServiceProtectionNotice implements ProtectionNotice {
   @override
-  Future<void> show({required bool protecting}) =>
-      FlutterForegroundTask.updateService(
-        notificationTitle: protecting
-            ? Strings.serviceTitle
-            : Strings.notProtecting,
-        notificationText: protecting ? Strings.serviceText : Strings.tapToFix,
-      );
+  Future<void> show({required bool protecting}) async {
+    final text = await currentText();
+    await FlutterForegroundTask.updateService(
+      notificationTitle: protecting ? text.serviceTitle : text.notProtecting,
+      notificationText: protecting ? text.serviceText : text.tapToFix,
+    );
+  }
 }

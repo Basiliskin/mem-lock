@@ -3,7 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:geo_alert/domain/detector.dart';
 import 'package:geo_alert/domain/geo.dart';
 import 'package:geo_alert/domain/quiet_place_record.dart';
-import 'package:geo_alert/l10n/strings.dart';
+import 'package:geo_alert/l10n/l10n.dart';
+
+import '../support/l10n.dart';
+
 import 'package:geo_alert/ports/ports.dart';
 import 'package:geo_alert/ui/quiet_places_screen.dart';
 
@@ -44,7 +47,9 @@ class FakeLink implements WatcherLink {
   }
 
   @override
-  void staySettingChanged() {}
+  void languageChanged() {}
+  @override
+  void detectionSettingsChanged() {}
 }
 
 void main() {
@@ -61,6 +66,10 @@ void main() {
   Future<void> show(WidgetTester t) async {
     await t.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: testLocale,
+
         home: QuietPlacesScreen(
           store: quiet,
           location: location,
@@ -73,7 +82,7 @@ void main() {
   }
 
   Future<void> mark(WidgetTester t) async {
-    await t.tap(find.text(Strings.markQuietPlace));
+    await t.tap(find.text(l10n.markQuietPlace));
     await t.pumpAndSettle();
   }
 
@@ -82,7 +91,7 @@ void main() {
 
   testWidgets('an empty list says so', (t) async {
     await show(t);
-    expect(find.text(Strings.noQuietPlaces), findsOneWidget);
+    expect(find.text(l10n.noQuietPlaces), findsOneWidget);
   });
 
   testWidgets('AC-6.1: marking saves here and tells the service', (t) async {
@@ -91,8 +100,8 @@ void main() {
     expect(quiet.saved.single.place.point, home);
     expect(quiet.saved.single.markedAt, now);
     expect(link.told, 1);
-    expect(find.text(Strings.quietMarkedAt(now)), findsOneWidget);
-    expect(find.text(Strings.noQuietPlaces), findsNothing);
+    expect(find.text(l10n.quietMarkedAt(now)), findsOneWidget);
+    expect(find.text(l10n.noQuietPlaces), findsNothing);
   });
 
   testWidgets('AC-6.2: a second place is added, not replacing', (t) async {
@@ -109,7 +118,7 @@ void main() {
       await mark(t);
       expect(quiet.saved, isEmpty);
       expect(link.told, 0);
-      expect(find.text(Strings.noFixToMark), findsOneWidget);
+      expect(find.text(l10n.noFixToMark), findsOneWidget);
     }
 
     testWidgets('no fix', (t) async {
@@ -134,7 +143,7 @@ void main() {
     await mark(t);
     location.fix = LocationFix(now, home, 10);
     await mark(t);
-    expect(find.text(Strings.noFixToMark), findsNothing);
+    expect(find.text(l10n.noFixToMark), findsNothing);
     expect(quiet.saved, hasLength(1));
   });
 
@@ -144,15 +153,15 @@ void main() {
     await mark(t);
     expect(quiet.saved, hasLength(1));
     expect(link.told, 0);
-    expect(find.text(Strings.alreadyQuiet), findsOneWidget);
+    expect(find.text(l10n.alreadyQuiet), findsOneWidget);
   });
 
   testWidgets('a failed save says so and shows no new place', (t) async {
     quiet.failWrites = true;
     await show(t);
     await mark(t);
-    expect(find.text(Strings.saveFailed), findsOneWidget);
-    expect(find.text(Strings.quietMarkedAt(now)), findsNothing);
+    expect(find.text(l10n.saveFailed), findsOneWidget);
+    expect(find.text(l10n.quietMarkedAt(now)), findsNothing);
     expect(link.told, 0);
   });
 
@@ -163,12 +172,12 @@ void main() {
     await show(t);
     await mark(t);
     expect(quiet.saved, hasLength(1));
-    expect(find.text(Strings.saveFailed), findsNothing);
+    expect(find.text(l10n.saveFailed), findsNothing);
   });
 
   group('removing', () {
     Future<void> pressRemove(WidgetTester t) async {
-      await t.tap(find.text(Strings.remove));
+      await t.tap(find.text(l10n.remove));
       await t.pumpAndSettle();
     }
 
@@ -177,9 +186,9 @@ void main() {
     ) async {
       quiet.saved = [saved('a', home), saved('b', shop)];
       await show(t);
-      await t.tap(find.text(Strings.remove).first);
+      await t.tap(find.text(l10n.remove).first);
       await t.pumpAndSettle();
-      await t.tap(find.text(Strings.confirmRemove));
+      await t.tap(find.text(l10n.confirmRemove));
       await t.pumpAndSettle();
       expect(quiet.saved.single.place.id, 'b');
       expect(link.told, 1);
@@ -189,7 +198,7 @@ void main() {
       quiet.saved = [saved('a', home)];
       await show(t);
       await pressRemove(t);
-      await t.tap(find.text(Strings.cancel));
+      await t.tap(find.text(l10n.cancel));
       await t.pumpAndSettle();
       expect(quiet.saved, hasLength(1));
       expect(link.told, 0);
@@ -200,10 +209,10 @@ void main() {
       await show(t);
       quiet.failWrites = true;
       await pressRemove(t);
-      await t.tap(find.text(Strings.confirmRemove));
+      await t.tap(find.text(l10n.confirmRemove));
       await t.pumpAndSettle();
-      expect(find.text(Strings.remove), findsOneWidget);
-      expect(find.text(Strings.saveFailed), findsOneWidget);
+      expect(find.text(l10n.remove), findsOneWidget);
+      expect(find.text(l10n.saveFailed), findsOneWidget);
     });
   });
 }

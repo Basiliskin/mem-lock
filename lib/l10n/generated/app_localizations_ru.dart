@@ -1,0 +1,414 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Russian (`ru`).
+class AppLocalizationsRu extends AppLocalizations {
+  AppLocalizationsRu([String locale = 'ru']) : super(locale);
+
+  @override
+  String get appName => 'Geo Alert';
+
+  @override
+  String get protecting => 'Защита работает';
+
+  @override
+  String get notProtecting => 'Защита не работает';
+
+  @override
+  String get nothingToDo => 'Ничего нажимать не нужно';
+
+  @override
+  String get enable => 'Включить защиту';
+
+  @override
+  String get startFailed =>
+      'Не удалось включить. Проверьте разрешения в настройках.';
+
+  @override
+  String get serviceTitle => 'Защита работает';
+
+  @override
+  String get serviceText => 'Напомним о вещах, когда вы уйдёте';
+
+  @override
+  String get reminderChannel => 'Напоминания';
+
+  @override
+  String get reminderTitle => 'Ваши вещи с вами?';
+
+  @override
+  String get actionHaveEverything => 'Всё при мне';
+
+  @override
+  String get actionForgot => 'Я что-то забыл';
+
+  @override
+  String get reminderBody => 'Вы ушли с места. Проверьте вещи.';
+
+  @override
+  String get dontWorry => 'Не волнуйтесь';
+
+  @override
+  String get goBackAdvice => 'Вернитесь на это место или позвоните туда.';
+
+  @override
+  String get openMap => 'Открыть на карте';
+
+  @override
+  String get toMain => 'На главный экран';
+
+  @override
+  String get noMapApp => 'Не найдено приложение карт.';
+
+  @override
+  String get coordinates => 'Координаты';
+
+  @override
+  String get helperEntry => 'Для близких: удерживайте 2 секунды';
+
+  @override
+  String get quietPlaces => 'Тихие места';
+
+  @override
+  String get noQuietPlaces => 'Тихих мест пока нет.';
+
+  @override
+  String get markQuietPlace => 'Отметить место, где я сейчас';
+
+  @override
+  String get noFixToMark =>
+      'Место не сохранено: не удалось точно определить, где вы. Проверьте, что геолокация включена, выйдите ближе к окну или на улицу и попробуйте снова.';
+
+  @override
+  String get alreadyQuiet => 'Это место уже отмечено.';
+
+  @override
+  String get saveFailed => 'Не удалось сохранить. Попробуйте снова.';
+
+  @override
+  String get remove => 'Удалить';
+
+  @override
+  String get removeQuestion =>
+      'Удалить это место? Снова отметить его можно будет, только находясь там.';
+
+  @override
+  String get confirmRemove => 'Да, удалить';
+
+  @override
+  String get cancel => 'Отмена';
+
+  @override
+  String get helperSettings => 'Настройки для близких';
+
+  @override
+  String get reminderOptions => 'Напоминание';
+
+  @override
+  String get reminderChannelNoVibration => 'Напоминания без вибрации';
+
+  @override
+  String get reminderChannelStrong => 'Напоминания с сильной вибрацией';
+
+  @override
+  String get testReminder => 'Проверить напоминание';
+
+  @override
+  String get stopTest => 'Остановить проверку';
+
+  @override
+  String get testFailed => 'Не удалось запустить проверку.';
+
+  @override
+  String get soundHeading => 'Звук';
+
+  @override
+  String get toneRising => 'Два сигнала';
+
+  @override
+  String get toneBell => 'Колокольчик';
+
+  @override
+  String get tonePulse => 'Частые сигналы';
+
+  @override
+  String get recordVoice => 'Записать голос';
+
+  @override
+  String get stopRecording => 'Закончить запись';
+
+  @override
+  String get voiceInUse => 'Сейчас звучит записанный голос.';
+
+  @override
+  String get micRefused =>
+      'Нет доступа к микрофону. Разрешите его в настройках телефона.';
+
+  @override
+  String get recordFailed => 'Запись не удалась. Попробуйте снова.';
+
+  @override
+  String get vibrationHeading => 'Вибрация';
+
+  @override
+  String get vibrationOff => 'Без вибрации';
+
+  @override
+  String get vibrationNormal => 'Обычная';
+
+  @override
+  String get vibrationStrong => 'Сильная';
+
+  @override
+  String get silentHeading => 'Когда телефон без звука';
+
+  @override
+  String get silentAloud => 'Всё равно звучать';
+
+  @override
+  String get silentVibrate => 'Только вибрация';
+
+  @override
+  String get nothingOnSilent =>
+      'На беззвучном напоминание не будет ни слышно, ни ощутимо.';
+
+  @override
+  String get textHeading => 'Текст';
+
+  @override
+  String get setupNext => 'Дальше';
+
+  @override
+  String get setupBack => 'Назад';
+
+  @override
+  String get setupStart => 'Начать';
+
+  @override
+  String get setupAllow => 'Разрешить';
+
+  @override
+  String get setupAllowed => 'Разрешено ✓';
+
+  @override
+  String get setupOpenSettings => 'Открыть настройки телефона';
+
+  @override
+  String get setupBlocked => 'Сначала разрешите, чтобы продолжить.';
+
+  @override
+  String get setupWelcomeTitle => 'Настройка для близкого';
+
+  @override
+  String get setupWelcomeText =>
+      'Настройте приложение на телефоне близкого человека. Это займёт несколько минут.';
+
+  @override
+  String get setupLocationTitle => 'Разрешите геолокацию';
+
+  @override
+  String get setupLocationText => 'Выберите «Разрешить всегда».';
+
+  @override
+  String get setupWhyLocation =>
+      'Без этого приложение не заметит, что человек ушёл.';
+
+  @override
+  String get setupNotificationsTitle => 'Разрешите уведомления';
+
+  @override
+  String get setupNotificationsText => 'Так напоминание появится на экране.';
+
+  @override
+  String get setupWhyNotifications =>
+      'Без этого напоминание не появится на экране.';
+
+  @override
+  String get setupActivityTitle => 'Разрешите данные о движении';
+
+  @override
+  String get setupActivityText =>
+      'Так приложение сможет распознавать движение человека.';
+
+  @override
+  String get setupWhyActivity =>
+      'Это разрешение нужно, чтобы продолжить настройку.';
+
+  @override
+  String get setupNoRideDetection =>
+      'На этом телефоне нет нужных сервисов Google, поэтому напоминания после поездки на поезде или автобусе работать не будут. Напоминания при уходе с места будут работать.';
+
+  @override
+  String get setupBatteryTitle => 'Отключите экономию заряда';
+
+  @override
+  String get setupBatteryText =>
+      'Разрешите приложению работать без ограничений.';
+
+  @override
+  String get setupWhyBattery => 'Иначе телефон может закрыть приложение.';
+
+  @override
+  String get setupPhoneTitle => 'Телефон должен быть при себе';
+
+  @override
+  String get setupPhoneText =>
+      'Если телефон останется в забытой сумке, приложение ничего не заметит. Носите его в кармане или в чехле на шее.';
+
+  @override
+  String get setupQuietTitle => 'Отметьте дом';
+
+  @override
+  String get setupQuietText =>
+      'Уходя из тихого места, человек не получит напоминания. Отметить можно, только находясь там.';
+
+  @override
+  String get setupOpenQuiet => 'Отметить место';
+
+  @override
+  String get setupOptionsTitle => 'Напоминание';
+
+  @override
+  String get setupSilentText =>
+      'Когда телефон без звука, напоминание всё равно звучит вслух, с громкостью будильника. Можно выбрать «Только вибрация». Здесь же можно изменить звук, текст и записать голос.';
+
+  @override
+  String get setupChangeOptions => 'Настроить напоминание';
+
+  @override
+  String get setupDoneTitle => 'Готово';
+
+  @override
+  String get setupDoneText =>
+      'Нажмите «Начать», и приложение заработает. Больше ничего нажимать не нужно.';
+
+  @override
+  String get tapToFix => 'Нажмите, чтобы исправить';
+
+  @override
+  String get fix => 'Исправить';
+
+  @override
+  String get problemLocationOff => 'Геолокация выключена';
+
+  @override
+  String get problemLocationNotStarting =>
+      'Геолокация не запускается. Проверьте настройки геолокации.';
+
+  @override
+  String get problemActivityPermission =>
+      'Нет разрешения на данные о движении, поэтому напоминания после поездки не появятся.';
+
+  @override
+  String get problemLocationPermission =>
+      'Нет разрешения на геолокацию. Выберите «Разрешить всегда».';
+
+  @override
+  String get problemNotifications => 'Уведомления запрещены';
+
+  @override
+  String get openPreviousMap => 'Предыдущее место на карте';
+
+  @override
+  String get lowBattery => 'Телефон скоро разрядится';
+
+  @override
+  String get lowBatteryWhy =>
+      'Поставьте его на зарядку, иначе защита отключится.';
+
+  @override
+  String get lowBatteryChannel => 'Низкий заряд';
+
+  @override
+  String get staySetting => 'Как часто напоминать';
+
+  @override
+  String get stayMoreOften => 'Чаще';
+
+  @override
+  String get stayNormal => 'Обычно';
+
+  @override
+  String get stayLessOften => 'Реже';
+
+  @override
+  String get reminderTitleLabel => 'Заголовок: «Ваши вещи с вами?»';
+
+  @override
+  String get reminderBodyLabel =>
+      'Сообщение: «Вы ушли с места. Проверьте вещи.»';
+
+  @override
+  String setupProgress(int step, int total) {
+    return 'Шаг $step из $total';
+  }
+
+  @override
+  String stayHint(int minutes) {
+    return 'Если человек пробыл на месте $minutes мин.';
+  }
+
+  @override
+  String monthDay(String day, String month) {
+    String _temp0 = intl.Intl.selectLogic(month, {
+      'm1': 'января',
+      'm2': 'февраля',
+      'm3': 'марта',
+      'm4': 'апреля',
+      'm5': 'мая',
+      'm6': 'июня',
+      'm7': 'июля',
+      'm8': 'августа',
+      'm9': 'сентября',
+      'm10': 'октября',
+      'm11': 'ноября',
+      'm12': 'декабря',
+      'other': '',
+    });
+    return '$day $_temp0';
+  }
+
+  @override
+  String whenToday(String clock) {
+    return 'Вы были здесь до $clock';
+  }
+
+  @override
+  String whenOtherDay(String clock, String date) {
+    return 'Вы были здесь до $clock, $date';
+  }
+
+  @override
+  String previousToday(String clock) {
+    return 'Предыдущее: до $clock';
+  }
+
+  @override
+  String previousOtherDay(String clock, String date) {
+    return 'Предыдущее: до $clock, $date';
+  }
+
+  @override
+  String markedAt(String date, String clock) {
+    return 'Отмечено $date в $clock';
+  }
+
+  @override
+  String get languageSetting => 'Язык';
+
+  @override
+  String get languagePhone => 'Как на телефоне';
+
+  @override
+  String get languageRussian => 'Русский';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languagePreview => 'Следующее напоминание';
+}

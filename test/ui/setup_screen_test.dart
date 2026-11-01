@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:geo_alert/l10n/strings.dart';
+import 'package:geo_alert/l10n/l10n.dart';
+
+import '../support/l10n.dart';
+
 import 'package:geo_alert/ports/ports.dart';
 import 'package:geo_alert/ui/app_root.dart';
 import 'package:geo_alert/ui/setup_screen.dart';
@@ -79,6 +82,10 @@ void main() {
   Future<void> show(WidgetTester t) async {
     await t.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: testLocale,
+
         home: SetupScreen(
           gate: gate,
           host: host,
@@ -100,18 +107,18 @@ void main() {
 
   Future<void> toPermission(WidgetTester t) async {
     await show(t);
-    await tap(t, Strings.setupNext);
+    await tap(t, l10n.setupNext);
   }
 
   Future<void> throughAll(WidgetTester t) async {
     await show(t);
-    await tap(t, Strings.setupNext);
+    await tap(t, l10n.setupNext);
     for (var i = 0; i < 4; i++) {
-      await tap(t, Strings.setupAllow);
-      await tap(t, Strings.setupNext);
+      await tap(t, l10n.setupAllow);
+      await tap(t, l10n.setupNext);
     }
     for (var i = 0; i < 3; i++) {
-      await tap(t, Strings.setupNext);
+      await tap(t, l10n.setupNext);
     }
   }
 
@@ -119,9 +126,9 @@ void main() {
     t,
   ) async {
     await throughAll(t);
-    expect(find.text(Strings.setupDoneTitle), findsOneWidget);
+    expect(find.text(l10n.setupDoneTitle), findsOneWidget);
     expect(host.starts, 0);
-    await tap(t, Strings.setupStart);
+    await tap(t, l10n.setupStart);
     expect(host.starts, 1);
     expect(store.done, isTrue);
     expect(finished, isTrue);
@@ -143,35 +150,35 @@ void main() {
     Future<void> toActivity(WidgetTester t) async {
       await toPermission(t);
       for (var i = 0; i < 2; i++) {
-        await tap(t, Strings.setupAllow);
-        await tap(t, Strings.setupNext);
+        await tap(t, l10n.setupAllow);
+        await tap(t, l10n.setupNext);
       }
-      expect(find.text(Strings.setupActivityTitle), findsOneWidget);
+      expect(find.text(l10n.setupActivityTitle), findsOneWidget);
     }
 
     testWidgets('shows on the activity step when they are missing', (t) async {
       activityCheck.available = false;
       await toActivity(t);
-      expect(find.text(Strings.setupNoRideDetection), findsOneWidget);
+      expect(find.text(l10n.setupNoRideDetection), findsOneWidget);
     });
 
     testWidgets('missing Play services do not block setup', (t) async {
       activityCheck.available = false;
       await toActivity(t);
-      await tap(t, Strings.setupAllow);
-      await tap(t, Strings.setupNext);
-      expect(find.text(Strings.setupBatteryTitle), findsOneWidget);
+      await tap(t, l10n.setupAllow);
+      await tap(t, l10n.setupNext);
+      expect(find.text(l10n.setupBatteryTitle), findsOneWidget);
     });
 
     testWidgets('stays hidden when they are available', (t) async {
       await toActivity(t);
-      expect(find.text(Strings.setupNoRideDetection), findsNothing);
+      expect(find.text(l10n.setupNoRideDetection), findsNothing);
     });
 
     testWidgets('a failing check makes no claim', (t) async {
       activityCheck.throws = true;
       await toActivity(t);
-      expect(find.text(Strings.setupNoRideDetection), findsNothing);
+      expect(find.text(l10n.setupNoRideDetection), findsNothing);
       expect(t.takeException(), isNull);
     });
   });
@@ -179,10 +186,10 @@ void main() {
   testWidgets('a failed start stays in setup and says so', (t) async {
     host.works = false;
     await throughAll(t);
-    await tap(t, Strings.setupStart);
+    await tap(t, l10n.setupStart);
     expect(store.done, isFalse);
     expect(finished, isFalse);
-    expect(find.text(Strings.startFailed), findsOneWidget);
+    expect(find.text(l10n.startFailed), findsOneWidget);
   });
 
   testWidgets('AC-7.3: a refusal explains and blocks Next, without crashing', (
@@ -190,11 +197,11 @@ void main() {
   ) async {
     gate.onRequest = PermissionState.denied;
     await toPermission(t);
-    await tap(t, Strings.setupAllow);
-    expect(find.text(Strings.setupWhyLocation), findsOneWidget);
-    await tap(t, Strings.setupNext);
-    expect(find.text(Strings.setupLocationTitle), findsOneWidget);
-    expect(find.text(Strings.setupBlocked), findsOneWidget);
+    await tap(t, l10n.setupAllow);
+    expect(find.text(l10n.setupWhyLocation), findsOneWidget);
+    await tap(t, l10n.setupNext);
+    expect(find.text(l10n.setupLocationTitle), findsOneWidget);
+    expect(find.text(l10n.setupBlocked), findsOneWidget);
   });
 
   testWidgets('AC-7.3: a permanent refusal leads to system settings', (
@@ -202,16 +209,16 @@ void main() {
   ) async {
     gate.onRequest = PermissionState.permanentlyDenied;
     await toPermission(t);
-    await tap(t, Strings.setupAllow);
-    await tap(t, Strings.setupOpenSettings);
+    await tap(t, l10n.setupAllow);
+    await tap(t, l10n.setupOpenSettings);
     expect(gate.settingsOpened, 1);
   });
 
   testWidgets('a failing plugin counts as a refusal', (t) async {
     gate.throws = true;
     await toPermission(t);
-    await tap(t, Strings.setupAllow);
-    expect(find.text(Strings.setupAllow), findsOneWidget);
+    await tap(t, l10n.setupAllow);
+    expect(find.text(l10n.setupAllow), findsOneWidget);
     expect(t.takeException(), isNull);
   });
 
@@ -221,51 +228,54 @@ void main() {
     t.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
     t.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
     await t.pumpAndSettle();
-    expect(find.text(Strings.setupAllowed), findsOneWidget);
+    expect(find.text(l10n.setupAllowed), findsOneWidget);
   });
 
   testWidgets('a permission already granted needs no tap', (t) async {
     gate.states[SetupPermission.location] = PermissionState.granted;
     await toPermission(t);
-    await tap(t, Strings.setupNext);
-    expect(find.text(Strings.setupNotificationsTitle), findsOneWidget);
+    await tap(t, l10n.setupNext);
+    expect(find.text(l10n.setupNotificationsTitle), findsOneWidget);
   });
 
   testWidgets('Back returns a step, and the first step has none', (t) async {
     await show(t);
-    expect(find.text(Strings.setupBack), findsNothing);
-    await tap(t, Strings.setupNext);
-    await tap(t, Strings.setupBack);
-    expect(find.text(Strings.setupWelcomeTitle), findsOneWidget);
+    expect(find.text(l10n.setupBack), findsNothing);
+    await tap(t, l10n.setupNext);
+    await tap(t, l10n.setupBack);
+    expect(find.text(l10n.setupWelcomeTitle), findsOneWidget);
   });
 
   testWidgets(
     'AC-7.4 and AC-3.5: states the phone advice and silent behaviour',
     (t) async {
       await throughAll(t);
-      await tap(t, Strings.setupBack);
-      await tap(t, Strings.setupBack);
-      await tap(t, Strings.setupBack);
-      expect(find.text(Strings.setupPhoneText), findsOneWidget);
-      expect(Strings.setupPhoneText, contains('забытой сумке'));
-      await tap(t, Strings.setupNext);
-      await tap(t, Strings.setupNext);
-      expect(find.text(Strings.setupSilentText), findsOneWidget);
+      await tap(t, l10n.setupBack);
+      await tap(t, l10n.setupBack);
+      await tap(t, l10n.setupBack);
+      expect(find.text(l10n.setupPhoneText), findsOneWidget);
+      expect(
+        l10n.setupPhoneText,
+        contains(testLanguage == 'ru' ? 'забытой сумке' : 'forgotten bag'),
+      );
+      await tap(t, l10n.setupNext);
+      await tap(t, l10n.setupNext);
+      expect(find.text(l10n.setupSilentText), findsOneWidget);
     },
   );
 
   testWidgets('the Reminder step opens the options screen', (t) async {
     await throughAll(t);
-    await tap(t, Strings.setupBack);
-    await tap(t, Strings.setupChangeOptions);
+    await tap(t, l10n.setupBack);
+    await tap(t, l10n.setupChangeOptions);
     expect(find.text('options-screen'), findsOneWidget);
   });
 
   testWidgets('the Quiet Place step opens the list screen', (t) async {
     await throughAll(t);
-    await tap(t, Strings.setupBack);
-    await tap(t, Strings.setupBack);
-    await tap(t, Strings.setupOpenQuiet);
+    await tap(t, l10n.setupBack);
+    await tap(t, l10n.setupBack);
+    await tap(t, l10n.setupOpenQuiet);
     expect(find.text('quiet-screen'), findsOneWidget);
   });
 
@@ -273,6 +283,10 @@ void main() {
     Future<void> root(WidgetTester t) async {
       await t.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: testLocale,
+
           home: AppRoot(
             store: store,
             setup: (done) =>

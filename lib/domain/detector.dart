@@ -1,4 +1,7 @@
+import 'detection_settings.dart';
 import 'geo.dart';
+
+export 'detection_settings.dart';
 
 /// Readings less accurate than this are too unreliable to act on.
 const maxAccuracyMeters = 50.0;
@@ -20,45 +23,9 @@ const rideStartConfidence = 75;
 /// Other activity signals below this are ignored. Same as the S1 probe.
 const activityMinConfidence = 50;
 
-/// How long walking must last to confirm the Wearer got off. Leaves room to
-/// stay within FT-2's 60 seconds.
-const walkingToEndRide = Duration(seconds: 30);
-
-/// Faster than this between readings means still in the vehicle, whatever the
-/// activity signal says.
-const maxWalkingMetersPerSecond = 4.0;
-
 /// With no sign of a vehicle for this long, the end of the Ride was missed.
 /// Without it, Stay detection would never resume.
 const rideTimeLimit = Duration(minutes: 15);
-
-class StaySettings {
-  const StaySettings({required this.stayTime, required this.stayMeters});
-
-  static const normal = StaySettings(
-    stayTime: Duration(minutes: 5),
-    stayMeters: 75,
-  );
-
-  final Duration stayTime;
-  final double stayMeters;
-
-  /// Coming back needs a reading well inside the area, so that jitter near the
-  /// edge while walking away doesn't count as a return.
-  double get returnMeters => stayMeters / 2;
-}
-
-/// The Helper's choice of how often Reminders happen. Values are to be tuned
-/// from the field tests.
-enum StayChoice {
-  moreOften(StaySettings(stayTime: Duration(minutes: 3), stayMeters: 75)),
-  normal(StaySettings.normal),
-  lessOften(StaySettings(stayTime: Duration(minutes: 10), stayMeters: 100));
-
-  const StayChoice(this.settings);
-
-  final StaySettings settings;
-}
 
 class QuietPlace {
   const QuietPlace(this.id, this.point);
@@ -112,7 +79,7 @@ class QuietPlacesChanged extends DetectorEvent {
 class SettingsChanged extends DetectorEvent {
   const SettingsChanged(super.time, this.settings);
 
-  final StaySettings settings;
+  final DetectionSettings settings;
 }
 
 // Decisions -----------------------------------------------------------------
@@ -207,12 +174,12 @@ class DetectorState {
 
   factory DetectorState.initial() => const DetectorState(
     phase: Roaming(),
-    settings: StaySettings.normal,
+    settings: DetectionSettings.normal,
     quietPlaces: [],
   );
 
   final Phase phase;
-  final StaySettings settings;
+  final DetectionSettings settings;
   final List<QuietPlace> quietPlaces;
 
   /// Where the last Reminder's Stay was, until the Wearer returns or a new
@@ -477,7 +444,8 @@ bool _isQuiet(DetectorState s, GeoPoint point) =>
     final seconds = fix.time.difference(lastFixAt).inMilliseconds / 1000;
     moving =
         seconds > 0 &&
-        fix.point.distanceTo(lastPoint) / seconds > maxWalkingMetersPerSecond;
+        fix.point.distanceTo(lastPoint) / seconds >
+            s.settings.vehicleMetersPerSecond;
   }
   final next = OnRide(
     movingAt: moving ? fix.time : phase.movingAt,
@@ -500,7 +468,8 @@ GeoPoint? _ifWalking(OnRide phase, LocationFix fix) =>
   DateTime now,
 ) {
   final since = phase.walkingSince;
-  final confirmed = since != null && now.difference(since) >= walkingToEndRide;
+  final confirmed =
+      since != null && now.difference(since) >= s.settings.walkingAfterRide;
   final timedOut = now.difference(phase.movingAt) >= rideTimeLimit;
   if (!confirmed && !timedOut) return (s, const []);
 

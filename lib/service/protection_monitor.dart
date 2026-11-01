@@ -39,6 +39,10 @@ class ProtectionMonitor {
     });
   }
 
+  /// Says the same thing again, for when its language changes.
+  Future<void> refreshNotice() =>
+      _quietly(() => _notice.show(protecting: _protecting));
+
   Future<void> _quietly(Future<void> Function() action) async {
     try {
       await action();

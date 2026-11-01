@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geo_alert/domain/detector.dart';
-import 'package:geo_alert/l10n/strings.dart';
+import 'package:geo_alert/l10n/l10n.dart';
+
+import '../support/l10n.dart';
+
 import 'package:geo_alert/ports/ports.dart';
 import 'package:geo_alert/ui/stay_setting_screen.dart';
 
-class FakeStore implements StayChoiceStore {
-  FakeStore([this.saved = StayChoice.normal]);
-  StayChoice saved;
+class FakeStore implements DetectionSettingsStore {
+  FakeStore([this.saved = DetectionSettings.normal]);
+  DetectionSettings saved;
   bool failWrites = false;
   @override
-  Future<StayChoice> read() async => saved;
+  Future<DetectionSettings> read() async => saved;
   @override
-  Future<void> write(StayChoice value) async {
+  Future<void> write(DetectionSettings value) async {
     if (failWrites) throw StateError('disk');
     saved = value;
   }
@@ -23,7 +26,9 @@ class FakeLink implements WatcherLink {
   @override
   void quietPlacesChanged() {}
   @override
-  void staySettingChanged() => told++;
+  void languageChanged() {}
+  @override
+  void detectionSettingsChanged() => told++;
 }
 
 void main() {
@@ -33,6 +38,10 @@ void main() {
   Future<void> show(WidgetTester t, FakeStore store) async {
     await t.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: testLocale,
+
         home: StaySettingScreen(store: store, link: link),
       ),
     );
@@ -50,27 +59,53 @@ void main() {
 
   testWidgets('AC-10.2: Normal is chosen when nothing was picked', (t) async {
     await show(t, FakeStore());
-    expect(chosen(t, Strings.stayNormal), isTrue);
-    expect(chosen(t, Strings.stayMoreOften), isFalse);
+    expect(chosen(t, l10n.stayNormal), isTrue);
+    expect(chosen(t, l10n.stayMoreOften), isFalse);
   });
 
   testWidgets('AC-10.1: picking saves and tells the service', (t) async {
     final store = FakeStore();
     await show(t, store);
-    await t.tap(find.text(Strings.stayLessOften));
+    await t.tap(find.text(l10n.stayLessOften));
     await t.pumpAndSettle();
-    expect(store.saved, StayChoice.lessOften);
+    expect(store.saved.choice, StayChoice.lessOften);
     expect(link.told, 1);
-    expect(chosen(t, Strings.stayLessOften), isTrue);
+    expect(chosen(t, l10n.stayLessOften), isTrue);
+  });
+
+  group('with advanced values saved', () {
+    const advanced = DetectionSettings(
+      stayTime: Duration(minutes: 20),
+      stayMeters: 200,
+      vehicleKmh: 20,
+      walkingAfterRide: Duration(seconds: 60),
+    );
+
+    testWidgets('AC-12.5: no choice is shown as chosen', (t) async {
+      await show(t, FakeStore(advanced));
+      expect(chosen(t, l10n.stayNormal), isFalse);
+      expect(chosen(t, l10n.stayMoreOften), isFalse);
+      expect(chosen(t, l10n.stayLessOften), isFalse);
+    });
+
+    testWidgets('AC-12.5: picking replaces only the Stay values', (t) async {
+      final store = FakeStore(advanced);
+      await show(t, store);
+      await t.tap(find.text(l10n.stayMoreOften));
+      await t.pumpAndSettle();
+      expect(store.saved.choice, StayChoice.moreOften);
+      expect(store.saved.vehicleKmh, 20);
+      expect(store.saved.walkingAfterRide, const Duration(seconds: 60));
+    });
   });
 
   testWidgets('a failed save says so and does not tell the service', (t) async {
     final store = FakeStore()..failWrites = true;
     await show(t, store);
-    await t.tap(find.text(Strings.stayLessOften));
+    await t.tap(find.text(l10n.stayLessOften));
     await t.pumpAndSettle();
-    expect(find.text(Strings.saveFailed), findsOneWidget);
+    expect(find.text(l10n.saveFailed), findsOneWidget);
     expect(link.told, 0);
-    expect(chosen(t, Strings.stayNormal), isTrue);
+    expect(chosen(t, l10n.stayNormal), isTrue);
   });
 }

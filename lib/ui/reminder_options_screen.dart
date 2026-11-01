@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../domain/reminder_options.dart';
-import '../l10n/strings.dart';
+import '../l10n/l10n.dart';
 import '../ports/ports.dart';
 
 /// Kept shorter than the gap between tries, so a voice never overlaps itself.
@@ -71,11 +71,12 @@ class _ReminderOptionsScreenState extends State<ReminderOptionsScreen> {
       _options = options;
       _message = null;
     });
+    final text = context.l10n;
     _saving = _saving.then((_) async {
       try {
         await widget.store.write(options);
       } on Object {
-        _say(Strings.saveFailed);
+        _say(text.saveFailed);
       }
     });
   }
@@ -85,14 +86,15 @@ class _ReminderOptionsScreenState extends State<ReminderOptionsScreen> {
   }
 
   Future<void> _startRecording() async {
+    final text = context.l10n;
     await _stopTest();
     try {
       if (!await widget.recorder.start()) {
-        _say(Strings.micRefused);
+        _say(text.micRefused);
         return;
       }
     } on Object {
-      _say(Strings.recordFailed);
+      _say(text.recordFailed);
       return;
     }
     if (!mounted) return;
@@ -114,19 +116,20 @@ class _ReminderOptionsScreenState extends State<ReminderOptionsScreen> {
     }
     if (!mounted) return;
     if (path == null) {
-      _say(Strings.recordFailed);
+      _say(context.l10n.recordFailed);
     } else {
       _update(_options!.copyWith(voicePath: () => path));
     }
   }
 
   Future<void> _startTest() async {
+    final text = context.l10n;
     await _saving;
     if (mounted) setState(() => _testing = true);
     try {
       await widget.tester.test(_options!);
     } on Object {
-      _say(Strings.testFailed);
+      _say(text.testFailed);
     }
   }
 
@@ -194,7 +197,7 @@ class _ReminderOptionsScreenState extends State<ReminderOptionsScreen> {
   Widget build(BuildContext context) {
     final o = _options;
     return Scaffold(
-      appBar: AppBar(title: const Text(Strings.reminderOptions)),
+      appBar: AppBar(title: Text(context.l10n.reminderOptions)),
       body: o == null ? const SizedBox.shrink() : _body(o),
     );
   }
@@ -202,18 +205,18 @@ class _ReminderOptionsScreenState extends State<ReminderOptionsScreen> {
   Widget _body(ReminderOptions o) {
     final message = _message;
     final tones = {
-      ReminderTone.rising: Strings.toneRising,
-      ReminderTone.bell: Strings.toneBell,
-      ReminderTone.pulse: Strings.tonePulse,
+      ReminderTone.rising: context.l10n.toneRising,
+      ReminderTone.bell: context.l10n.toneBell,
+      ReminderTone.pulse: context.l10n.tonePulse,
     };
     final vibrations = {
-      VibrationChoice.off: Strings.vibrationOff,
-      VibrationChoice.normal: Strings.vibrationNormal,
-      VibrationChoice.strong: Strings.vibrationStrong,
+      VibrationChoice.off: context.l10n.vibrationOff,
+      VibrationChoice.normal: context.l10n.vibrationNormal,
+      VibrationChoice.strong: context.l10n.vibrationStrong,
     };
     final silents = {
-      SilentChoice.aloud: Strings.silentAloud,
-      SilentChoice.vibrate: Strings.silentVibrate,
+      SilentChoice.aloud: context.l10n.silentAloud,
+      SilentChoice.vibrate: context.l10n.silentVibrate,
     };
     return SafeArea(
       child: ListView(
@@ -224,39 +227,41 @@ class _ReminderOptionsScreenState extends State<ReminderOptionsScreen> {
             child: FilledButton(
               onPressed: _testing ? _stopTest : _startTest,
               child: Text(
-                _testing ? Strings.stopTest : Strings.testReminder,
+                _testing ? context.l10n.stopTest : context.l10n.testReminder,
                 style: const TextStyle(fontSize: 20),
               ),
             ),
           ),
           if (message != null) _note(message),
-          _heading(Strings.soundHeading),
+          _heading(context.l10n.soundHeading),
           for (final e in tones.entries)
             _choice(
               e.value,
               o.voicePath == null && o.tone == e.key,
               () => _update(o.copyWith(tone: e.key, voicePath: () => null)),
             ),
-          if (o.voicePath != null) _note(Strings.voiceInUse),
+          if (o.voicePath != null) _note(context.l10n.voiceInUse),
           const SizedBox(height: 12),
           ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 64),
             child: OutlinedButton(
               onPressed: _recording ? _stopRecording : _startRecording,
               child: Text(
-                _recording ? Strings.stopRecording : Strings.recordVoice,
+                _recording
+                    ? context.l10n.stopRecording
+                    : context.l10n.recordVoice,
                 style: const TextStyle(fontSize: 20),
               ),
             ),
           ),
-          _heading(Strings.vibrationHeading),
+          _heading(context.l10n.vibrationHeading),
           for (final e in vibrations.entries)
             _choice(
               e.value,
               o.vibration == e.key,
               () => _update(o.copyWith(vibration: e.key)),
             ),
-          _heading(Strings.silentHeading),
+          _heading(context.l10n.silentHeading),
           for (final e in silents.entries)
             _choice(
               e.value,
@@ -265,10 +270,10 @@ class _ReminderOptionsScreenState extends State<ReminderOptionsScreen> {
             ),
           if (o.silent == SilentChoice.vibrate &&
               o.vibration == VibrationChoice.off)
-            _note(Strings.nothingOnSilent),
-          _heading(Strings.textHeading),
-          _textField(Strings.reminderTitleLabel, o.title, 40, true),
-          _textField(Strings.reminderBodyLabel, o.body, 120, false),
+            _note(context.l10n.nothingOnSilent),
+          _heading(context.l10n.textHeading),
+          _textField(context.l10n.reminderTitleLabel, o.title, 40, true),
+          _textField(context.l10n.reminderBodyLabel, o.body, 120, false),
         ],
       ),
     );

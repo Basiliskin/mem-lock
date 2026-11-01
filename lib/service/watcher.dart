@@ -17,7 +17,7 @@ class Watcher {
     required ReminderPlayer reminders,
     required LastPlaceStore places,
     required QuietPlaceStore quiet,
-    required StayChoiceStore stayChoice,
+    required DetectionSettingsStore detectionSettings,
   }) : _location = location,
        _locationStatus = locationStatus,
        _activity = activity,
@@ -25,7 +25,7 @@ class Watcher {
        _reminders = reminders,
        _places = places,
        _quiet = quiet,
-       _stayChoice = stayChoice;
+       _detectionSettings = detectionSettings;
 
   final LocationSource _location;
   final LocationStatusStore _locationStatus;
@@ -34,7 +34,7 @@ class Watcher {
   final ReminderPlayer _reminders;
   final LastPlaceStore _places;
   final QuietPlaceStore _quiet;
-  final StayChoiceStore _stayChoice;
+  final DetectionSettingsStore _detectionSettings;
 
   DetectorState state = DetectorState.initial();
   StreamSubscription<LocationFix>? _subscription;
@@ -54,7 +54,7 @@ class Watcher {
     await _quietly(() => _location.setMode(state.locationMode));
     // These may have changed while the service wasn't running.
     await syncQuietPlaces();
-    await syncStaySetting();
+    await syncDetectionSettings();
     _listenToActivity();
   }
 
@@ -117,16 +117,16 @@ class Watcher {
     );
   });
 
-  /// Reads the Helper's choice and passes it to the Detector, in turn with
-  /// other events. A failed read keeps the setting the Detector already has.
-  Future<void> syncStaySetting() => _queue = _queue.then((_) async {
-    final StayChoice choice;
+  /// Reads the Helper's settings and passes them to the Detector, in turn with
+  /// other events. A failed read keeps the ones the Detector already has.
+  Future<void> syncDetectionSettings() => _queue = _queue.then((_) async {
+    final DetectionSettings settings;
     try {
-      choice = await _stayChoice.read();
+      settings = await _detectionSettings.read();
     } on Object {
       return;
     }
-    await _process(SettingsChanged(DateTime.now(), choice.settings));
+    await _process(SettingsChanged(DateTime.now(), settings));
   });
 
   Future<void> handle(DetectorEvent event) =>

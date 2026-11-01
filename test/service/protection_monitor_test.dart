@@ -108,4 +108,14 @@ void main() {
     await monitor.check();
     expect(recoveries, 1);
   });
+
+  test('AC-13.3: a language change repeats what the notice says', () async {
+    health.problem = ProtectionProblem.locationOff;
+    await monitor.check();
+    notice.shown.clear();
+
+    await monitor.refreshNotice();
+
+    expect(notice.shown, [false]);
+  });
 }

@@ -3,8 +3,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../domain/battery.dart';
-import '../l10n/strings.dart';
 import '../ports/ports.dart';
+import 'prefs_language.dart';
 
 class PhoneBattery implements BatterySource {
   final _battery = Battery();
@@ -26,18 +26,21 @@ class PhoneLowBatteryNotice implements LowBatteryNotice {
   final _plugin = FlutterLocalNotificationsPlugin();
 
   @override
-  Future<void> show() => _plugin.show(
-    id: _id,
-    title: Strings.lowBattery,
-    body: Strings.lowBatteryWhy,
-    notificationDetails: const NotificationDetails(
-      android: AndroidNotificationDetails(
-        'low_battery',
-        Strings.lowBatteryChannel,
-        visibility: NotificationVisibility.public,
+  Future<void> show() async {
+    final text = await currentText();
+    await _plugin.show(
+      id: _id,
+      title: text.lowBattery,
+      body: text.lowBatteryWhy,
+      notificationDetails: NotificationDetails(
+        android: AndroidNotificationDetails(
+          'low_battery',
+          text.lowBatteryChannel,
+          visibility: NotificationVisibility.public,
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class PrefsLowBatteryStore implements LowBatteryStore {

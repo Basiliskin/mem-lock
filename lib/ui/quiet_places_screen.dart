@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../domain/detector.dart';
 import '../domain/quiet_place_record.dart';
-import '../l10n/strings.dart';
+import '../l10n/l10n.dart';
 import '../ports/ports.dart';
 
 class QuietPlacesScreen extends StatefulWidget {
@@ -39,7 +39,7 @@ class _QuietPlacesScreenState extends State<QuietPlacesScreen> {
       final places = await widget.store.read();
       if (mounted) setState(() => _places = places);
     } on Object {
-      if (mounted) setState(() => _message = Strings.saveFailed);
+      if (mounted) setState(() => _message = context.l10n.saveFailed);
     }
   }
 
@@ -57,6 +57,7 @@ class _QuietPlacesScreenState extends State<QuietPlacesScreen> {
   }
 
   Future<void> _run(Future<String?> Function() action) async {
+    final text = context.l10n;
     setState(() {
       _busy = true;
       _message = null;
@@ -65,7 +66,7 @@ class _QuietPlacesScreenState extends State<QuietPlacesScreen> {
     try {
       message = await action();
     } on Object {
-      message = Strings.saveFailed;
+      message = text.saveFailed;
     }
     if (mounted) {
       setState(() {
@@ -85,39 +86,42 @@ class _QuietPlacesScreenState extends State<QuietPlacesScreen> {
     }
   }
 
-  Future<void> _mark() => _run(() async {
-    final fix = await _usableFix();
-    if (fix == null) return Strings.noFixToMark;
-    final current = await widget.store.read();
-    if (coversPoint(current, fix.point)) return Strings.alreadyQuiet;
-    final now = widget.now();
-    await _save([
-      ...current,
-      QuietPlaceRecord(
-        QuietPlace('${now.millisecondsSinceEpoch}', fix.point),
-        now,
-      ),
-    ]);
-    return null;
-  });
+  Future<void> _mark() {
+    final text = context.l10n;
+    return _run(() async {
+      final fix = await _usableFix();
+      if (fix == null) return text.noFixToMark;
+      final current = await widget.store.read();
+      if (coversPoint(current, fix.point)) return text.alreadyQuiet;
+      final now = widget.now();
+      await _save([
+        ...current,
+        QuietPlaceRecord(
+          QuietPlace('${now.millisecondsSinceEpoch}', fix.point),
+          now,
+        ),
+      ]);
+      return null;
+    });
+  }
 
   Future<void> _remove(QuietPlaceRecord record) async {
     final sure = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        content: const Text(
-          Strings.removeQuestion,
+        content: Text(
+          context.l10n.removeQuestion,
           style: TextStyle(fontSize: 20),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text(Strings.cancel, style: TextStyle(fontSize: 20)),
+            child: Text(context.l10n.cancel, style: TextStyle(fontSize: 20)),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(
-              Strings.confirmRemove,
+            child: Text(
+              context.l10n.confirmRemove,
               style: TextStyle(fontSize: 20),
             ),
           ),
@@ -139,7 +143,7 @@ class _QuietPlacesScreenState extends State<QuietPlacesScreen> {
   Widget build(BuildContext context) {
     final message = _message;
     return Scaffold(
-      appBar: AppBar(title: const Text(Strings.quietPlaces)),
+      appBar: AppBar(title: Text(context.l10n.quietPlaces)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -148,8 +152,8 @@ class _QuietPlacesScreenState extends State<QuietPlacesScreen> {
             children: [
               Expanded(
                 child: _places.isEmpty
-                    ? const Text(
-                        Strings.noQuietPlaces,
+                    ? Text(
+                        context.l10n.noQuietPlaces,
                         style: TextStyle(fontSize: 20),
                       )
                     : ListView(
@@ -171,8 +175,8 @@ class _QuietPlacesScreenState extends State<QuietPlacesScreen> {
                 constraints: const BoxConstraints(minHeight: 64),
                 child: FilledButton(
                   onPressed: _busy ? null : _mark,
-                  child: const Text(
-                    Strings.markQuietPlace,
+                  child: Text(
+                    context.l10n.markQuietPlace,
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 20),
                   ),
@@ -196,7 +200,7 @@ class _QuietPlacesScreenState extends State<QuietPlacesScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  Strings.quietMarkedAt(r.markedAt),
+                  context.l10n.quietMarkedAt(r.markedAt),
                   style: const TextStyle(fontSize: 20),
                 ),
                 Text(
@@ -211,7 +215,7 @@ class _QuietPlacesScreenState extends State<QuietPlacesScreen> {
             constraints: const BoxConstraints(minHeight: 48),
             child: OutlinedButton(
               onPressed: _busy ? null : () => _remove(r),
-              child: const Text(Strings.remove, style: TextStyle(fontSize: 18)),
+              child: Text(context.l10n.remove, style: TextStyle(fontSize: 18)),
             ),
           ),
         ],

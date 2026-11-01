@@ -3,22 +3,26 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
 import 'adapters/foreground_host.dart';
 import 'adapters/geolocator_location.dart';
+import 'adapters/prefs_detection_settings.dart';
 import 'adapters/prefs_last_place.dart';
 import 'adapters/phone_battery.dart';
 import 'adapters/phone_health.dart';
 import 'adapters/phone_reminder_output.dart';
 import 'adapters/plugin_activity.dart';
+import 'adapters/prefs_language.dart';
 import 'adapters/prefs_quiet_places.dart';
 import 'adapters/prefs_reminder_options.dart';
-import 'adapters/prefs_stay_choice.dart';
 import 'adapters/reminder_actions.dart';
 import 'adapters/setup_adapters.dart';
 import 'adapters/url_map_launcher.dart';
 import 'adapters/voice_recorder.dart';
-import 'l10n/strings.dart';
+import 'domain/language.dart';
+import 'ports/ports.dart';
 import 'service/reminder_session.dart';
 import 'ui/app_root.dart';
 import 'ui/helper_settings_screen.dart';
+import 'ui/language_screen.dart';
+import 'ui/localized_app.dart';
 import 'ui/main_screen.dart';
 import 'ui/quiet_places_screen.dart';
 import 'ui/reminder_options_screen.dart';
@@ -28,7 +32,11 @@ import 'ui/stay_setting_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   FlutterForegroundTask.initCommunicationPort();
-  ForegroundHost.init();
+  ForegroundHost.init((await currentText()).serviceTitle);
+  final languageStore = PrefsLanguage();
+  final language = ValueNotifier<AppLanguage?>(
+    await _savedLanguage(languageStore),
+  );
   final forgotRequests = ValueNotifier(0);
   await initReminderActionsInApp(() => forgotRequests.value++);
   final host = ForegroundHost();
@@ -55,8 +63,8 @@ Future<void> main() async {
   );
 
   runApp(
-    MaterialApp(
-      title: Strings.appName,
+    LocalizedApp(
+      language: language,
       home: AppRoot(
         store: setupStore,
         setup: (onDone) => SetupScreen(
@@ -78,11 +86,25 @@ Future<void> main() async {
           helperSettings: (_) => HelperSettingsScreen(
             reminderOptions: reminderOptions,
             staySetting: (_) =>
-                StaySettingScreen(store: PrefsStayChoice(), link: host),
+                StaySettingScreen(store: PrefsDetectionSettings(), link: host),
             quietPlaces: quietPlaces,
+            language: (_) => LanguageScreen(
+              store: languageStore,
+              link: host,
+              language: language,
+            ),
           ),
         ),
       ),
     ),
   );
+}
+
+/// Unreadable storage follows the phone.
+Future<AppLanguage?> _savedLanguage(LanguageStore store) async {
+  try {
+    return await store.read();
+  } on Object {
+    return null;
+  }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../l10n/strings.dart';
+import '../l10n/l10n.dart';
 import '../ports/ports.dart';
 
 class _Step {
@@ -47,46 +47,46 @@ class SetupScreen extends StatefulWidget {
 }
 
 class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
-  late final List<_Step> _steps = [
-    const _Step(Strings.setupWelcomeTitle, Strings.setupWelcomeText),
-    const _Step(
-      Strings.setupLocationTitle,
-      Strings.setupLocationText,
-      permission: SetupPermission.location,
-      why: Strings.setupWhyLocation,
-    ),
-    const _Step(
-      Strings.setupNotificationsTitle,
-      Strings.setupNotificationsText,
-      permission: SetupPermission.notifications,
-      why: Strings.setupWhyNotifications,
-    ),
-    const _Step(
-      Strings.setupActivityTitle,
-      Strings.setupActivityText,
-      permission: SetupPermission.activity,
-      why: Strings.setupWhyActivity,
-    ),
-    const _Step(
-      Strings.setupBatteryTitle,
-      Strings.setupBatteryText,
-      permission: SetupPermission.battery,
-      why: Strings.setupWhyBattery,
-    ),
-    const _Step(Strings.setupPhoneTitle, Strings.setupPhoneText),
+  List<_Step> get _steps => [
+    _Step(context.l10n.setupWelcomeTitle, context.l10n.setupWelcomeText),
     _Step(
-      Strings.setupQuietTitle,
-      Strings.setupQuietText,
-      openLabel: Strings.setupOpenQuiet,
+      context.l10n.setupLocationTitle,
+      context.l10n.setupLocationText,
+      permission: SetupPermission.location,
+      why: context.l10n.setupWhyLocation,
+    ),
+    _Step(
+      context.l10n.setupNotificationsTitle,
+      context.l10n.setupNotificationsText,
+      permission: SetupPermission.notifications,
+      why: context.l10n.setupWhyNotifications,
+    ),
+    _Step(
+      context.l10n.setupActivityTitle,
+      context.l10n.setupActivityText,
+      permission: SetupPermission.activity,
+      why: context.l10n.setupWhyActivity,
+    ),
+    _Step(
+      context.l10n.setupBatteryTitle,
+      context.l10n.setupBatteryText,
+      permission: SetupPermission.battery,
+      why: context.l10n.setupWhyBattery,
+    ),
+    _Step(context.l10n.setupPhoneTitle, context.l10n.setupPhoneText),
+    _Step(
+      context.l10n.setupQuietTitle,
+      context.l10n.setupQuietText,
+      openLabel: context.l10n.setupOpenQuiet,
       open: widget.quietPlaces,
     ),
     _Step(
-      Strings.setupOptionsTitle,
-      Strings.setupSilentText,
-      openLabel: Strings.setupChangeOptions,
+      context.l10n.setupOptionsTitle,
+      context.l10n.setupSilentText,
+      openLabel: context.l10n.setupChangeOptions,
       open: widget.reminderOptions,
     ),
-    const _Step(Strings.setupDoneTitle, Strings.setupDoneText),
+    _Step(context.l10n.setupDoneTitle, context.l10n.setupDoneText),
   ];
 
   int _index = 0;
@@ -222,14 +222,17 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
     final permission = step.permission!;
     return switch (_state) {
       PermissionState.granted => [
-        const Padding(
+        Padding(
           padding: EdgeInsets.only(top: 12),
-          child: Text(Strings.setupAllowed, style: TextStyle(fontSize: 20)),
+          child: Text(
+            context.l10n.setupAllowed,
+            style: TextStyle(fontSize: 20),
+          ),
         ),
       ],
       PermissionState.denied => [
         _button(
-          Strings.setupAllow,
+          context.l10n.setupAllow,
           () => _apply(permission, () => widget.gate.request(permission)),
           primary: true,
         ),
@@ -237,7 +240,7 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
       ],
       PermissionState.permanentlyDenied => [
         _button(
-          Strings.setupOpenSettings,
+          context.l10n.setupOpenSettings,
           () => widget.gate.openSettings(),
           primary: true,
         ),
@@ -261,7 +264,7 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
                 child: ListView(
                   children: [
                     Text(
-                      Strings.setupProgress(_index + 1, _steps.length),
+                      context.l10n.setupProgress(_index + 1, _steps.length),
                       style: const TextStyle(fontSize: 16),
                     ),
                     const SizedBox(height: 8),
@@ -281,7 +284,7 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
                     if (step.permission != null) ..._permissionPart(step),
                     if (_noRideDetection &&
                         step.permission == SetupPermission.activity)
-                      _note(Strings.setupNoRideDetection),
+                      _note(context.l10n.setupNoRideDetection),
                     if (open != null)
                       _button(
                         step.openLabel!,
@@ -289,19 +292,19 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
                             Navigator.of(context)
                                 .push(MaterialPageRoute<void>(builder: open)),
                       ),
-                    if (_blockedTap) _note(Strings.setupBlocked),
-                    if (_startFailed) _note(Strings.startFailed),
+                    if (_blockedTap) _note(context.l10n.setupBlocked),
+                    if (_startFailed) _note(context.l10n.startFailed),
                   ],
                 ),
               ),
               _button(
-                _isLast ? Strings.setupStart : Strings.setupNext,
+                _isLast ? context.l10n.setupStart : context.l10n.setupNext,
                 _busy ? null : (_isLast ? _start : _next),
                 primary: true,
               ),
               if (_index > 0)
                 _button(
-                  Strings.setupBack,
+                  context.l10n.setupBack,
                   _busy ? null : () => _go(_index - 1),
                 ),
             ],

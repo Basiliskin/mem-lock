@@ -4,7 +4,10 @@ import 'package:geo_alert/domain/battery.dart';
 import 'package:geo_alert/domain/detector.dart';
 import 'package:geo_alert/domain/geo.dart';
 import 'package:geo_alert/domain/last_place_record.dart';
-import 'package:geo_alert/l10n/strings.dart';
+import 'package:geo_alert/l10n/l10n.dart';
+
+import '../support/l10n.dart';
+
 import 'package:geo_alert/ports/ports.dart';
 import 'package:geo_alert/ui/forgot_screen.dart';
 import 'package:geo_alert/ui/main_screen.dart';
@@ -49,14 +52,14 @@ void main() {
     final now = DateTime(2026, 11, 1, 18);
     test('same day shows only the time', () {
       expect(
-        Strings.whenText(DateTime(2026, 11, 1, 9, 5), now),
-        'Вы были здесь до 09:05',
+        l10n.whenText(DateTime(2026, 11, 1, 9, 5), now),
+        l10n.whenToday('09:05'),
       );
     });
     test('another day also shows the date', () {
       expect(
-        Strings.whenText(DateTime(2026, 10, 31, 14, 32), now),
-        'Вы были здесь до 14:32, 31 октября',
+        l10n.whenText(DateTime(2026, 10, 31, 14, 32), now),
+        l10n.whenOtherDay('14:32', l10n.monthDay('31', 'm10')),
       );
     });
   });
@@ -64,6 +67,10 @@ void main() {
   group('ForgotScreen', () {
     Future<void> show(WidgetTester t, MapLauncher map) => t.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: testLocale,
+
         home: ForgotScreen(
           place: place,
           map: map,
@@ -76,9 +83,9 @@ void main() {
       t,
     ) async {
       await show(t, FakeMap());
-      expect(find.text(Strings.dontWorry), findsOneWidget);
-      expect(find.text('Вы были здесь до 14:32'), findsOneWidget);
-      expect(find.text(Strings.openMap), findsOneWidget);
+      expect(find.text(l10n.dontWorry), findsOneWidget);
+      expect(find.text(l10n.whenToday('14:32')), findsOneWidget);
+      expect(find.text(l10n.openMap), findsOneWidget);
     });
 
     testWidgets('AC-5.2: the button opens the map at the Last Place', (
@@ -86,7 +93,7 @@ void main() {
     ) async {
       final map = FakeMap();
       await show(t, map);
-      await t.tap(find.text(Strings.openMap));
+      await t.tap(find.text(l10n.openMap));
       await t.pumpAndSettle();
       expect(map.opened, place.point);
       expect(find.textContaining('55.75124'), findsNothing);
@@ -103,18 +110,18 @@ void main() {
       t,
     ) async {
       await show(t, FakeMap(works: false));
-      await t.tap(find.text(Strings.openMap));
+      await t.tap(find.text(l10n.openMap));
       await t.pumpAndSettle();
-      expect(find.textContaining(Strings.noMapApp), findsOneWidget);
+      expect(find.textContaining(l10n.noMapApp), findsOneWidget);
       expect(find.textContaining('55.75124, 37.61842'), findsOneWidget);
-      expect(find.text('Вы были здесь до 14:32'), findsOneWidget);
+      expect(find.text(l10n.whenToday('14:32')), findsOneWidget);
     });
 
     testWidgets('a map error is treated the same way', (t) async {
       await show(t, FakeMap()..fails = true);
-      await t.tap(find.text(Strings.openMap));
+      await t.tap(find.text(l10n.openMap));
       await t.pumpAndSettle();
-      expect(find.textContaining(Strings.noMapApp), findsOneWidget);
+      expect(find.textContaining(l10n.noMapApp), findsOneWidget);
     });
   });
 
@@ -127,6 +134,10 @@ void main() {
 
     Future<void> showBoth(WidgetTester t, MapLauncher map) => t.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: testLocale,
+
         home: ForgotScreen(
           place: place,
           previous: previous,
@@ -138,18 +149,18 @@ void main() {
 
     testWidgets('shows its time and its own map button', (t) async {
       await showBoth(t, FakeMap());
-      expect(find.text('Вы были здесь до 14:32'), findsOneWidget);
-      expect(find.text('Предыдущее: до 11:05'), findsOneWidget);
-      expect(find.text(Strings.openPreviousMap), findsOneWidget);
+      expect(find.text(l10n.whenToday('14:32')), findsOneWidget);
+      expect(find.text(l10n.previousToday('11:05')), findsOneWidget);
+      expect(find.text(l10n.openPreviousMap), findsOneWidget);
     });
 
     testWidgets('each button opens its own place', (t) async {
       final map = FakeMap();
       await showBoth(t, map);
-      await t.tap(find.text(Strings.openPreviousMap));
+      await t.tap(find.text(l10n.openPreviousMap));
       await t.pumpAndSettle();
       expect(map.opened, previous.point);
-      await t.tap(find.text(Strings.openMap));
+      await t.tap(find.text(l10n.openMap));
       await t.pumpAndSettle();
       expect(map.opened, place.point);
     });
@@ -158,7 +169,7 @@ void main() {
       t,
     ) async {
       await showBoth(t, FakeMap(works: false));
-      await t.tap(find.text(Strings.openPreviousMap));
+      await t.tap(find.text(l10n.openPreviousMap));
       await t.pumpAndSettle();
       expect(find.textContaining('55.80000, 37.70000'), findsOneWidget);
     });
@@ -166,10 +177,14 @@ void main() {
     testWidgets('with one place there is no previous button', (t) async {
       await t.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: testLocale,
+
           home: ForgotScreen(place: place, map: FakeMap()),
         ),
       );
-      expect(find.text(Strings.openPreviousMap), findsNothing);
+      expect(find.text(l10n.openPreviousMap), findsNothing);
     });
   });
 
@@ -178,6 +193,10 @@ void main() {
       final requests = ValueNotifier(0);
       await t.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: testLocale,
+
           home: MainScreen(
             host: FakeHost(),
             places: places,
@@ -195,21 +214,21 @@ void main() {
 
     testWidgets('no Last Place, no forgot button', (t) async {
       await show(t, FakePlaces());
-      expect(find.text(Strings.actionForgot), findsNothing);
+      expect(find.text(l10n.actionForgot), findsNothing);
     });
 
     testWidgets('the forgot button opens the screen', (t) async {
       await show(t, FakePlaces(place));
-      await t.tap(find.text(Strings.actionForgot));
+      await t.tap(find.text(l10n.actionForgot));
       await t.pumpAndSettle();
-      expect(find.text(Strings.dontWorry), findsOneWidget);
+      expect(find.text(l10n.dontWorry), findsOneWidget);
     });
 
     testWidgets('the notification button opens the screen', (t) async {
       final requests = await show(t, FakePlaces(place));
       requests.value++;
       await t.pumpAndSettle();
-      expect(find.text(Strings.dontWorry), findsOneWidget);
+      expect(find.text(l10n.dontWorry), findsOneWidget);
     });
 
     testWidgets('a request made before the screen opened still counts', (
@@ -218,6 +237,10 @@ void main() {
       final requests = ValueNotifier(1);
       await t.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: testLocale,
+
           home: MainScreen(
             host: FakeHost(),
             places: FakePlaces(place),
@@ -230,7 +253,7 @@ void main() {
         ),
       );
       await t.pumpAndSettle();
-      expect(find.text(Strings.dontWorry), findsOneWidget);
+      expect(find.text(l10n.dontWorry), findsOneWidget);
     });
 
     testWidgets('a notification request with no place stays on main', (
@@ -239,8 +262,8 @@ void main() {
       final requests = await show(t, FakePlaces());
       requests.value++;
       await t.pumpAndSettle();
-      expect(find.text(Strings.dontWorry), findsNothing);
-      expect(find.text(Strings.protecting), findsOneWidget);
+      expect(find.text(l10n.dontWorry), findsNothing);
+      expect(find.text(l10n.protecting), findsOneWidget);
     });
   });
 

@@ -32,8 +32,7 @@ String encodeState(DetectorState s) => jsonEncode({
       'gotOffPoint': r.gotOffPoint == null ? null : _point(r.gotOffPoint!),
     },
   },
-  'staySeconds': s.settings.stayTime.inSeconds,
-  'stayMeters': s.settings.stayMeters,
+  ...s.settings.toMap(),
   'quiet': [
     for (final q in s.quietPlaces) {'id': q.id, 'point': _point(q.point)},
   ],
@@ -77,10 +76,7 @@ DetectorState decodeState(String text) {
         ),
         _ => throw const FormatException('Unknown phase'),
       },
-      settings: StaySettings(
-        stayTime: Duration(seconds: m['staySeconds'] as int),
-        stayMeters: (m['stayMeters'] as num).toDouble(),
-      ),
+      settings: DetectionSettings.fromMap(m),
       quietPlaces: [
         for (final q in m['quiet'] as List<dynamic>)
           QuietPlace(

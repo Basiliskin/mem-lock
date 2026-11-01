@@ -114,4 +114,19 @@ Decisions on these findings:
 
 ## Field test log
 
-No runs recorded yet.
+No real walks recorded yet, so S15 stays open.
+
+S15 emulator check, 2026-11-01, uncommitted `LocationManager` fallback, release build, Android 16 emulator:
+
+- **Fallback:** fused location's failed start moved to `LocationManager` at once, with no warning. Fixes reached the Watcher, the Stay was detected, and low-power mode began after 5 minutes. Before the fallback, no fixes arrived.
+- **Walk on simulated GPS only:** no Reminder after 330 m. Low-power mode asks for balanced accuracy, which didn't use the simulated GPS, so the app's location stayed at the cafe.
+- **Same walk on a test fused provider:** Reminder "Ваши вещи с вами?" within 3 readings, about 30 m further on. This bypasses Google's fused location, so it proves the app's logic and not how soon a real phone notices leaving.
+- **Warning:** adding the test provider caused "Защита не работает". The next 60 s retry cleared it.
+- **Open for the real walk:** whether low-power readings notice leaving within 100 m (FT-1), and whether real phones hit the failed start at all.
+
+S16 emulator check, 2026-11-01, uncommitted, release build, Android 16 emulator with the phone set to Russian:
+
+- **Nothing chosen:** screens and the service's own location warning were in Russian, so the service sees the phone's language.
+- **English chosen:** screens and the service notification changed at once. After a Stay and a walk on a test fused provider, the Reminder and both its buttons were in English.
+- **Warning recovery:** after location came back on, the warning took about 110 s to clear, because it takes two 60 s checks. The earlier report measured 65 s, before the S15 fallback.
+- **Not run on the emulator:** a phone in another language, and a Reminder with custom text or a recording in the new language. These are covered by tests or existing code only.

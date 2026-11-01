@@ -6,9 +6,10 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../domain/reminder_options.dart';
-import '../l10n/strings.dart';
+import '../l10n/generated/app_localizations.dart';
 import '../ports/ports.dart';
 import 'default_tone.dart';
+import 'prefs_language.dart';
 import 'reminder_actions.dart';
 
 class PhoneReminderOutput implements ReminderOutput {
@@ -32,44 +33,47 @@ class PhoneReminderOutput implements ReminderOutput {
   Future<void> show({
     required bool alert,
     required ReminderOptions options,
-  }) => _plugin.show(
-    id: _test ? _testId : _id,
-    title: options.title ?? Strings.reminderTitle,
-    body: options.body ?? Strings.reminderBody,
-    payload: _test ? testReminderPayload : null,
-    notificationDetails: NotificationDetails(
-      android: AndroidNotificationDetails(
-        // Sound comes from the audio player, so that it can use the alarm
-        // channel. A channel's settings are fixed once created on a phone, so
-        // each vibration choice has its own.
-        _channelId(options.vibration),
-        _channelName(options.vibration),
-        importance: Importance.max,
-        priority: Priority.max,
-        visibility: NotificationVisibility.public,
-        category: AndroidNotificationCategory.reminder,
-        playSound: false,
-        enableVibration: options.vibration != VibrationChoice.off,
-        vibrationPattern: options.vibration == VibrationChoice.strong
-            ? _strongPattern
-            : null,
-        onlyAlertOnce: !alert,
-        ongoing: alert && !_test,
-        autoCancel: false,
-        actions: const [
-          AndroidNotificationAction(
-            actionHaveEverything,
-            Strings.actionHaveEverything,
-          ),
-          AndroidNotificationAction(
-            actionForgot,
-            Strings.actionForgot,
-            showsUserInterface: true,
-          ),
-        ],
+  }) async {
+    final text = await currentText();
+    await _plugin.show(
+      id: _test ? _testId : _id,
+      title: options.title ?? text.reminderTitle,
+      body: options.body ?? text.reminderBody,
+      payload: _test ? testReminderPayload : null,
+      notificationDetails: NotificationDetails(
+        android: AndroidNotificationDetails(
+          // Sound comes from the audio player, so that it can use the alarm
+          // channel. A channel's settings are fixed once created on a phone, so
+          // each vibration choice has its own.
+          _channelId(options.vibration),
+          _channelName(text, options.vibration),
+          importance: Importance.max,
+          priority: Priority.max,
+          visibility: NotificationVisibility.public,
+          category: AndroidNotificationCategory.reminder,
+          playSound: false,
+          enableVibration: options.vibration != VibrationChoice.off,
+          vibrationPattern: options.vibration == VibrationChoice.strong
+              ? _strongPattern
+              : null,
+          onlyAlertOnce: !alert,
+          ongoing: alert && !_test,
+          autoCancel: false,
+          actions: [
+            AndroidNotificationAction(
+              actionHaveEverything,
+              text.actionHaveEverything,
+            ),
+            AndroidNotificationAction(
+              actionForgot,
+              text.actionForgot,
+              showsUserInterface: true,
+            ),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 
   /// The alarm channel plays through silent mode. The notification channel is
   /// muted by Android itself on silent, which gives "vibrate only" without
@@ -128,9 +132,10 @@ class PhoneReminderOutput implements ReminderOutput {
     VibrationChoice.strong => 'reminder_alerts_strong',
   };
 
-  static String _channelName(VibrationChoice v) => switch (v) {
-    VibrationChoice.normal => Strings.reminderChannel,
-    VibrationChoice.off => Strings.reminderChannelNoVibration,
-    VibrationChoice.strong => Strings.reminderChannelStrong,
-  };
+  static String _channelName(AppLocalizations text, VibrationChoice v) =>
+      switch (v) {
+        VibrationChoice.normal => text.reminderChannel,
+        VibrationChoice.off => text.reminderChannelNoVibration,
+        VibrationChoice.strong => text.reminderChannelStrong,
+      };
 }

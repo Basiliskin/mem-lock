@@ -267,7 +267,10 @@ void main() {
       final (s, _) = run([
         SettingsChanged(
           at(0),
-          const StaySettings(stayTime: Duration(minutes: 15), stayMeters: 75),
+          const DetectionSettings(
+            stayTime: Duration(minutes: 15),
+            stayMeters: 75,
+          ),
         ),
         fix(at(0), cafe),
         Tick(at(10)),
@@ -279,7 +282,10 @@ void main() {
       final (_, d) = run([
         SettingsChanged(
           at(0),
-          const StaySettings(stayTime: Duration(minutes: 5), stayMeters: 300),
+          const DetectionSettings(
+            stayTime: Duration(minutes: 5),
+            stayMeters: 300,
+          ),
         ),
         ...stayed(),
         ...leave(),

@@ -1,0 +1,191 @@
+{
+  "@@locale": "ru",
+  "appName": "Geo Alert",
+  "protecting": "Защита работает",
+  "notProtecting": "Защита не работает",
+  "nothingToDo": "Ничего нажимать не нужно",
+  "enable": "Включить защиту",
+  "startFailed": "Не удалось включить. Проверьте разрешения в настройках.",
+  "serviceTitle": "Защита работает",
+  "serviceText": "Напомним о вещах, когда вы уйдёте",
+  "reminderChannel": "Напоминания",
+  "reminderTitle": "Ваши вещи с вами?",
+  "actionHaveEverything": "Всё при мне",
+  "actionForgot": "Я что-то забыл",
+  "reminderBody": "Вы ушли с места. Проверьте вещи.",
+  "dontWorry": "Не волнуйтесь",
+  "goBackAdvice": "Вернитесь на это место или позвоните туда.",
+  "openMap": "Открыть на карте",
+  "toMain": "На главный экран",
+  "noMapApp": "Не найдено приложение карт.",
+  "coordinates": "Координаты",
+  "helperEntry": "Для близких: удерживайте 2 секунды",
+  "quietPlaces": "Тихие места",
+  "noQuietPlaces": "Тихих мест пока нет.",
+  "markQuietPlace": "Отметить место, где я сейчас",
+  "noFixToMark": "Место не сохранено: не удалось точно определить, где вы. Проверьте, что геолокация включена, выйдите ближе к окну или на улицу и попробуйте снова.",
+  "alreadyQuiet": "Это место уже отмечено.",
+  "saveFailed": "Не удалось сохранить. Попробуйте снова.",
+  "remove": "Удалить",
+  "removeQuestion": "Удалить это место? Снова отметить его можно будет, только находясь там.",
+  "confirmRemove": "Да, удалить",
+  "cancel": "Отмена",
+  "helperSettings": "Настройки для близких",
+  "reminderOptions": "Напоминание",
+  "reminderChannelNoVibration": "Напоминания без вибрации",
+  "reminderChannelStrong": "Напоминания с сильной вибрацией",
+  "testReminder": "Проверить напоминание",
+  "stopTest": "Остановить проверку",
+  "testFailed": "Не удалось запустить проверку.",
+  "soundHeading": "Звук",
+  "toneRising": "Два сигнала",
+  "toneBell": "Колокольчик",
+  "tonePulse": "Частые сигналы",
+  "recordVoice": "Записать голос",
+  "stopRecording": "Закончить запись",
+  "voiceInUse": "Сейчас звучит записанный голос.",
+  "micRefused": "Нет доступа к микрофону. Разрешите его в настройках телефона.",
+  "recordFailed": "Запись не удалась. Попробуйте снова.",
+  "vibrationHeading": "Вибрация",
+  "vibrationOff": "Без вибрации",
+  "vibrationNormal": "Обычная",
+  "vibrationStrong": "Сильная",
+  "silentHeading": "Когда телефон без звука",
+  "silentAloud": "Всё равно звучать",
+  "silentVibrate": "Только вибрация",
+  "nothingOnSilent": "На беззвучном напоминание не будет ни слышно, ни ощутимо.",
+  "textHeading": "Текст",
+  "setupNext": "Дальше",
+  "setupBack": "Назад",
+  "setupStart": "Начать",
+  "setupAllow": "Разрешить",
+  "setupAllowed": "Разрешено ✓",
+  "setupOpenSettings": "Открыть настройки телефона",
+  "setupBlocked": "Сначала разрешите, чтобы продолжить.",
+  "setupWelcomeTitle": "Настройка для близкого",
+  "setupWelcomeText": "Настройте приложение на телефоне близкого человека. Это займёт несколько минут.",
+  "setupLocationTitle": "Разрешите геолокацию",
+  "setupLocationText": "Выберите «Разрешить всегда».",
+  "setupWhyLocation": "Без этого приложение не заметит, что человек ушёл.",
+  "setupNotificationsTitle": "Разрешите уведомления",
+  "setupNotificationsText": "Так напоминание появится на экране.",
+  "setupWhyNotifications": "Без этого напоминание не появится на экране.",
+  "setupActivityTitle": "Разрешите данные о движении",
+  "setupActivityText": "Так приложение сможет распознавать движение человека.",
+  "setupWhyActivity": "Это разрешение нужно, чтобы продолжить настройку.",
+  "setupNoRideDetection": "На этом телефоне нет нужных сервисов Google, поэтому напоминания после поездки на поезде или автобусе работать не будут. Напоминания при уходе с места будут работать.",
+  "setupBatteryTitle": "Отключите экономию заряда",
+  "setupBatteryText": "Разрешите приложению работать без ограничений.",
+  "setupWhyBattery": "Иначе телефон может закрыть приложение.",
+  "setupPhoneTitle": "Телефон должен быть при себе",
+  "setupPhoneText": "Если телефон останется в забытой сумке, приложение ничего не заметит. Носите его в кармане или в чехле на шее.",
+  "setupQuietTitle": "Отметьте дом",
+  "setupQuietText": "Уходя из тихого места, человек не получит напоминания. Отметить можно, только находясь там.",
+  "setupOpenQuiet": "Отметить место",
+  "setupOptionsTitle": "Напоминание",
+  "setupSilentText": "Когда телефон без звука, напоминание всё равно звучит вслух, с громкостью будильника. Можно выбрать «Только вибрация». Здесь же можно изменить звук, текст и записать голос.",
+  "setupChangeOptions": "Настроить напоминание",
+  "setupDoneTitle": "Готово",
+  "setupDoneText": "Нажмите «Начать», и приложение заработает. Больше ничего нажимать не нужно.",
+  "tapToFix": "Нажмите, чтобы исправить",
+  "fix": "Исправить",
+  "problemLocationOff": "Геолокация выключена",
+  "problemLocationNotStarting": "Геолокация не запускается. Проверьте настройки геолокации.",
+  "problemActivityPermission": "Нет разрешения на данные о движении, поэтому напоминания после поездки не появятся.",
+  "problemLocationPermission": "Нет разрешения на геолокацию. Выберите «Разрешить всегда».",
+  "problemNotifications": "Уведомления запрещены",
+  "openPreviousMap": "Предыдущее место на карте",
+  "lowBattery": "Телефон скоро разрядится",
+  "lowBatteryWhy": "Поставьте его на зарядку, иначе защита отключится.",
+  "lowBatteryChannel": "Низкий заряд",
+  "staySetting": "Как часто напоминать",
+  "stayMoreOften": "Чаще",
+  "stayNormal": "Обычно",
+  "stayLessOften": "Реже",
+  "reminderTitleLabel": "Заголовок: «Ваши вещи с вами?»",
+  "reminderBodyLabel": "Сообщение: «Вы ушли с места. Проверьте вещи.»",
+  "setupProgress": "Шаг {step} из {total}",
+  "@setupProgress": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "stayHint": "Если человек пробыл на месте {minutes} мин.",
+  "@stayHint": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "monthDay": "{day} {month, select, m1{января} m2{февраля} m3{марта} m4{апреля} m5{мая} m6{июня} m7{июля} m8{августа} m9{сентября} m10{октября} m11{ноября} m12{декабря} other{}}",
+  "@monthDay": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "whenToday": "Вы были здесь до {clock}",
+  "@whenToday": {
+    "placeholders": {
+      "clock": {
+        "type": "String"
+      }
+    }
+  },
+  "whenOtherDay": "Вы были здесь до {clock}, {date}",
+  "@whenOtherDay": {
+    "placeholders": {
+      "clock": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "previousToday": "Предыдущее: до {clock}",
+  "@previousToday": {
+    "placeholders": {
+      "clock": {
+        "type": "String"
+      }
+    }
+  },
+  "previousOtherDay": "Предыдущее: до {clock}, {date}",
+  "@previousOtherDay": {
+    "placeholders": {
+      "clock": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "markedAt": "Отмечено {date} в {clock}",
+  "@markedAt": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "clock": {
+        "type": "String"
+      }
+    }
+  },
+  "languageSetting": "Язык",
+  "languagePhone": "Как на телефоне",
+  "languageRussian": "Русский",
+  "languageEnglish": "English",
+  "languagePreview": "Следующее напоминание"
+}

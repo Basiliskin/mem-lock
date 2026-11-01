@@ -34,7 +34,7 @@ lib/
   adapters/     Thin plugin wrappers, one per port
   service/      Foreground service entry point: connects adapters to the Detector
   ui/           Wearer screen, Helper settings, setup
-  l10n/         Russian text, ready to translate
+  l10n/         Russian and English translation files
 probes/         Throwaway S1 and S2 apps, never imported by lib/
 test/
   domain/       Detector tests

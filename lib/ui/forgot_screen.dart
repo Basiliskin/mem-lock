@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../domain/geo.dart';
 import '../domain/last_place_record.dart';
-import '../l10n/strings.dart';
+import '../l10n/l10n.dart';
 import '../ports/ports.dart';
 
 class ForgotScreen extends StatefulWidget {
@@ -51,8 +51,8 @@ class _ForgotScreenState extends State<ForgotScreen> {
               Expanded(
                 child: ListView(
                   children: [
-                    const Text(
-                      Strings.dontWorry,
+                    Text(
+                      context.l10n.dontWorry,
                       style: TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.bold,
@@ -60,21 +60,21 @@ class _ForgotScreenState extends State<ForgotScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      Strings.whenText(widget.place.time, widget.now()),
+                      context.l10n.whenText(widget.place.time, widget.now()),
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
-                      Strings.goBackAdvice,
+                    Text(
+                      context.l10n.goBackAdvice,
                       style: TextStyle(fontSize: 20),
                     ),
                     if (previous != null) ...[
                       const SizedBox(height: 16),
                       Text(
-                        Strings.previousWhen(previous.time, widget.now()),
+                        context.l10n.previousWhen(previous.time, widget.now()),
                         style: const TextStyle(fontSize: 20),
                       ),
                       const SizedBox(height: 8),
@@ -82,8 +82,8 @@ class _ForgotScreenState extends State<ForgotScreen> {
                         constraints: const BoxConstraints(minHeight: 64),
                         child: OutlinedButton(
                           onPressed: () => _open(previous.point),
-                          child: const Text(
-                            Strings.openPreviousMap,
+                          child: Text(
+                            context.l10n.openPreviousMap,
                             textAlign: TextAlign.center,
                             style: TextStyle(fontSize: 20),
                           ),
@@ -98,8 +98,8 @@ class _ForgotScreenState extends State<ForgotScreen> {
                           padding: const EdgeInsets.all(12),
                           color: const Color(0xFFFFF3C4),
                           child: Text(
-                            '${Strings.noMapApp} '
-                            '${Strings.coordinates}: '
+                            '${context.l10n.noMapApp} '
+                            '${context.l10n.coordinates}: '
                             '${p.lat.toStringAsFixed(5)}, '
                             '${p.lng.toStringAsFixed(5)}',
                             style: const TextStyle(fontSize: 20),
@@ -114,8 +114,8 @@ class _ForgotScreenState extends State<ForgotScreen> {
                 height: 64,
                 child: FilledButton(
                   onPressed: () => _open(widget.place.point),
-                  child: const Text(
-                    Strings.openMap,
+                  child: Text(
+                    context.l10n.openMap,
                     style: TextStyle(fontSize: 20),
                   ),
                 ),
@@ -125,8 +125,8 @@ class _ForgotScreenState extends State<ForgotScreen> {
                 height: 64,
                 child: OutlinedButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text(
-                    Strings.toMain,
+                  child: Text(
+                    context.l10n.toMain,
                     style: TextStyle(fontSize: 20),
                   ),
                 ),

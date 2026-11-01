@@ -75,17 +75,17 @@ class FakeQuiet implements QuietPlaceStore {
   Future<void> write(List<QuietPlaceRecord> places) async => saved = places;
 }
 
-class FakeChoice implements StayChoiceStore {
-  StayChoice saved = StayChoice.normal;
+class FakeChoice implements DetectionSettingsStore {
+  DetectionSettings saved = DetectionSettings.normal;
   bool fail = false;
   @override
-  Future<StayChoice> read() async {
+  Future<DetectionSettings> read() async {
     if (fail) throw StateError('disk');
     return saved;
   }
 
   @override
-  Future<void> write(StayChoice value) async => saved = value;
+  Future<void> write(DetectionSettings value) async => saved = value;
 }
 
 class FakeReminders implements ReminderPlayer {
@@ -127,7 +127,7 @@ void main() {
       reminders: reminders,
       places: places,
       quiet: quiet,
-      stayChoice: choice,
+      detectionSettings: choice,
     );
     await watcher.start();
   }
@@ -234,23 +234,39 @@ void main() {
   });
 
   test('AC-10.1: the saved Stay choice applies from the start', () async {
-    choice.saved = StayChoice.moreOften;
+    choice.saved = StayChoice.moreOften.settings;
     await begin();
     expect(watcher.state.settings.stayTime, const Duration(minutes: 3));
   });
 
   test('AC-10.1: a changed choice reaches the Detector', () async {
     await begin();
-    choice.saved = StayChoice.lessOften;
-    await watcher.syncStaySetting();
+    choice.saved = StayChoice.lessOften.settings;
+    await watcher.syncDetectionSettings();
     expect(watcher.state.settings.stayMeters, 100);
   });
 
+  test('AC-12.5: saved Ride values reach the Detector', () async {
+    await begin();
+    choice.saved = const DetectionSettings(
+      stayTime: Duration(minutes: 5),
+      stayMeters: 75,
+      vehicleKmh: 20,
+      walkingAfterRide: Duration(seconds: 60),
+    );
+    await watcher.syncDetectionSettings();
+    expect(watcher.state.settings.vehicleKmh, 20);
+    expect(
+      watcher.state.settings.walkingAfterRide,
+      const Duration(seconds: 60),
+    );
+  });
+
   test('a failed read keeps the Stay setting', () async {
-    choice.saved = StayChoice.lessOften;
+    choice.saved = StayChoice.lessOften.settings;
     await begin();
     choice.fail = true;
-    await watcher.syncStaySetting();
+    await watcher.syncDetectionSettings();
     expect(watcher.state.settings.stayMeters, 100);
   });
 
@@ -288,7 +304,7 @@ void main() {
       reminders: _OrderReminders(order),
       places: p,
       quiet: quiet,
-      stayChoice: FakeChoice(),
+      detectionSettings: FakeChoice(),
     );
     await watcher.start();
     await settle();
@@ -359,7 +375,7 @@ void main() {
         reminders: reminders,
         places: places,
         quiet: quiet,
-        stayChoice: FakeChoice(),
+        detectionSettings: FakeChoice(),
       );
       await watcher.start();
       expect(watcher.state.phase, isA<Roaming>());
@@ -451,7 +467,7 @@ void main() {
       reminders: failing,
       places: places,
       quiet: quiet,
-      stayChoice: FakeChoice(),
+      detectionSettings: FakeChoice(),
     );
     await watcher.start();
     await settle();
@@ -488,7 +504,7 @@ void main() {
         reminders: FakeReminders(),
         places: FakePlaces(),
         quiet: FakeQuiet(),
-        stayChoice: FakeChoice(),
+        detectionSettings: FakeChoice(),
       );
       await failing.start();
       await Future<void>.delayed(Duration.zero);

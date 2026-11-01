@@ -1,6 +1,7 @@
 import '../domain/battery.dart';
 import '../domain/detector.dart';
 import '../domain/geo.dart';
+import '../domain/language.dart';
 import '../domain/last_place_record.dart';
 import '../domain/quiet_place_record.dart';
 import '../domain/reminder_options.dart';
@@ -94,12 +95,19 @@ abstract interface class QuietPlaceStore {
 /// Lets the screens tell the running service something changed.
 abstract interface class WatcherLink {
   void quietPlacesChanged();
-  void staySettingChanged();
+  void detectionSettingsChanged();
+  void languageChanged();
 }
 
-abstract interface class StayChoiceStore {
-  Future<StayChoice> read();
-  Future<void> write(StayChoice value);
+abstract interface class DetectionSettingsStore {
+  Future<DetectionSettings> read();
+  Future<void> write(DetectionSettings value);
+}
+
+/// The Helper's language choice; null follows the phone.
+abstract interface class LanguageStore {
+  Future<AppLanguage?> read();
+  Future<void> write(AppLanguage? value);
 }
 
 abstract interface class BatterySource {

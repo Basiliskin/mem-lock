@@ -5,7 +5,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:geo_alert/domain/battery.dart';
 import 'package:geo_alert/domain/geo.dart';
 import 'package:geo_alert/domain/last_place_record.dart';
-import 'package:geo_alert/l10n/strings.dart';
+import 'package:geo_alert/l10n/l10n.dart';
+
+import 'support/l10n.dart';
+
 import 'package:geo_alert/ports/ports.dart';
 import 'package:geo_alert/ui/main_screen.dart';
 
@@ -27,6 +30,10 @@ class FakeHost implements BackgroundHost {
 Future<void> show(WidgetTester t, BackgroundHost host) async {
   await t.pumpWidget(
     MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: testLocale,
+
       home: MainScreen(
         host: host,
         places: _NoPlaces(),
@@ -44,31 +51,35 @@ Future<void> show(WidgetTester t, BackgroundHost host) async {
 void main() {
   testWidgets('AC-8.4: a running service shows protecting', (t) async {
     await show(t, FakeHost(running: true));
-    expect(find.text(Strings.protecting), findsOneWidget);
-    expect(find.text(Strings.nothingToDo), findsOneWidget);
-    expect(find.text(Strings.enable), findsNothing);
+    expect(find.text(l10n.protecting), findsOneWidget);
+    expect(find.text(l10n.nothingToDo), findsOneWidget);
+    expect(find.text(l10n.enable), findsNothing);
   });
 
   testWidgets('a stopped service never claims protection', (t) async {
     await show(t, FakeHost());
-    expect(find.text(Strings.notProtecting), findsOneWidget);
-    expect(find.text(Strings.protecting), findsNothing);
-    expect(find.text(Strings.enable), findsOneWidget);
+    expect(find.text(l10n.notProtecting), findsOneWidget);
+    expect(find.text(l10n.protecting), findsNothing);
+    expect(find.text(l10n.enable), findsOneWidget);
   });
 
   testWidgets('enabling starts the service and updates status', (t) async {
     final host = FakeHost();
     await show(t, host);
-    await t.tap(find.text(Strings.enable));
+    await t.tap(find.text(l10n.enable));
     await t.pumpAndSettle();
     expect(host.starts, 1);
-    expect(find.text(Strings.protecting), findsOneWidget);
+    expect(find.text(l10n.protecting), findsOneWidget);
   });
 
   group('warnings', () {
     Future<void> showWith(WidgetTester t, FakeHost host, FakeHealth h) async {
       await t.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: testLocale,
+
           home: MainScreen(
             host: host,
             places: _NoPlaces(),
@@ -83,11 +94,11 @@ void main() {
       await t.pumpAndSettle();
     }
 
-    const reasons = {
-      ProtectionProblem.locationOff: Strings.problemLocationOff,
-      ProtectionProblem.locationPermission: Strings.problemLocationPermission,
-      ProtectionProblem.notifications: Strings.problemNotifications,
-      ProtectionProblem.activityPermission: Strings.problemActivityPermission,
+    final reasons = {
+      ProtectionProblem.locationOff: l10n.problemLocationOff,
+      ProtectionProblem.locationPermission: l10n.problemLocationPermission,
+      ProtectionProblem.notifications: l10n.problemNotifications,
+      ProtectionProblem.activityPermission: l10n.problemActivityPermission,
     };
     for (final e in reasons.entries) {
       testWidgets('AC-8.2: ${e.key.name} warns with the reason and a fix', (
@@ -95,10 +106,10 @@ void main() {
       ) async {
         final h = FakeHealth(e.key);
         await showWith(t, FakeHost(running: true), h);
-        expect(find.text(Strings.notProtecting), findsOneWidget);
-        expect(find.text(Strings.protecting), findsNothing);
+        expect(find.text(l10n.notProtecting), findsOneWidget);
+        expect(find.text(l10n.protecting), findsNothing);
         expect(find.text(e.value), findsOneWidget);
-        await t.tap(find.text(Strings.fix));
+        await t.tap(find.text(l10n.fix));
         await t.pump();
         expect(h.fixed, [e.key]);
       });
@@ -111,8 +122,8 @@ void main() {
       t.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
       t.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await t.pumpAndSettle();
-      expect(find.text(Strings.protecting), findsOneWidget);
-      expect(find.text(Strings.fix), findsNothing);
+      expect(find.text(l10n.protecting), findsOneWidget);
+      expect(find.text(l10n.fix), findsNothing);
     });
 
     testWidgets('a change is noticed while the screen stays open', (t) async {
@@ -121,7 +132,7 @@ void main() {
       h.problem = ProtectionProblem.locationOff;
       await t.pump(const Duration(seconds: 6));
       await t.pump();
-      expect(find.text(Strings.notProtecting), findsOneWidget);
+      expect(find.text(l10n.notProtecting), findsOneWidget);
     });
 
     testWidgets('a stopped service with a problem offers the fix first', (
@@ -132,8 +143,8 @@ void main() {
         FakeHost(),
         FakeHealth(ProtectionProblem.locationPermission),
       );
-      expect(find.text(Strings.fix), findsOneWidget);
-      expect(find.text(Strings.enable), findsNothing);
+      expect(find.text(l10n.fix), findsOneWidget);
+      expect(find.text(l10n.enable), findsNothing);
     });
 
     testWidgets('a failing check does not clear a warning', (t) async {
@@ -142,16 +153,14 @@ void main() {
       h.fails = true;
       await t.pump(const Duration(seconds: 6));
       await t.pump();
-      expect(find.text(Strings.notProtecting), findsOneWidget);
-      expect(find.text(Strings.protecting), findsNothing);
+      expect(find.text(l10n.notProtecting), findsOneWidget);
+      expect(find.text(l10n.protecting), findsNothing);
     });
   });
 
   group('Helper entry', () {
     Future<void> hold(WidgetTester t, Duration time) async {
-      final g = await t.startGesture(
-        t.getCenter(find.text(Strings.helperEntry)),
-      );
+      final g = await t.startGesture(t.getCenter(find.text(l10n.helperEntry)));
       await t.pump(time);
       await g.up();
       await t.pumpAndSettle();
@@ -167,7 +176,7 @@ void main() {
       await show(t, FakeHost(running: true));
       await hold(t, const Duration(seconds: 1));
       expect(find.text('helper-settings'), findsNothing);
-      await t.tap(find.text(Strings.helperEntry));
+      await t.tap(find.text(l10n.helperEntry));
       await t.pumpAndSettle();
       expect(find.text('helper-settings'), findsNothing);
     });
@@ -176,10 +185,10 @@ void main() {
       await show(t, FakeHost(running: true));
       final handle = t.ensureSemantics();
       t
-          .getSemantics(find.text(Strings.helperEntry))
+          .getSemantics(find.text(l10n.helperEntry))
           .owner!
           .performAction(
-            t.getSemantics(find.text(Strings.helperEntry)).id,
+            t.getSemantics(find.text(l10n.helperEntry)).id,
             SemanticsAction.longPress,
           );
       await t.pumpAndSettle();
@@ -192,6 +201,10 @@ void main() {
     Future<void> showBattery(WidgetTester t, FakeBattery battery) async {
       await t.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: testLocale,
+
           home: MainScreen(
             host: FakeHost(running: true),
             places: _NoPlaces(),
@@ -211,38 +224,38 @@ void main() {
         t,
         FakeBattery(const BatteryReading(15, charging: false)),
       );
-      expect(find.text(Strings.lowBattery), findsOneWidget);
-      expect(find.text(Strings.protecting), findsOneWidget);
+      expect(find.text(l10n.lowBattery), findsOneWidget);
+      expect(find.text(l10n.protecting), findsOneWidget);
     });
 
     testWidgets('hidden when fine, and once charging', (t) async {
       final b = FakeBattery();
       await showBattery(t, b);
-      expect(find.text(Strings.lowBattery), findsNothing);
+      expect(find.text(l10n.lowBattery), findsNothing);
       b.reading = const BatteryReading(15, charging: false);
       await t.pump(const Duration(seconds: 6));
       await t.pump();
-      expect(find.text(Strings.lowBattery), findsOneWidget);
+      expect(find.text(l10n.lowBattery), findsOneWidget);
       b.reading = const BatteryReading(15, charging: true);
       await t.pump(const Duration(seconds: 6));
       await t.pump();
-      expect(find.text(Strings.lowBattery), findsNothing);
+      expect(find.text(l10n.lowBattery), findsNothing);
     });
 
     testWidgets('a failing reading leaves the screen working', (t) async {
       await showBattery(t, FakeBattery()..fails = true);
-      expect(find.text(Strings.protecting), findsOneWidget);
-      expect(find.text(Strings.lowBattery), findsNothing);
+      expect(find.text(l10n.protecting), findsOneWidget);
+      expect(find.text(l10n.lowBattery), findsNothing);
     });
   });
 
   testWidgets('a failed start says so and still offers the button', (t) async {
     await show(t, FakeHost(startWorks: false));
-    await t.tap(find.text(Strings.enable));
+    await t.tap(find.text(l10n.enable));
     await t.pumpAndSettle();
-    expect(find.text(Strings.notProtecting), findsOneWidget);
-    expect(find.text(Strings.startFailed), findsOneWidget);
-    expect(find.text(Strings.enable), findsOneWidget);
+    expect(find.text(l10n.notProtecting), findsOneWidget);
+    expect(find.text(l10n.startFailed), findsOneWidget);
+    expect(find.text(l10n.enable), findsOneWidget);
   });
 }
 

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../domain/detector.dart';
-import '../l10n/strings.dart';
+import '../l10n/l10n.dart';
 import '../ports/ports.dart';
 
 class StaySettingScreen extends StatefulWidget {
   const StaySettingScreen({super.key, required this.store, required this.link});
 
-  final StayChoiceStore store;
+  final DetectionSettingsStore store;
   final WatcherLink link;
 
   @override
@@ -15,7 +15,7 @@ class StaySettingScreen extends StatefulWidget {
 }
 
 class _StaySettingScreenState extends State<StaySettingScreen> {
-  StayChoice? _choice;
+  DetectionSettings? _settings;
   bool _failed = false;
 
   @override
@@ -25,40 +25,41 @@ class _StaySettingScreenState extends State<StaySettingScreen> {
   }
 
   Future<void> _load() async {
-    StayChoice choice;
+    DetectionSettings settings;
     try {
-      choice = await widget.store.read();
+      settings = await widget.store.read();
     } on Object {
-      choice = StayChoice.normal;
+      settings = DetectionSettings.normal;
     }
-    if (mounted) setState(() => _choice = choice);
+    if (mounted) setState(() => _settings = settings);
   }
 
   Future<void> _pick(StayChoice choice) async {
+    final settings = _settings!.withChoice(choice);
     try {
-      await widget.store.write(choice);
+      await widget.store.write(settings);
       // With no service running, it reads the choice when it next starts.
-      widget.link.staySettingChanged();
+      widget.link.detectionSettingsChanged();
     } on Object {
       if (mounted) setState(() => _failed = true);
       return;
     }
     if (mounted) {
       setState(() {
-        _choice = choice;
+        _settings = settings;
         _failed = false;
       });
     }
   }
 
   String _label(StayChoice choice) => switch (choice) {
-    StayChoice.moreOften => Strings.stayMoreOften,
-    StayChoice.normal => Strings.stayNormal,
-    StayChoice.lessOften => Strings.stayLessOften,
+    StayChoice.moreOften => context.l10n.stayMoreOften,
+    StayChoice.normal => context.l10n.stayNormal,
+    StayChoice.lessOften => context.l10n.stayLessOften,
   };
 
   Widget _option(StayChoice choice) {
-    final chosen = choice == _choice;
+    final chosen = choice == _settings!.choice;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Semantics(
@@ -75,7 +76,7 @@ class _StaySettingScreenState extends State<StaySettingScreen> {
           ),
           title: Text(_label(choice), style: const TextStyle(fontSize: 20)),
           subtitle: Text(
-            Strings.stayHint(choice.settings.stayTime.inMinutes),
+            context.l10n.stayHint(choice.settings.stayTime.inMinutes),
             style: const TextStyle(fontSize: 16),
           ),
           onTap: () => _pick(choice),
@@ -86,8 +87,8 @@ class _StaySettingScreenState extends State<StaySettingScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text(Strings.staySetting)),
-    body: _choice == null
+    appBar: AppBar(title: Text(context.l10n.staySetting)),
+    body: _settings == null
         ? const SizedBox.shrink()
         : ListView(
             padding: const EdgeInsets.all(20),
@@ -96,8 +97,8 @@ class _StaySettingScreenState extends State<StaySettingScreen> {
               if (_failed)
                 Semantics(
                   liveRegion: true,
-                  child: const Text(
-                    Strings.saveFailed,
+                  child: Text(
+                    context.l10n.saveFailed,
                     style: TextStyle(fontSize: 20),
                   ),
                 ),

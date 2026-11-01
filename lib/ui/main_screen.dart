@@ -5,7 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../domain/last_place_record.dart';
-import '../l10n/strings.dart';
+import '../l10n/l10n.dart';
 import '../ports/ports.dart';
 import 'forgot_screen.dart';
 
@@ -150,9 +150,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       },
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: 48),
-        child: const Center(
+        child: Center(
           child: Text(
-            Strings.helperEntry,
+            context.l10n.helperEntry,
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 16, color: Color(0xFF3D3D3D)),
           ),
@@ -162,11 +162,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   );
 
   String _reason(ProtectionProblem problem) => switch (problem) {
-    ProtectionProblem.locationOff => Strings.problemLocationOff,
-    ProtectionProblem.locationNotStarting => Strings.problemLocationNotStarting,
-    ProtectionProblem.locationPermission => Strings.problemLocationPermission,
-    ProtectionProblem.notifications => Strings.problemNotifications,
-    ProtectionProblem.activityPermission => Strings.problemActivityPermission,
+    ProtectionProblem.locationOff => context.l10n.problemLocationOff,
+    ProtectionProblem.locationNotStarting =>
+      context.l10n.problemLocationNotStarting,
+    ProtectionProblem.locationPermission =>
+      context.l10n.problemLocationPermission,
+    ProtectionProblem.notifications => context.l10n.problemNotifications,
+    ProtectionProblem.activityPermission =>
+      context.l10n.problemActivityPermission,
   };
 
   Future<void> _fix(ProtectionProblem problem) async {
@@ -216,7 +219,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       Semantics(
                         liveRegion: true,
                         child: Text(
-                          running ? Strings.protecting : Strings.notProtecting,
+                          running
+                              ? context.l10n.protecting
+                              : context.l10n.notProtecting,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: Colors.white,
@@ -227,8 +232,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       ),
                       const SizedBox(height: 12),
                       if (running)
-                        const Text(
-                          Strings.nothingToDo,
+                        Text(
+                          context.l10n.nothingToDo,
                           textAlign: TextAlign.center,
                           style: TextStyle(color: Colors.white, fontSize: 20),
                         ),
@@ -243,8 +248,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                             ),
                           ),
                         if (problem == null && _failed)
-                          const Text(
-                            Strings.startFailed,
+                          Text(
+                            context.l10n.startFailed,
                             textAlign: TextAlign.center,
                             style: TextStyle(color: Colors.white, fontSize: 20),
                           ),
@@ -261,7 +266,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                                 ? _enable
                                 : () => _fix(problem),
                             child: Text(
-                              problem == null ? Strings.enable : Strings.fix,
+                              problem == null
+                                  ? context.l10n.enable
+                                  : context.l10n.fix,
                               style: const TextStyle(fontSize: 20),
                             ),
                           ),
@@ -288,8 +295,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                           color: const Color(0xFFFFF3C4),
                           border: Border.all(color: const Color(0xFF7A5C00)),
                         ),
-                        child: const Text(
-                          Strings.lowBattery,
+                        child: Text(
+                          context.l10n.lowBattery,
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 20),
                         ),
@@ -303,15 +310,15 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text(
-                              Strings.actionForgot,
+                            Text(
+                              context.l10n.actionForgot,
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             Text(
-                              Strings.whenText(
+                              context.l10n.whenText(
                                 _places.first.time,
                                 DateTime.now(),
                               ),

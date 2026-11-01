@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../l10n/strings.dart';
+import '../l10n/l10n.dart';
 
 class HelperSettingsScreen extends StatelessWidget {
   const HelperSettingsScreen({
@@ -8,11 +8,13 @@ class HelperSettingsScreen extends StatelessWidget {
     required this.reminderOptions,
     required this.staySetting,
     required this.quietPlaces,
+    required this.language,
   });
 
   final WidgetBuilder reminderOptions;
   final WidgetBuilder staySetting;
   final WidgetBuilder quietPlaces;
+  final WidgetBuilder language;
 
   Widget _link(BuildContext context, String text, WidgetBuilder builder) =>
       Padding(
@@ -30,13 +32,14 @@ class HelperSettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text(Strings.helperSettings)),
+    appBar: AppBar(title: Text(context.l10n.helperSettings)),
     body: ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        _link(context, Strings.reminderOptions, reminderOptions),
-        _link(context, Strings.staySetting, staySetting),
-        _link(context, Strings.quietPlaces, quietPlaces),
+        _link(context, context.l10n.reminderOptions, reminderOptions),
+        _link(context, context.l10n.staySetting, staySetting),
+        _link(context, context.l10n.quietPlaces, quietPlaces),
+        _link(context, context.l10n.languageSetting, language),
       ],
     ),
   );

@@ -1,7 +1,7 @@
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import '../l10n/strings.dart';
+import 'prefs_language.dart';
 import '../ports/ports.dart';
 import '../service/entry_point.dart';
 
@@ -10,14 +10,17 @@ class ForegroundHost implements BackgroundHost, WatcherLink {
   static const quietPlacesMessage = 'quiet_places_changed';
 
   /// The message sent to the service when the Stay setting changes.
-  static const staySettingMessage = 'stay_setting_changed';
+  static const detectionSettingsMessage = 'detection_settings_changed';
+
+  /// The message sent to the service when the language changes.
+  static const languageMessage = 'language_changed';
 
   static const _tickMilliseconds = 60000;
 
-  static void init() => FlutterForegroundTask.init(
+  static void init(String channelName) => FlutterForegroundTask.init(
     androidNotificationOptions: AndroidNotificationOptions(
       channelId: 'watching',
-      channelName: Strings.serviceTitle,
+      channelName: channelName,
     ),
     iosNotificationOptions: const IOSNotificationOptions(),
     foregroundTaskOptions: ForegroundTaskOptions(
@@ -36,8 +39,12 @@ class ForegroundHost implements BackgroundHost, WatcherLink {
       FlutterForegroundTask.sendDataToTask(quietPlacesMessage);
 
   @override
-  void staySettingChanged() =>
-      FlutterForegroundTask.sendDataToTask(staySettingMessage);
+  void detectionSettingsChanged() =>
+      FlutterForegroundTask.sendDataToTask(detectionSettingsMessage);
+
+  @override
+  void languageChanged() =>
+      FlutterForegroundTask.sendDataToTask(languageMessage);
 
   /// Asks again for anything missing, because the main screen's button uses
   /// this after setup too. "Allow all the time" is required for the service to
@@ -49,10 +56,11 @@ class ForegroundHost implements BackgroundHost, WatcherLink {
     await Permission.notification.request();
     await FlutterForegroundTask.requestIgnoreBatteryOptimization();
 
+    final text = await currentText();
     final result = await FlutterForegroundTask.startService(
       serviceTypes: [ForegroundServiceTypes.location],
-      notificationTitle: Strings.serviceTitle,
-      notificationText: Strings.serviceText,
+      notificationTitle: text.serviceTitle,
+      notificationText: text.serviceText,
       callback: watcherEntryPoint,
     );
     return result is ServiceRequestSuccess;
