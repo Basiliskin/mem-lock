@@ -65,7 +65,7 @@
   "setupWelcomeTitle": "Setup for your family member",
   "setupWelcomeText": "Set up the app on your family member's phone. It takes a few minutes.",
   "setupLocationTitle": "Allow location",
-  "setupLocationText": "Choose \"Allow all the time\".",
+  "setupLocationText": "LeaveCheck uses your location to give a Reminder when you leave a place, and to show the last place, even when the app is closed or not in use. Location stays on this phone. On the next screen, choose \"Allow all the time\".",
   "setupWhyLocation": "Without this, the app won't notice that the person has left.",
   "setupNotificationsTitle": "Allow notifications",
   "setupNotificationsText": "This lets the Reminder appear on the screen.",

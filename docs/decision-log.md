@@ -140,3 +140,15 @@
 ## 2026-11-01 · /developer S21
 
 - **Step probe measures against Activity Recognition, with a fixed rule for "clear benefit".** A sensor is kept only if it is seen on at least 90% of walks, is at least 15 s sooner at the median, and gives no more false signals. These thresholds are the developer's default, set before any data, and the owner can change them. The probe logs that a step happened, never a count, and no places. Files: `probes/steps/`, `docs/qa-report.md`.
+
+## 2026-11-01 · /developer S22
+
+- **Listing leaves out trains and buses,** because FT-2 hasn't passed (AC-15.3). Tagline is "check your things" / "проверь вещи", not the earlier "ничего не забудь" example, which comes close to the claim AC-15.2 forbids.
+- **Setup's location text is now a real disclosure,** naming location, its features and use when the app is closed.
+- **Release signing reads `android/key.properties`;** without it, release builds use the debug key, which Play rejects. The owner creates and keeps the upload key.
+- Files: `android/app/build.gradle.kts`, `fastlane/metadata/android/`, `docs/store/`, `lib/l10n/`, `test/l10n/text_test.dart`.
+
+## 2026-11-01 · /qa
+
+- **Fixed the README's language and feature text, and AC-4.3's conflict with AC-13.4.** The other findings keep the recommendations in the report. Files: `README.md`, `docs/requirements.md`, `docs/qa-report.md`.
+

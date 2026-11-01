@@ -1,4 +1,78 @@
-# Geo Alert: QA Report
+# LeaveCheck: QA Report
+
+## Latest run: 2026-11-01, full build (S1 to S22)
+
+Run on `release/leavecheck` at 72be996 plus the uncommitted S20, S21 and S22 changes. Verdict: **not ready for release.** The code passes its checks, but the field tests, a real walk and the Play steps are still open. Sections below "Earlier run" are kept as history and use the old name; this section replaces their verdict.
+
+### Results
+
+| Check | Result |
+|---|---|
+| `flutter analyze` | No issues found |
+| `flutter test` | 394 passed, 0 failed |
+| `probes/steps` tests | 14 passed, 0 failed |
+| Clean copy of tracked and new files: `flutter pub get`, `flutter test`, `flutter build apk --release` | All passed; APK built |
+| Release APK | `com.leavecheck.app`, target SDK 36, no `INTERNET` permission |
+| Signed bundle | Built and signed with a throwaway key; no build signed with the real upload key yet |
+| Listing validator | Passed; phone screenshots still missing |
+| Secrets | No keystore, key properties or service account files in tracked or new files; a pattern search of `lib`, `android`, `fastlane` and `docs` found no credentials |
+
+### Emulator results (release build, Android 16, simulated location)
+
+| Check | Result |
+|---|---|
+| Fresh install, then all 9 setup steps, with permissions granted through adb | Pass; "Protection is on", location foreground service running |
+| Location disclosure on step 2 | Pass: shown before the permission is granted |
+| Stay, then walk at about 5 km/h on a test fused provider | Pass: one Reminder after 107 m from the Stay point, with both buttons |
+| "I have everything" on the Reminder's notification | Pass: the Reminder cleared |
+| Remove background location | Pass: "Protection is off" within 75 s, no crash |
+| Crash log over all runs | No LeaveCheck crashes |
+
+Simulated location bypasses Google's fused location, so this doesn't show how soon a real phone notices leaving. Earlier attempts in this run were discarded: the first had a false match in my check, and later ones sent no locations because mock location wasn't allowed. A further Reminder came from a jump of hundreds of kilometres between simulated positions, so it isn't counted. Adding the test provider again caused a temporary "Protection is off", as in S15.
+
+### Acceptance criteria added since the earlier run
+
+| AC | Covered by | Status |
+|---|---|---|
+| 10.1, 10.2, 12.5 | `test/domain/detection_settings_test.dart`, `test/service/watcher_test.dart`, `test/ui/stay_setting_screen_test.dart` | Logic; phone open |
+| 11.2, 11.3, 11.5, 11.8 | `test/domain/reminder_place_test.dart`, `test/fixtures/synthetic_place_*.jsonl` | Logic; FT-6 open |
+| 11.1, 11.4, 11.6, 11.7 | `test/ui/reminder_places_screen_test.dart`, `test/ui/quiet_places_screen_test.dart`, `test/service/watcher_test.dart` | Logic; FT-6 open |
+| 12.1 to 12.4, 12.6 | `test/ui/advanced_settings_screen_test.dart` | Logic |
+| 13.1 to 13.4 | `test/ui/language_screen_test.dart`, `test/l10n/text_test.dart`, `test/domain/language_test.dart`, `test/service/protection_monitor_test.dart` | Logic; S16 emulator check |
+| 13.5 | manual; sheet in `docs/store/native-speaker-check.md` | **Open** |
+| 14.1 to 14.3 | `probes/steps/test/steps_log_test.dart`; main app has no step code | **14.1 open:** no real walks |
+| 15.1 | manual: `fastlane/metadata/android/`, `assets/brand/`, owner's reported trademark search | Prepared; shape of the logo to confirm on a real phone |
+| 15.2, 15.3 | manual: listing text read against the criteria | Pass for now; recheck after FT-2 |
+| 15.4 | manual | **Open:** nothing submitted |
+
+Coverage for 11 to 13 was mapped by test file and test name; each test's assertions weren't re-read in this run. The earlier AC table still applies to the older criteria, except that the 7.x setup text changed.
+
+### What blocks release
+
+1. **No real-phone results:** the S15 Walk test and FT-1 to FT-6. FT-2 decides whether Ride stays in v1. The earlier gaps 0 to 3 stay open for real phones; on the emulator, gap 0's silent failure is handled by the S15 fallback.
+2. **Native-speaker check (AC-13.5)** not done.
+3. **Play:** real upload key, published privacy policy, screenshots, the declaration with its video, and the Data safety form. Rejection of background location is the main product risk.
+
+### Audit against the Engineering rules
+
+| Rule | Result |
+|---|---|
+| Detection separate from Flutter and plugins | Pass: `test/architecture_test.dart`; no plugin imports in `lib/domain` or `lib/ports` |
+| Plugins only through thin wrappers | Pass, with the same accepted exceptions: `lib/main.dart` and `lib/service/entry_point.dart` use `flutter_foreground_task` |
+| Location stays on the phone | Pass: no `INTERNET` in the release APK and no network code in `lib` |
+
+### Findings
+
+| Finding | Recommendation |
+|---|---|
+| `README.md:3` said the app is Russian only and omitted newer features | Fixed |
+| `docs/requirements.md:55` (AC-4.3) said the default is in Russian, which conflicted with AC-13.4 | Fixed |
+| `ic_notification` not looked at in the status bar, and the service notification still uses the app icon | Check during FT-6; fix if it looks wrong |
+| The warning box is repeated in six places, and `_quietly` in four files | Defer until after the field tests, as before |
+| Release builds without `key.properties` use the debug key without warning | Ignore: Play rejects them |
+| `docs/requirements.md` AC-5.3: showing a Ride's advice on screen has no test | Defer to FT-2 |
+
+## Earlier run
 
 Run 2026-10-31 on commit 76b6afe. Verdict: **not ready for release.** See "Blocking gaps".
 
@@ -140,3 +214,4 @@ S16 emulator check, 2026-11-01, uncommitted, release build, Android 16 emulator 
 - **Emulator check only:** over three short runs, the probe started and motion logging continued for about 40 s with the screen locked. The step stream reported "not available" once and stayed silent in the other two runs. One Activity Recognition signal arrived, in the first run only. No step or pedestrian signal has been seen, so the step path is untested, and this says nothing about the sensors' benefit.
 - **First real session:** after one short walk, check that the report shows step, pedestrian and activity signals before doing the full set.
 - **Real-walk results:** to be added here from `tool/report.dart`.
+

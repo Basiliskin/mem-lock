@@ -212,7 +212,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get setupLocationTitle => 'Allow location';
 
   @override
-  String get setupLocationText => 'Choose \"Allow all the time\".';
+  String get setupLocationText =>
+      'LeaveCheck uses your location to give a Reminder when you leave a place, and to show the last place, even when the app is closed or not in use. Location stays on this phone. On the next screen, choose \"Allow all the time\".';
 
   @override
   String get setupWhyLocation =>

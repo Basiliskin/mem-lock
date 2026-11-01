@@ -1,0 +1,23 @@
+Does your mother or father sometimes leave a bag or phone charger behind? LeaveCheck reminds them to check their belongings when they leave a place.
+
+You set it up once on their phone. After that, there is nothing to start or press. When they have stayed somewhere and walk away, the phone gives a Reminder and repeats it a few times until they tap it.
+
+WHAT IT DOES
+• Gives a Reminder after leaving a place where they stayed for a while
+• Lets you mark places that always get a Reminder, with your own message
+• Lets you mark Quiet Places, such as home, where it stays silent
+• Plays your own text or recorded voice, with sound and vibration
+• "I forgot something" shows the last place, and opens it in the phone's map app
+• Warns when something stops it working, such as location being off or a low battery
+• Protects settings from accidental changes
+
+WHAT IT CAN'T DO
+• It can't tell whether a bag was left behind. It reminds them to check, every time.
+• It can't detect a phone left inside a forgotten bag. The phone needs to be on their body, in a pocket or around the neck.
+• It can't guarantee that nothing will be lost.
+• Reminders can come late or be missed if the phone restricts background work or location is weak.
+
+YOUR PRIVACY
+LeaveCheck uses location all the time, including in the background, to notice when they leave a place. Location stays on the phone. There is no account and no server. It is shared only when they choose to open directions in the map app.
+
+Available in Russian and English. Free.

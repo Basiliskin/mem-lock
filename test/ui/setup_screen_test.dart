@@ -198,10 +198,13 @@ void main() {
     gate.onRequest = PermissionState.denied;
     await toPermission(t);
     await tap(t, l10n.setupAllow);
+    await t.scrollUntilVisible(find.text(l10n.setupWhyLocation), 100);
     expect(find.text(l10n.setupWhyLocation), findsOneWidget);
     await tap(t, l10n.setupNext);
-    expect(find.text(l10n.setupLocationTitle), findsOneWidget);
+    await t.scrollUntilVisible(find.text(l10n.setupBlocked), 100);
     expect(find.text(l10n.setupBlocked), findsOneWidget);
+    await t.scrollUntilVisible(find.text(l10n.setupLocationTitle), -100);
+    expect(find.text(l10n.setupLocationTitle), findsOneWidget);
   });
 
   testWidgets('AC-7.3: a permanent refusal leads to system settings', (

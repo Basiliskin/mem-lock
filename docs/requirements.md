@@ -52,7 +52,7 @@ As a Helper, I want to choose the sound, vibration, text and a recorded voice, s
 
 - **AC-4.1** Given the Helper changes a Reminder option, when the next Reminder starts, then it uses the new option.
 - **AC-4.2** Given the Helper records a voice message, when a Reminder starts on a locked phone, then the message plays.
-- **AC-4.3** Given no custom options are set, then a Reminder uses a working default in Russian.
+- **AC-4.3** Given no custom options are set, then a Reminder uses a working default in the app's language (see AC-13.4).
 - **AC-4.4** Given a chosen sound or recording cannot be played, then the Reminder still plays using the default.
 - **AC-4.5** Given the Helper is choosing options, when they tap test, then they hear and feel the Reminder as it will play.
 

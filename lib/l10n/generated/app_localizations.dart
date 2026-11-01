@@ -491,7 +491,7 @@ abstract class AppLocalizations {
   /// No description provided for @setupLocationText.
   ///
   /// In ru, this message translates to:
-  /// **'Выберите «Разрешить всегда».'**
+  /// **'LeaveCheck использует геолокацию, чтобы напоминать о вещах, когда вы уходите с места, и показывать последнее место, даже когда приложение закрыто или не используется. Данные о местоположении остаются на этом телефоне. На следующем экране выберите «Разрешить всегда».'**
   String get setupLocationText;
 
   /// No description provided for @setupWhyLocation.

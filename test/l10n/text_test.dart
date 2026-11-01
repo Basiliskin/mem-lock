@@ -23,6 +23,21 @@ class FakeLanguageStore implements LanguageStore {
 }
 
 void main() {
+  test('the location disclosure names location and background use', () {
+    final en =
+        jsonDecode(File('lib/l10n/app_en.arb').readAsStringSync()) as Map;
+    final ru =
+        jsonDecode(File('lib/l10n/app_ru.arb').readAsStringSync()) as Map;
+    expect(
+      en['setupLocationText'],
+      allOf(contains('location'), contains('even when the app is closed')),
+    );
+    expect(
+      ru['setupLocationText'],
+      allOf(contains('геолокацию'), contains('даже когда приложение закрыто')),
+    );
+  });
+
   test('the app is called LeaveCheck in both languages', () {
     for (final arb in ['lib/l10n/app_ru.arb', 'lib/l10n/app_en.arb']) {
       final strings = jsonDecode(File(arb).readAsStringSync()) as Map;

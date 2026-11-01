@@ -211,7 +211,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String get setupLocationTitle => 'Разрешите геолокацию';
 
   @override
-  String get setupLocationText => 'Выберите «Разрешить всегда».';
+  String get setupLocationText =>
+      'LeaveCheck использует геолокацию, чтобы напоминать о вещах, когда вы уходите с места, и показывать последнее место, даже когда приложение закрыто или не используется. Данные о местоположении остаются на этом телефоне. На следующем экране выберите «Разрешить всегда».';
 
   @override
   String get setupWhyLocation =>
