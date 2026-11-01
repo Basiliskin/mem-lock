@@ -1,6 +1,6 @@
-# Geo Alert: Requirements
+# LeaveCheck: Requirements
 
-The single source of truth for what gets built in v1. It is based on `docs/idea.md` and uses the terms in `GLOSSARY.md`.
+The single source of truth for what gets built in v1. It is based on `docs/idea.md` and uses the terms in `GLOSSARY.md`. The 2026-11-01 decisions in `docs/decision-log.md` widen the brief where they differ: the first release adds Reminder Places, advanced settings and English. The app is named LeaveCheck, replacing Geo Alert, subject to a trademark search.
 
 Field test numbers are targets set before any testing, not measured results.
 
@@ -8,10 +8,10 @@ Field test numbers are targets set before any testing, not measured results.
 
 | Priority | Items |
 |---|---|
-| **Must** | Stay and Ride detection; Reminders with repeats and two actions; customizable sound, vibration, text and recorded voice; Last Place; Quiet Places; guided setup with protected settings and phone-on-body advice; restart after reboot; "not protecting you" warnings; wake-on-movement location; Russian text |
+| **Must** | Stay and Ride detection; Reminders with repeats and two actions; customizable sound, vibration, text and recorded voice; Last Place; Quiet Places; guided setup with protected settings and phone-on-body advice; restart after reboot; "not protecting you" warnings; wake-on-movement location; Russian and English text; Reminder Places; advanced settings; store listing with name, logo and description |
 | **Should** | Low battery warning; More often / Normal / Less often setting; keeping two Last Places instead of one |
-| **Could** | Adjustable number of repeats; spoken message read out from the Reminder text |
-| **Won't (v1)** | iPhone; Bluetooth tags and smartwatches; alerts to the Helper's phone; a server or accounts; a manual mode; a map inside the app; location history beyond the Last Place; "back in the zone" alerts; other languages |
+| **Could** | Adjustable number of repeats; spoken message read out from the Reminder text; step and motion sensors as a sign that walking has started (experiment, US-14) |
+| **Won't (v1)** | iPhone; Bluetooth tags and smartwatches; alerts to the Helper's phone; a server or accounts; a manual mode; a map inside the app; location history beyond the Last Place; "back in the zone" alerts; languages other than Russian and English, including Hebrew unless specific families are lined up; address search for places; step history; a paid version |
 
 Two Must items depend on field results:
 
@@ -103,6 +103,54 @@ As a Helper, I want to choose how often Reminders happen, so that they suit the 
 - **AC-10.1** Given the Helper picks More often, Normal or Less often, then later Stays use those values.
 - **AC-10.2** Given no choice was made, then Normal applies: 5 minutes and 75 m, subject to tuning from the field tests.
 
+### US-11: Reminder Places (Must)
+As a Helper, I want to mark places that always give a Reminder with their own message, so that the Wearer is reminded even after a short visit.
+
+- **AC-11.1** Given the Helper is at a place and has entered a name and message, when they press the button to mark it, then it becomes a Reminder Place.
+- **AC-11.2** Given the Wearer was inside a Reminder Place's area (75 m) for at least 1 minute, when they have clearly left it, then one Reminder starts with that place's message.
+- **AC-11.3** Given the Wearer was inside for less than 1 minute, when they move on, then no Reminder starts for that place.
+- **AC-11.4** Given the place is already a Quiet Place, when the Helper marks it as a Reminder Place, then the app asks which to keep, and it is never both. The same applies the other way round.
+- **AC-11.5** Given the Wearer leaves a Reminder Place at the end of a Stay there, then only one Reminder starts, with that place's message.
+- **AC-11.6** Given no location fix is available, when the Helper presses the button, then no place is saved and a clear message says why.
+- **AC-11.7** Given the Helper removes a Reminder Place, then it no longer gives its own Reminder or message.
+- **AC-11.8** Given a Reminder Place's Reminder started, then its Last Place is saved as for any other Reminder.
+
+### US-12: Advanced settings (Must)
+As a Helper, I want to set actual values, so that the app suits the Wearer's habits.
+
+- **AC-12.1** Given the Helper opens advanced settings, then they can set Stay time (1-30 minutes), Stay area (30-300 m), vehicle speed (7-30 km/h) and walking time after a Ride (10-120 seconds). The Ride time limit cannot be changed.
+- **AC-12.2** Given a value outside its limits, then it is not saved and the limits are shown.
+- **AC-12.3** Given a value that risks missed Reminders, such as a Stay time over 15 minutes, then a plain warning is shown before saving.
+- **AC-12.4** Given the Helper taps "Reset to recommended", then all advanced values return to the recommended ones.
+- **AC-12.5** Given values are saved, then later Stays and Rides use them, and the Helper can see that advanced values replace the More often, Normal or Less often choice. Picking one of those choices again replaces the advanced Stay values.
+- **AC-12.6** Given the Wearer uses the main screen normally, then advanced settings cannot be reached without the long press or code.
+
+The limits are starting points, to be retuned from the field tests.
+
+### US-13: Language (Must)
+As a Helper, I want the app in our language, so that the Wearer understands every Reminder and warning.
+
+- **AC-13.1** Given the phone's language is Russian or English, then the app follows it.
+- **AC-13.2** Given any other phone language, then the app uses English.
+- **AC-13.3** Given the Helper chooses a language in settings, then the app and the next Reminder use it, including in the service.
+- **AC-13.4** Given a Reminder has no custom text, then its default is in the chosen language. A recording or custom text plays as the Helper made it.
+- **AC-13.5** Before release, a native speaker of each language has checked every Reminder and warning.
+
+### US-14: Step experiment (Could)
+As a Wearer, I want a Reminder soon after I start walking, even if location is slow.
+
+- **AC-14.1** Given the experiment, then a probe records step and motion signals against real walks, and the results are recorded in `docs/qa-report.md`.
+- **AC-14.2** Given the probe shows no clear benefit on a real phone, then steps are not used in the release, and any permission added only for it is removed.
+- **AC-14.3** Given any use of steps, then no step count or history is shown or kept.
+
+### US-15: Store listing (Must)
+As an adult child of a Wearer, I want a clear listing, so that I know what the app does and doesn't do.
+
+- **AC-15.1** Given the store listing, then the title is LeaveCheck plus a translated tagline, in Russian and English, and the logo is a high-contrast bag with a checkmark. The name has passed a trademark search first.
+- **AC-15.2** Given the description, then it states that the app cannot detect a phone left in the bag, and it makes no "never lose anything" claim.
+- **AC-15.3** Given FT-2 has not passed, then the listing doesn't mention trains or buses, and it never claims a bag can be saved on a metro.
+- **AC-15.4** Given release, then the app is free and available in all countries on the owner's Play account, and the background location declaration has been submitted.
+
 ## Field tests
 
 Run on a real Android phone kept on the body, with the app minimised and the screen locked. Record every run, including failures, in `docs/qa-report.md`.
@@ -114,6 +162,7 @@ Run on a real Android phone kept on the body, with the app minimised and the scr
 | FT-3 | Short stops: 5 stops shorter than the Stay time | No Reminder | AC-1.2 |
 | FT-4 | Full days: 3 days of normal use on an older phone | No more than 2 needless Reminders a day on average, and the phone lasts 16 hours | US-1, US-9 |
 | FT-5 | Locked phone: 5 Reminders with a recorded voice on a locked phone | All 5 play the recording | AC-4.2 |
+| FT-6 | Reminder Places: 5 short visits of over 1 minute, then leaving, and 5 walks past without stopping | All 5 visits give one Reminder with the place's message; no more than 1 walk past gives a Reminder | US-11 |
 
 Results by train type must be reported separately. A pass on FT-2 does not mean a bag can be saved on a metro, where doors may close within seconds, and the app must not claim that it can.
 

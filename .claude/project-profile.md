@@ -5,8 +5,9 @@ The single source of project facts for this repo's role skills. Edit here; skill
 ## Product
 - Summary: A phone app that helps elderly people avoid losing their belongings by reminding them to check they have everything when they leave a place or get off a vehicle.
 - Users: Wearers (elderly people who receive Reminders) and Helpers (family members who set up the app).
-- Deliverable: A working Android v1, in Russian.
-- Out of scope: The v1 non-goals in docs/idea.md, section 2.
+- Name: LeaveCheck (replaces Geo Alert; trademark search still to be done)
+- Deliverable: A working Android v1, in Russian and English, free, in all countries, on the owner's existing Play account.
+- Out of scope: "Won't (v1)" in docs/requirements.md, which replaces docs/idea.md section 2 where they differ.
 - Time budget: None
 
 ## Sources
@@ -35,7 +36,10 @@ The single source of project facts for this repo's role skills. Edit here; skill
 ## Settled decisions
 <!-- Do not re-ask these. -->
 - The app is always watching, with no manual mode or start button.
-- A Reminder is triggered by the end of a Stay or Ride, except at a Quiet Place.
+- A Reminder is triggered by the end of a Stay or Ride, except at a Quiet Place, or by leaving a Reminder Place after at least 1 minute.
+- A place can't be both a Quiet Place and a Reminder Place. Reminder Places are marked by pressing a button on the spot, with no address search or internet.
+- Advanced settings expose real values within limits; the Ride time limit stays fixed.
+- Steps are an experiment only, with no step history.
 - The Helper customizes Reminders and settings, which are protected from accidental changes.
 - A Reminder repeats about 3 times until tapped; there is no "back in the zone" alert.
 - "I forgot something" shows the Last Place; only the most recent one or two are kept.
@@ -45,7 +49,7 @@ The single source of project facts for this repo's role skills. Edit here; skill
 - Watching runs as Dart in an Android foreground service; native Kotlin is the fallback.
 - On silent, the Helper chooses "play aloud" (default) or "vibrate only".
 - Ride detection uses Activity Recognition first, with GPS speed as a check.
-- Android first, Russian only, with text ready to translate.
+- Android first, Russian and English, following the phone's language, with a choice in settings.
 - Location wakes on movement, with a low battery warning.
 
 ## Marketing

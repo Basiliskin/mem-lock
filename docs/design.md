@@ -92,3 +92,66 @@ App
 - Large text must reflow without clipping at 360 dp wide.
 - Sound, vibration and on-screen text all carry the Reminder, so it isn't lost if one fails.
 - The prototype's layout, keyboard use and announcements have only been checked by a scripted logic run and the user's viewing. Test the real app on a phone, ideally with elderly people.
+
+## Release additions: Helper settings
+
+The chosen UX is Variant A, "separate screens" (`prototypes/release-variant-a.html`). It holds mock logic only and is never imported by production code. These screens sit behind the existing long press or code. Text is a draft until the native-speaker check.
+
+```text
+Helper settings menu           Reminder Places
++----------------------+       +----------------------+
+| Настройки для близких|       | ← Назад              |
+| [Места с напоминанием|       | Места с напоминанием |
+|   Отмечено: 1       ]|       | Напомним при уходе…  |
+| [Точные значения     |       | Бассейн              |
+|   Сейчас: Обычно    ]|       | «Возьмите полотенце» |
+| [Язык                |       | [Удалить: Бассейн]   |
+|   Как на телефоне   ]|       | Название [         ] |
++----------------------+       | Сообщение [        ] |
+                               | [Отметить это место] |
+                               +----------------------+
+
+Exact values                   Language
++----------------------+       +----------------------+
+| ← Назад              |       | ← Назад              |
+| Точные значения      |       | Язык                 |
+| Сейчас: Обычно       |       | (•) Как на телефоне  |
+| [Чаще][Обычно][Реже] |       | ( ) Русский          |
+| Сколько пробыть, мин |       | ( ) English          |
+| [−]    [ 5 ]    [+]  |       | Следующее напоминание|
+| от 1 до 30, реком. 5 |       | Ваши вещи с вами?    |
+| … 3 more values …    |       +----------------------+
+| [Сохранить]          |
+| [Вернуть рекомендуемые]
++----------------------+
+```
+
+### Components
+
+```text
+HelperSettings: menu, each row showing its current state
+├─ ReminderPlacesScreen
+│  ├─ PlaceCard ×n: name, message, remove with confirmation
+│  ├─ AddPlaceForm: name, message, mark
+│  └─ QuietPlaceClashDialog
+├─ AdvancedSettingsScreen
+│  ├─ CurrentChoice: preset name or "Свои значения"
+│  ├─ PresetButtons
+│  ├─ ValueField ×4: label with unit, − and +, typed number, limits, recommended
+│  ├─ RiskWarning: save anyway or change
+│  └─ Save, Reset to recommended
+└─ LanguageScreen: phone, Русский, English, with a Reminder preview
+```
+
+### Interaction rules
+
+- **Mark a place:** an empty name or message, or no location fix, saves nothing and says why. The buttons stay enabled, so the explanation is always reachable.
+- **Quiet Place clash:** the dialog asks which to keep. Keeping it quiet saves no Reminder Place. The same question applies when marking a Reminder Place as a Quiet Place.
+- **Values:** − and + step by 1, except Stay area and walking time, which step by 5, and they stop at the limits. Typed values are checked on save; if any is out of limits, nothing is saved and the limits are shown.
+- **Risk warning:** Stay time over 15 min, Stay area over 150 m, speed over 20 km/h or walking time over 60 s. These thresholds are starting points. Nothing is saved until "Save anyway".
+- **Presets:** save at once and replace only Stay time and area. If speed or walking time are custom, the state stays "Свои значения".
+- **Language:** applies at once, including to the next Reminder. "Как на телефоне" follows the phone. A recording or custom message stays as the Helper made it.
+
+### Tokens and accessibility
+
+Uses the existing tokens above, with buttons at least 56 px high and body text at 20 px. Every result appears on screen and is announced to screen readers. Moving to a screen puts focus on its title, and dialogs take focus and close with Back. − and + have labels naming their value. The real screens need checking with TalkBack, since the prototype wasn't tried with a screen reader or walked through by keyboard.

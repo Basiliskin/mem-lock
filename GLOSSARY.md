@@ -1,4 +1,4 @@
-# Geo Alert
+# LeaveCheck
 
 A phone app that helps elderly people avoid losing their belongings by reminding them to check they have everything when they leave a place or get off a vehicle.
 
@@ -24,10 +24,14 @@ _Avoid_: Trip, journey
 A place chosen by the Helper, such as the Wearer's home, that never produces a Reminder when the Wearer leaves it.
 _Avoid_: Home, safe zone, excluded zone
 
+**Reminder Place**:
+A place chosen by the Helper that always produces a Reminder when the Wearer leaves it, even after a short visit, with that place's own message. A place cannot be both a Reminder Place and a Quiet Place.
+_Avoid_: Alert, custom location, geofence
+
 **Last Place**:
 Where and when a recent Stay or Ride ended, kept so the Wearer can go back or report a loss. The two most recent are kept.
 _Avoid_: History, track, log
 
 **Reminder**:
-The prompt telling the person to check their belongings after a Stay or Ride ends.
+The prompt telling the person to check their belongings after a Stay or Ride ends, or after they leave a Reminder Place.
 _Avoid_: Alert, notification, alarm

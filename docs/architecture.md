@@ -174,3 +174,91 @@ S1 also ran the plugin in the probe's main isolate with no service of its own, s
 **Tests:** kind mapping; Watcher sends activity to the Detector in order, keeps watching after a stream error, and cancels on stop; setup shows the note; a saved `OnRide` continues after a restart with signals arriving.
 
 **Unchanged:** the Detector and its thresholds. Losing the activity permission gives a warning, which replaces the S11 decision.
+
+## Release additions: US-11 to US-15
+
+The name LeaveCheck applies from S20. Until then, code and earlier sections keep Geo Alert.
+
+```mermaid
+flowchart LR
+  H[Helper screens] -->|places, settings, language| P[(Prefs)]
+  P -->|re-read on message| W[Watcher in service]
+  L[LocationSource] --> W
+  A[ActivitySource] --> W
+  W --> D[Detector: Stay, Ride, Reminder Place]
+  D -->|StartReminder with optional place message| R[ReminderSession]
+  T[Translation files] --> H
+  T --> R
+```
+
+### Folder additions
+
+```text
+lib/domain/reminder_place_record.dart   name, message, point; encoding
+lib/domain/detection_settings.dart      preset or custom values, limits, validation
+lib/adapters/prefs_reminder_places.dart
+lib/adapters/prefs_detection_settings.dart
+lib/adapters/prefs_language.dart
+lib/l10n/app_ru.arb, app_en.arb         replace lib/l10n/strings.dart
+lib/ui/reminder_places_screen.dart
+lib/ui/advanced_settings_screen.dart
+lib/ui/language_screen.dart
+probes/steps/                           experiment only
+```
+
+### Invariants
+
+- A place is never both a Quiet Place and a Reminder Place. Both screens enforce this, and if stored data ever disagrees, Quiet Place wins, because it is the Helper's explicit "stay silent".
+- Leaving a Reminder Place gives a Reminder only after at least 1 minute inside its 75 m area, confirmed by the same number of outside readings as a Stay.
+- One departure gives one Reminder. If a Stay ends at a Reminder Place, the one Reminder uses that place's message.
+- Being near a Reminder Place doesn't stop or reset Stay and Ride detection. During a Ride, Reminder Places are ignored, so passing one in a vehicle gives no Reminder.
+- Detection values are always within limits: anything invalid when read falls back to Normal.
+- The Ride time limit is not a setting.
+- `lib/domain` stays free of Flutter, plugins and translated text. It carries only a place's own message.
+
+### Ports and events
+
+| Item | Change |
+|---|---|
+| `ReminderPlaceStore` | New: `read()`, `write(list)`; screens write, service reads |
+| `DetectionSettingsStore` | Replaces `StayChoiceStore`: `read()`, `write(settings)`. An existing `stay_choice` is read once as its preset |
+| `LanguageStore` | New: `read()` returning a language or null, `write(language)` |
+| `ReminderPlacesChanged` | New Detector event, sent like `QuietPlacesChanged` |
+| `SettingsChanged` | Carries `DetectionSettings`: Stay time and area, vehicle speed, walking time after a Ride |
+| `StartReminder` | Adds an optional `placeMessage`. `ReminderSource` gains `reminderPlace` |
+| Service messages | Add `reminderPlacesMessage` and `languageMessage` beside the existing ones |
+
+Saved `DetectorState` must still load when these fields are missing, so an update doesn't lose an active Stay.
+
+### Errors
+
+| Case | Behaviour |
+|---|---|
+| No fix when marking a Reminder Place | Nothing saved; a clear message (AC-11.6) |
+| Place already a Quiet Place, or the reverse | Ask which to keep (AC-11.4) |
+| Value outside limits | Not saved; limits shown (AC-12.2) |
+| Risky value | Warn, then allow saving (AC-12.3) |
+| Unreadable places, settings or language in storage | Treat as none, Normal, or the phone's language; keep watching |
+| Other phone language | English (AC-13.2) |
+
+### Key decisions
+
+- **Reminder Places:** in the Detector. See `docs/adr/0001-reminder-places-in-detector.md`.
+- **Text:** Flutter's standard translation files, looked up without screen context in the service, which reads the saved language.
+- **App ID:** becomes `com.leavecheck.app` only after the trademark search passes (S20).
+
+### Slices
+
+| Slice | Delivers | AC | Done when |
+|---|---|---|---|
+| S15 | **Gate:** real-phone Walk test, then fix location starting if needed | Blocking gap 0, FT-1 start | A real walk gives a Reminder, or the `LocationManager` fallback is built and does. Nothing below ships before this |
+| S16 | Translation files, moving all text, language choice, service using the saved language | 13.1 to 13.4 | Tests pass in both languages; no Russian left in code; changing language reaches the next Reminder on the emulator |
+| S17 | `DetectionSettings` in the Detector, replacing fixed values; old choice migrated | 10.1, 10.2, 12.5 (values) | Existing tests and replays pass unchanged at recommended values; custom values change outcomes in tests |
+| S18 | Advanced settings screen | 12.1 to 12.6 | Widget tests cover limits, warning, reset and protection |
+| S19a | Reminder Place rules in the Detector | 11.2, 11.3, 11.5, 11.8 | Replay tests cover visit, walk past, Stay at a place and passing in a vehicle |
+| S19b | Reminder Places screen and storage, with the place's message in the Reminder | 11.1, 11.4, 11.6, 11.7 | Widget and Watcher tests pass; FT-6 runnable |
+| S20 | Rename to LeaveCheck, new app ID, logo and app icon | 15.1 | Trademark search recorded in `docs/decision-log.md`; clean release build installs under the new ID |
+| S21 | Step experiment probe | 14.1 to 14.3 | Real-walk results in `docs/qa-report.md`, with a keep-or-drop decision |
+| S22 | Store listing, background location declaration, native-speaker check, release signing | 13.5, 15.2 to 15.4 | Listing text matches FT-2 results; signed build ready for the closed test |
+
+S16 comes first because later screens would otherwise add more text to move. S19b's UI depends on `/designer`, as do S18 and the language screen. FT-1 to FT-6 run on the near-final build, before S22. S21 can run at any time after S15, and doesn't block release: if it isn't finished, steps stay out.
