@@ -136,3 +136,7 @@
 - **Trademark search passed.** The owner searched WIPO, TMview, USPTO and FIPS and reported no matches in classes 9 and 42. This is the owner's reported result, not a legal clearance opinion.
 - **Renamed to LeaveCheck; app ID and namespace are `com.leavecheck.app`; Dart package is `leavecheck`.** Installs under the old ID are a separate app, so test phones need setup again. `probes/` keep their IDs because they don't ship.
 - **Logo:** a white tote bag with a checkmark on the `primary` blue, as an adaptive icon. Notifications use a separate one-colour icon. Files: `pubspec.yaml`, `android/app/`, `assets/brand/`, `lib/l10n/`, `lib/adapters/reminder_actions.dart`, imports across `lib/` and `test/`, `README.md`, `.claude/`, `docs/architecture.md`.
+
+## 2026-11-01 · /developer S21
+
+- **Step probe measures against Activity Recognition, with a fixed rule for "clear benefit".** A sensor is kept only if it is seen on at least 90% of walks, is at least 15 s sooner at the median, and gives no more false signals. These thresholds are the developer's default, set before any data, and the owner can change them. The probe logs that a step happened, never a count, and no places. Files: `probes/steps/`, `docs/qa-report.md`.

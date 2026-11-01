@@ -130,3 +130,13 @@ S16 emulator check, 2026-11-01, uncommitted, release build, Android 16 emulator 
 - **English chosen:** screens and the service notification changed at once. After a Stay and a walk on a test fused provider, the Reminder and both its buttons were in English.
 - **Warning recovery:** after location came back on, the warning took about 110 s to clear, because it takes two 60 s checks. The earlier report measured 65 s, before the S15 fallback.
 - **Not run on the emulator:** a phone in another language, and a Reminder with custom text or a recording in the new language. These are covered by tests or existing code only.
+
+## S21: Step experiment (AC-14.1 to 14.3)
+
+**Status: open. No real walks yet, so no keep-or-drop decision.** Steps stay out of the release until there is one, and the main app has no step code or added permission.
+
+- **Built:** `probes/steps`, with a report tool. Its logs hold no places and no step counts.
+- **Rule for a clear benefit:** at least 10 walks and 4 still segments; seen on at least 90% of walks; median delay at least 15 s shorter than Activity Recognition; false signals in no more still segments than Activity Recognition.
+- **Emulator check only:** over three short runs, the probe started and motion logging continued for about 40 s with the screen locked. The step stream reported "not available" once and stayed silent in the other two runs. One Activity Recognition signal arrived, in the first run only. No step or pedestrian signal has been seen, so the step path is untested, and this says nothing about the sensors' benefit.
+- **First real session:** after one short walk, check that the report shows step, pedestrian and activity signals before doing the full set.
+- **Real-walk results:** to be added here from `tool/report.dart`.
