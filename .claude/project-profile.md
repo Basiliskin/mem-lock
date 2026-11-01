@@ -5,7 +5,7 @@ The single source of project facts for this repo's role skills. Edit here; skill
 ## Product
 - Summary: A phone app that helps elderly people avoid losing their belongings by reminding them to check they have everything when they leave a place or get off a vehicle.
 - Users: Wearers (elderly people who receive Reminders) and Helpers (family members who set up the app).
-- Name: LeaveCheck (replaces Geo Alert; trademark search still to be done)
+- Name: LeaveCheck (replaces Geo Alert; owner's trademark search on 2026-11-01 found no matches)
 - Deliverable: A working Android v1, in Russian and English, free, in all countries, on the owner's existing Play account.
 - Out of scope: "Won't (v1)" in docs/requirements.md, which replaces docs/idea.md section 2 where they differ.
 - Time budget: None

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:geo_alert/adapters/default_tone.dart';
-import 'package:geo_alert/domain/reminder_options.dart';
+import 'package:leavecheck/adapters/default_tone.dart';
+import 'package:leavecheck/domain/reminder_options.dart';
 
 void main() {
   test('every tone is a valid WAV, and they differ', () {

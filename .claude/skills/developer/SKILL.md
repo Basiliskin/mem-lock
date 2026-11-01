@@ -1,6 +1,6 @@
 ---
 name: developer
-description: Developer step for Geo Alert — implements exactly one vertical slice from docs/architecture.md, proposing options first, then writing code test-first. Use with a slice id, e.g. "/developer S1".
+description: Developer step for LeaveCheck — implements exactly one vertical slice from docs/architecture.md, proposing options first, then writing code test-first. Use with a slice id, e.g. "/developer S1".
 ---
 
 # /developer <slice>

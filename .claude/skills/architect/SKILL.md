@@ -1,6 +1,6 @@
 ---
 name: architect
-description: Architect step for Geo Alert — designs structure, domain model, interfaces and an ordered list of vertical slices. Use after /product, or when structure or API decisions need revisiting.
+description: Architect step for LeaveCheck — designs structure, domain model, interfaces and an ordered list of vertical slices. Use after /product, or when structure or API decisions need revisiting.
 ---
 
 # /architect

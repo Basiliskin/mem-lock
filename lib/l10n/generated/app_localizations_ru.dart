@@ -10,7 +10,7 @@ class AppLocalizationsRu extends AppLocalizations {
   AppLocalizationsRu([String locale = 'ru']) : super(locale);
 
   @override
-  String get appName => 'Geo Alert';
+  String get appName => 'LeaveCheck';
 
   @override
   String get protecting => 'Защита работает';

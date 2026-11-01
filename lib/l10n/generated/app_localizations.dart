@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appName.
   ///
   /// In ru, this message translates to:
-  /// **'Geo Alert'**
+  /// **'LeaveCheck'**
   String get appName;
 
   /// No description provided for @protecting.

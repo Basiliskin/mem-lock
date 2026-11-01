@@ -1,10 +1,10 @@
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:geo_alert/domain/detector.dart';
-import 'package:geo_alert/domain/geo.dart';
-import 'package:geo_alert/domain/reminder_options.dart';
-import 'package:geo_alert/ports/ports.dart';
-import 'package:geo_alert/service/reminder_session.dart';
+import 'package:leavecheck/domain/detector.dart';
+import 'package:leavecheck/domain/geo.dart';
+import 'package:leavecheck/domain/reminder_options.dart';
+import 'package:leavecheck/ports/ports.dart';
+import 'package:leavecheck/service/reminder_session.dart';
 
 class FakeOutput implements ReminderOutput {
   final events = <String>[];

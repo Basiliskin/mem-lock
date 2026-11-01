@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Status bar icons use only the alpha channel, so the check is cut out of the bag. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:pathData="M45,46V38a9,9 0,0 1,18 0V46"
+        android:strokeColor="#FFFFFF" android:strokeWidth="5"/>
+    <path android:fillType="evenOdd" android:fillColor="#FFFFFF"
+        android:pathData="M38,44H70L76,78H32Z
+            M46.5,58.5L42,63L51,72.5L67.5,55L63,51L51,63.5Z"/>
+</vector>

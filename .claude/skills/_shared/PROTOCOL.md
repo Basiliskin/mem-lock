@@ -1,4 +1,4 @@
-# Skill Protocol for Geo Alert
+# Skill Protocol for LeaveCheck
 
 Every role skill in this repo follows these rules. Read this file before acting.
 

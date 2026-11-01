@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:geo_alert/domain/detector.dart';
-import 'package:geo_alert/domain/geo.dart';
-import 'package:geo_alert/domain/quiet_place_record.dart';
-import 'package:geo_alert/domain/reminder_place_record.dart';
-import 'package:geo_alert/l10n/l10n.dart';
+import 'package:leavecheck/domain/detector.dart';
+import 'package:leavecheck/domain/geo.dart';
+import 'package:leavecheck/domain/quiet_place_record.dart';
+import 'package:leavecheck/domain/reminder_place_record.dart';
+import 'package:leavecheck/l10n/l10n.dart';
 
 import '../support/l10n.dart';
 
-import 'package:geo_alert/ports/ports.dart';
-import 'package:geo_alert/ui/quiet_places_screen.dart';
+import 'package:leavecheck/ports/ports.dart';
+import 'package:leavecheck/ui/quiet_places_screen.dart';
 
 const home = GeoPoint(55.75, 37.61);
 const shop = GeoPoint(55.80, 37.70);

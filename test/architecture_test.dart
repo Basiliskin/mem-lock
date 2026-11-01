@@ -14,7 +14,7 @@ List<String> importsOf(String source) =>
 bool allowedInDomain(String uri) {
   if (uri.startsWith('dart:')) return uri != 'dart:io' && uri != 'dart:ui';
   if (uri.startsWith('package:')) {
-    return uri.startsWith('package:geo_alert/domain/');
+    return uri.startsWith('package:leavecheck/domain/');
   }
   return !uri.split('/').contains('..');
 }
@@ -30,13 +30,13 @@ void main() {
     test('accepts pure Dart and domain files', () {
       expect(allowedInDomain('dart:math'), isTrue);
       expect(allowedInDomain('stay.dart'), isTrue);
-      expect(allowedInDomain('package:geo_alert/domain/stay.dart'), isTrue);
+      expect(allowedInDomain('package:leavecheck/domain/stay.dart'), isTrue);
     });
 
     test('rejects plugins, Flutter, platform access and other layers', () {
       expect(allowedInDomain('package:flutter/material.dart'), isFalse);
       expect(allowedInDomain('package:geolocator/geolocator.dart'), isFalse);
-      expect(allowedInDomain('package:geo_alert/adapters/x.dart'), isFalse);
+      expect(allowedInDomain('package:leavecheck/adapters/x.dart'), isFalse);
       expect(allowedInDomain('../adapters/x.dart'), isFalse);
       expect(allowedInDomain('dart:io'), isFalse);
     });

@@ -1,4 +1,4 @@
-name: geo_alert
+name: leavecheck
 description: "Reminds elderly people to check their belongings when they leave a place."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -46,7 +46,7 @@ dependencies:
   url_launcher: ^6.3.3
   record: ^7.1.2
   battery_plus: ^7.1.2
-  # 6.1.0 with one fix; see packages/activity_recognition_flutter/GEO_ALERT_PATCH.md
+  # 6.1.0 with one fix; see packages/activity_recognition_flutter/LEAVECHECK_PATCH.md
   activity_recognition_flutter:
     path: packages/activity_recognition_flutter
   google_api_availability: ^5.0.1

@@ -10,7 +10,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appName => 'Geo Alert';
+  String get appName => 'LeaveCheck';
 
   @override
   String get protecting => 'Protection is on';

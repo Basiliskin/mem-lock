@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:geo_alert/adapters/geolocator_location.dart';
-import 'package:geo_alert/domain/detector.dart';
+import 'package:leavecheck/adapters/geolocator_location.dart';
+import 'package:leavecheck/domain/detector.dart';
 import 'package:geolocator/geolocator.dart';
 
 Position position(double latitude) => Position(

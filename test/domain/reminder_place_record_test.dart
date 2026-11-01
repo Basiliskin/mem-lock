@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:geo_alert/domain/detector.dart';
-import 'package:geo_alert/domain/geo.dart';
-import 'package:geo_alert/domain/reminder_place_record.dart';
+import 'package:leavecheck/domain/detector.dart';
+import 'package:leavecheck/domain/geo.dart';
+import 'package:leavecheck/domain/reminder_place_record.dart';
 
 const pool = GeoPoint(55.75, 37.61);
 GeoPoint north(double m) => GeoPoint(pool.lat + m / 111195, pool.lng);

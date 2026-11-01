@@ -56,7 +56,7 @@ class ActivityRecognitionFlutterPlugin :
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        // Geo Alert patch: updates are shared by every engine in the process, so
+        // LeaveCheck patch: updates are shared by every engine in the process, so
         // only the engine that is listening may stop them.
         if (eventSink != null) stopTracking()
         eventSink = null

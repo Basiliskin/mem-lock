@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:geo_alert/domain/detector.dart';
-import 'package:geo_alert/domain/geo.dart';
+import 'package:leavecheck/domain/detector.dart';
+import 'package:leavecheck/domain/geo.dart';
 
 ActivityKind kindOf(String s) => switch (s) {
   'IN_VEHICLE' => ActivityKind.inVehicle,

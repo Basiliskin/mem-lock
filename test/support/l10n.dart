@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:geo_alert/l10n/generated/app_localizations.dart';
+import 'package:leavecheck/l10n/generated/app_localizations.dart';
 
 /// Run the suite in English with `flutter test --dart-define=TEST_LANG=en`.
 const testLanguage = String.fromEnvironment('TEST_LANG', defaultValue: 'ru');

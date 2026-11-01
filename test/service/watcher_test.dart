@@ -1,14 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:geo_alert/domain/detector.dart';
-import 'package:geo_alert/domain/detector_json.dart';
-import 'package:geo_alert/domain/geo.dart';
-import 'package:geo_alert/domain/last_place_record.dart';
-import 'package:geo_alert/domain/quiet_place_record.dart';
-import 'package:geo_alert/domain/reminder_place_record.dart';
-import 'package:geo_alert/ports/ports.dart';
-import 'package:geo_alert/service/watcher.dart';
+import 'package:leavecheck/domain/detector.dart';
+import 'package:leavecheck/domain/detector_json.dart';
+import 'package:leavecheck/domain/geo.dart';
+import 'package:leavecheck/domain/last_place_record.dart';
+import 'package:leavecheck/domain/quiet_place_record.dart';
+import 'package:leavecheck/domain/reminder_place_record.dart';
+import 'package:leavecheck/ports/ports.dart';
+import 'package:leavecheck/service/watcher.dart';
 
 final t0 = DateTime.utc(2026, 11, 1, 10);
 DateTime at(int m, [int s = 0]) => t0.add(Duration(minutes: m, seconds: s));

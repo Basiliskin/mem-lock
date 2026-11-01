@@ -1,6 +1,6 @@
 ---
 name: designer
-description: UI/UX designer step for Geo Alert — builds 2 clickable, self-contained HTML prototypes with mocked state, lets the user pick or mix, then writes docs/design.md. Use after /architect, or when the UI needs rethinking.
+description: UI/UX designer step for LeaveCheck — builds 2 clickable, self-contained HTML prototypes with mocked state, lets the user pick or mix, then writes docs/design.md. Use after /architect, or when the UI needs rethinking.
 ---
 
 # /designer

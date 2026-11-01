@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:geo_alert/domain/battery.dart';
-import 'package:geo_alert/domain/detector.dart';
-import 'package:geo_alert/domain/geo.dart';
-import 'package:geo_alert/domain/last_place_record.dart';
-import 'package:geo_alert/l10n/l10n.dart';
+import 'package:leavecheck/domain/battery.dart';
+import 'package:leavecheck/domain/detector.dart';
+import 'package:leavecheck/domain/geo.dart';
+import 'package:leavecheck/domain/last_place_record.dart';
+import 'package:leavecheck/l10n/l10n.dart';
 
 import '../support/l10n.dart';
 
-import 'package:geo_alert/ports/ports.dart';
-import 'package:geo_alert/ui/forgot_screen.dart';
-import 'package:geo_alert/ui/main_screen.dart';
+import 'package:leavecheck/ports/ports.dart';
+import 'package:leavecheck/ui/forgot_screen.dart';
+import 'package:leavecheck/ui/main_screen.dart';
 
 final place = LastPlaceRecord(
   const GeoPoint(55.751244, 37.618423),

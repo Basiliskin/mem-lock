@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:geo_alert/domain/detector.dart';
-import 'package:geo_alert/domain/detector_json.dart';
-import 'package:geo_alert/domain/geo.dart';
+import 'package:leavecheck/domain/detector.dart';
+import 'package:leavecheck/domain/detector_json.dart';
+import 'package:leavecheck/domain/geo.dart';
 
 final t0 = DateTime.utc(2026, 11, 1, 10);
 const cafe = GeoPoint(55.75, 37.61);

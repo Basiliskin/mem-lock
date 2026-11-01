@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:geo_alert/l10n/l10n.dart';
+import 'package:leavecheck/l10n/l10n.dart';
 
 import '../support/l10n.dart';
 
-import 'package:geo_alert/ports/ports.dart';
-import 'package:geo_alert/ui/app_root.dart';
-import 'package:geo_alert/ui/setup_screen.dart';
+import 'package:leavecheck/ports/ports.dart';
+import 'package:leavecheck/ui/app_root.dart';
+import 'package:leavecheck/ui/setup_screen.dart';
 
 class FakeGate implements PermissionGate {
   final states = {

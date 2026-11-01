@@ -1,6 +1,6 @@
 ---
 name: qa
-description: QA and final-review step for Geo Alert — maps each requirement to a test, runs all checks and a manual smoke run, audits the code against project rules, and checks release readiness. Use after the last /developer slice.
+description: QA and final-review step for LeaveCheck — maps each requirement to a test, runs all checks and a manual smoke run, audits the code against project rules, and checks release readiness. Use after the last /developer slice.
 ---
 
 # /qa

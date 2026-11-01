@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:geo_alert/ports/ports.dart';
-import 'package:geo_alert/service/protection_monitor.dart';
+import 'package:leavecheck/ports/ports.dart';
+import 'package:leavecheck/service/protection_monitor.dart';
 
 class FakeHealth implements HealthCheck {
   ProtectionProblem? problem;

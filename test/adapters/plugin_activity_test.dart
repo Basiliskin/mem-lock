@@ -1,7 +1,7 @@
 import 'package:activity_recognition_flutter/activity_recognition_flutter.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:geo_alert/adapters/plugin_activity.dart';
-import 'package:geo_alert/domain/detector.dart';
+import 'package:leavecheck/adapters/plugin_activity.dart';
+import 'package:leavecheck/domain/detector.dart';
 
 void main() {
   test('every plugin type maps to the expected kind', () {

@@ -177,7 +177,7 @@ S1 also ran the plugin in the probe's main isolate with no service of its own, s
 
 ## Release additions: US-11 to US-15
 
-The name LeaveCheck applies from S20. Until then, code and earlier sections keep Geo Alert.
+The name LeaveCheck applies from S20. Earlier sections and the decision log keep Geo Alert as written at the time; the code package is now `leavecheck`.
 
 ```mermaid
 flowchart LR
@@ -245,7 +245,7 @@ Saved `DetectorState` must still load when these fields are missing, so an updat
 
 - **Reminder Places:** in the Detector. See `docs/adr/0001-reminder-places-in-detector.md`.
 - **Text:** Flutter's standard translation files, looked up without screen context in the service, which reads the saved language.
-- **App ID:** becomes `com.leavecheck.app` only after the trademark search passes (S20).
+- **App ID:** `com.leavecheck.app`, set in S20 after the trademark search.
 
 ### Slices
 

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:geo_alert/domain/language.dart';
+import 'package:leavecheck/domain/language.dart';
 
 void main() {
   test('AC-13.1: follows a Russian or English phone', () {

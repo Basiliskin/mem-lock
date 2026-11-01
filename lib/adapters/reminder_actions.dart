@@ -8,7 +8,7 @@ const actionForgot = 'forgot';
 
 /// Marks a test notification, whose buttons must not act on a real Reminder.
 const testReminderPayload = 'test';
-const _portName = 'geo_alert_reminder_actions';
+const _portName = 'leavecheck_reminder_actions';
 
 /// Isolates in one process can reach each other through this name, which lets
 /// a button tapped anywhere stop the Reminder running in the service.
@@ -31,7 +31,7 @@ void onBackgroundReminderAction(NotificationResponse response) =>
     forwardAction(response);
 
 const reminderNotificationSettings = InitializationSettings(
-  android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+  android: AndroidInitializationSettings('@drawable/ic_notification'),
 );
 
 /// For the app's own isolate: "I forgot something" opens the app, including

@@ -1,4 +1,4 @@
-package com.geoalert.geo_alert
+package com.leavecheck.app
 
 import io.flutter.embedding.android.FlutterActivity
 

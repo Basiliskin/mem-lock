@@ -15,7 +15,7 @@
     <!-- The activity plugin runs inside the location service; see S14. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" tools:node="remove" />
     <application
-        android:label="Geo Alert"
+        android:label="LeaveCheck"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

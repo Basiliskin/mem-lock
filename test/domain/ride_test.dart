@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:geo_alert/domain/detector.dart';
-import 'package:geo_alert/domain/detector_json.dart';
-import 'package:geo_alert/domain/geo.dart';
+import 'package:leavecheck/domain/detector.dart';
+import 'package:leavecheck/domain/detector_json.dart';
+import 'package:leavecheck/domain/geo.dart';
 
 const start = GeoPoint(55.75, 37.61);
 GeoPoint north(double m) => GeoPoint(start.lat + m / 111195, start.lng);

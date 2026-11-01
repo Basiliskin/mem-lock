@@ -3,10 +3,10 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:geo_alert/domain/language.dart';
-import 'package:geo_alert/l10n/current_text.dart';
-import 'package:geo_alert/l10n/l10n.dart';
-import 'package:geo_alert/ports/ports.dart';
+import 'package:leavecheck/domain/language.dart';
+import 'package:leavecheck/l10n/current_text.dart';
+import 'package:leavecheck/l10n/l10n.dart';
+import 'package:leavecheck/ports/ports.dart';
 
 class FakeLanguageStore implements LanguageStore {
   FakeLanguageStore([this.saved]);
@@ -23,6 +23,13 @@ class FakeLanguageStore implements LanguageStore {
 }
 
 void main() {
+  test('the app is called LeaveCheck in both languages', () {
+    for (final arb in ['lib/l10n/app_ru.arb', 'lib/l10n/app_en.arb']) {
+      final strings = jsonDecode(File(arb).readAsStringSync()) as Map;
+      expect(strings['appName'], 'LeaveCheck');
+    }
+  });
+
   final ru = lookupAppLocalizations(const Locale('ru'));
   final en = lookupAppLocalizations(const Locale('en'));
 

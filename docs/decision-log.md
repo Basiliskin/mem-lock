@@ -126,3 +126,13 @@
 ## 2026-11-01 · /developer S16
 
 - **Translation files with the language read at each use.** `app_ru.arb` and `app_en.arb` replace `lib/l10n/strings.dart`. The service looks up the saved language each time it shows text. The first phone language alone decides when nothing is chosen. English text is a draft until the AC-13.5 check. Times stay 24-hour in both languages. Files: `lib/l10n/`, `lib/domain/language.dart`, `lib/adapters/prefs_language.dart`, `lib/ui/language_screen.dart`, `lib/ui/localized_app.dart`, the screens and adapters that show text, and their tests.
+
+## 2026-11-01 · /developer S18, S19
+
+- **Advanced settings and Reminder Places committed together,** at the owner's request, so S20 has its own commit. Files: `lib/ui/advanced_settings_screen.dart`, `lib/ui/reminder_places_screen.dart`, `lib/domain/detector.dart`, `lib/adapters/prefs_reminder_places.dart` and their tests.
+
+## 2026-11-01 · /developer S20
+
+- **Trademark search passed.** The owner searched WIPO, TMview, USPTO and FIPS and reported no matches in classes 9 and 42. This is the owner's reported result, not a legal clearance opinion.
+- **Renamed to LeaveCheck; app ID and namespace are `com.leavecheck.app`; Dart package is `leavecheck`.** Installs under the old ID are a separate app, so test phones need setup again. `probes/` keep their IDs because they don't ship.
+- **Logo:** a white tote bag with a checkmark on the `primary` blue, as an adaptive icon. Notifications use a separate one-colour icon. Files: `pubspec.yaml`, `android/app/`, `assets/brand/`, `lib/l10n/`, `lib/adapters/reminder_actions.dart`, imports across `lib/` and `test/`, `README.md`, `.claude/`, `docs/architecture.md`.

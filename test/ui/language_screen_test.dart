@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:geo_alert/domain/language.dart';
-import 'package:geo_alert/l10n/l10n.dart';
-import 'package:geo_alert/ports/ports.dart';
-import 'package:geo_alert/ui/language_screen.dart';
-import 'package:geo_alert/ui/localized_app.dart';
+import 'package:leavecheck/domain/language.dart';
+import 'package:leavecheck/l10n/l10n.dart';
+import 'package:leavecheck/ports/ports.dart';
+import 'package:leavecheck/ui/language_screen.dart';
+import 'package:leavecheck/ui/localized_app.dart';
 
 class FakeStore implements LanguageStore {
   AppLanguage? saved;

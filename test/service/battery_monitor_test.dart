@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:geo_alert/domain/battery.dart';
-import 'package:geo_alert/ports/ports.dart';
-import 'package:geo_alert/service/battery_monitor.dart';
+import 'package:leavecheck/domain/battery.dart';
+import 'package:leavecheck/ports/ports.dart';
+import 'package:leavecheck/service/battery_monitor.dart';
 
 class FakeBattery implements BatterySource {
   BatteryReading reading = const BatteryReading(80, charging: false);

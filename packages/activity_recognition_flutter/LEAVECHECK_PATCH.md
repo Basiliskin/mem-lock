@@ -1,4 +1,4 @@
-# Geo Alert patch
+# LeaveCheck patch
 
 A copy of activity_recognition_flutter 6.1.0, without its `example/` and `test/` folders.
 

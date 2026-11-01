@@ -1,6 +1,6 @@
 ---
 name: product
-description: Product-owner step for Geo Alert — turns the brief into user stories with testable acceptance criteria and a scope cut. Use first in the chain, or when requirements or scope need revisiting.
+description: Product-owner step for LeaveCheck — turns the brief into user stories with testable acceptance criteria and a scope cut. Use first in the chain, or when requirements or scope need revisiting.
 ---
 
 # /product

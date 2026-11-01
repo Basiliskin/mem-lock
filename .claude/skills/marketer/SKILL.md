@@ -1,6 +1,6 @@
 ---
 name: marketer
-description: Marketing step for Geo Alert — builds evidence-backed product facts, positioning, a launch plan and channel-ready copy in docs/marketing/. Use for promoting the project, launch posts, positioning, Product Hunt, Hacker News, Reddit, LinkedIn or portfolio copy, usually after /qa.
+description: Marketing step for LeaveCheck — builds evidence-backed product facts, positioning, a launch plan and channel-ready copy in docs/marketing/. Use for promoting the project, launch posts, positioning, Product Hunt, Hacker News, Reddit, LinkedIn or portfolio copy, usually after /qa.
 ---
 
 # /marketer
