@@ -11,6 +11,7 @@ import '../ports/ports.dart';
 class Watcher {
   Watcher({
     required LocationSource location,
+    required LocationStatusStore locationStatus,
     required ActivitySource activity,
     required StateStore store,
     required ReminderPlayer reminders,
@@ -18,6 +19,7 @@ class Watcher {
     required QuietPlaceStore quiet,
     required StayChoiceStore stayChoice,
   }) : _location = location,
+       _locationStatus = locationStatus,
        _activity = activity,
        _store = store,
        _reminders = reminders,
@@ -26,6 +28,7 @@ class Watcher {
        _stayChoice = stayChoice;
 
   final LocationSource _location;
+  final LocationStatusStore _locationStatus;
   final ActivitySource _activity;
   final StateStore _store;
   final ReminderPlayer _reminders;
@@ -37,14 +40,21 @@ class Watcher {
   StreamSubscription<LocationFix>? _subscription;
   StreamSubscription<ActivityChanged>? _activitySubscription;
   Future<void> _queue = Future.value();
+  bool _locationErrored = false;
+  bool _locationFailing = false;
 
   Future<void> start() async {
     state = await _load();
+    // Listen first: a failed start reports its error on this stream.
+    _subscription = _location.fixes.listen(
+      handle,
+      onError: (Object _) => _locationErrored = true,
+    );
+    await _locationStatusWrite(failing: false);
     await _quietly(() => _location.setMode(state.locationMode));
     // These may have changed while the service wasn't running.
     await syncQuietPlaces();
     await syncStaySetting();
-    _subscription = _location.fixes.listen(handle, onError: (Object _) {});
     _listenToActivity();
   }
 
@@ -59,6 +69,22 @@ class Watcher {
   Future<void> restartLocation() => _queue = _queue.then(
     (_) => _quietly(() => _location.setMode(state.locationMode)),
   );
+
+  /// Called on every service check. A failed start of location is not retried
+  /// by the phone, so ask again, and report it until a retry brings no error.
+  Future<void> checkLocation() => _queue = _queue.then((_) async {
+    final failing = _locationErrored;
+    _locationErrored = false;
+    if (failing != _locationFailing) {
+      _locationFailing = failing;
+      await _locationStatusWrite(failing: failing);
+    }
+    if (failing) await _quietly(() => _location.setMode(state.locationMode));
+    // An error from this retry arrives on the stream soon after.
+  });
+
+  Future<void> _locationStatusWrite({required bool failing}) =>
+      _quietly(() => _locationStatus.write(failing: failing));
 
   /// Listens again, because activity updates that failed to register while the
   /// permission was missing are not retried by the phone.

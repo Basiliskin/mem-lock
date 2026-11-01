@@ -124,6 +124,8 @@ abstract final class Strings {
   static const tapToFix = 'Нажмите, чтобы исправить';
   static const fix = 'Исправить';
   static const problemLocationOff = 'Геолокация выключена';
+  static const problemLocationNotStarting =
+      'Геолокация не запускается. Проверьте настройки геолокации.';
   static const problemActivityPermission =
       'Нет разрешения на данные о движении, поэтому напоминания после поездки '
       'не появятся.';

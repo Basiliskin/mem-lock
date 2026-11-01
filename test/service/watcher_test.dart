@@ -23,6 +23,12 @@ class FakeLocation implements LocationSource {
   Future<void> setMode(LocationMode mode) async => modes.add(mode);
 }
 
+class FakeLocationStatus implements LocationStatusStore {
+  final written = <bool>[];
+  @override
+  Future<void> write({required bool failing}) async => written.add(failing);
+}
+
 class FakeActivity implements ActivitySource {
   final controller = StreamController<ActivityChanged>.broadcast();
   @override
@@ -92,6 +98,8 @@ class FakeReminders implements ReminderPlayer {
 }
 
 void main() {
+  late FakeLocationStatus locationStatus;
+  setUp(() => locationStatus = FakeLocationStatus());
   late FakeLocation location;
   late FakeActivity activity;
   late FakeStore store;
@@ -112,6 +120,7 @@ void main() {
     store = FakeStore(saved);
     reminders = FakeReminders();
     watcher = Watcher(
+      locationStatus: locationStatus,
       location: location,
       activity: activity,
       store: store,
@@ -272,6 +281,7 @@ void main() {
     location = FakeLocation();
     store = FakeStore();
     watcher = Watcher(
+      locationStatus: locationStatus,
       location: location,
       activity: activity,
       store: store,
@@ -342,6 +352,7 @@ void main() {
       store = FakeStore()..failReads = true;
       reminders = FakeReminders();
       watcher = Watcher(
+        locationStatus: locationStatus,
         location: location,
         activity: activity,
         store: store,
@@ -433,6 +444,7 @@ void main() {
     location = FakeLocation();
     store = FakeStore();
     watcher = Watcher(
+      locationStatus: locationStatus,
       location: location,
       activity: activity,
       store: store,
@@ -460,6 +472,65 @@ void main() {
     await begin();
     await watcher.stop();
     expect(location.controller.hasListener, isFalse);
+  });
+
+  group('location stream failure', () {
+    late FakeLocation location;
+    late Watcher failing;
+
+    setUp(() async {
+      location = FakeLocation();
+      failing = Watcher(
+        locationStatus: locationStatus,
+        location: location,
+        activity: FakeActivity(),
+        store: FakeStore(),
+        reminders: FakeReminders(),
+        places: FakePlaces(),
+        quiet: FakeQuiet(),
+        stayChoice: FakeChoice(),
+      );
+      await failing.start();
+      await Future<void>.delayed(Duration.zero);
+      locationStatus.written.clear();
+      location.modes.clear();
+    });
+
+    Future<void> streamError() async {
+      location.controller.addError(StateError('settings check failed'));
+      await Future<void>.delayed(Duration.zero);
+    }
+
+    test('an error is reported and location is asked for again', () async {
+      await streamError();
+      await failing.checkLocation();
+      expect(locationStatus.written, [true]);
+      expect(location.modes, hasLength(1));
+    });
+
+    test('keeps retrying and reports once while errors continue', () async {
+      await streamError();
+      await failing.checkLocation();
+      await streamError();
+      await failing.checkLocation();
+      expect(locationStatus.written, [true]);
+      expect(location.modes, hasLength(2));
+    });
+
+    test('a retry with no new error clears the report', () async {
+      await streamError();
+      await failing.checkLocation();
+      await failing.checkLocation();
+      expect(locationStatus.written, [true, false]);
+      expect(location.modes, hasLength(1));
+    });
+
+    test('a healthy stream never retries or reports', () async {
+      await failing.checkLocation();
+      await failing.checkLocation();
+      expect(locationStatus.written, isEmpty);
+      expect(location.modes, isEmpty);
+    });
   });
 }
 

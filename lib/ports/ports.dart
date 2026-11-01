@@ -10,6 +10,12 @@ abstract interface class LocationSource {
   Future<void> setMode(LocationMode mode);
 }
 
+/// Whether location readings could not be started. Shared with the screens,
+/// which run apart from the service.
+abstract interface class LocationStatusStore {
+  Future<void> write({required bool failing});
+}
+
 abstract interface class ActivitySource {
   Stream<ActivityChanged> get changes;
 }
@@ -128,6 +134,7 @@ abstract interface class SetupStore {
 /// Something stopping the app from protecting the Wearer.
 enum ProtectionProblem {
   locationOff,
+  locationNotStarting,
   locationPermission,
   notifications,
   activityPermission,

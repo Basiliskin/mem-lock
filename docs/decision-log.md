@@ -79,3 +79,13 @@
 
 - **Activity permission warning:** removing it now shows "Not protecting you", replacing the S11 decision not to check it, because S14 makes Ride Reminders depend on it. Battery optimisation is still not checked. Files: `lib/adapters/phone_health.dart`, `lib/ports/ports.dart`, `lib/ui/main_screen.dart`, `lib/l10n/strings.dart`.
 - **Recovery:** clearing any warning also makes the Watcher listen for activity again, because a failed registration isn't retried. Files: `lib/service/watcher.dart`, `lib/service/entry_point.dart`.
+
+## 2026-10-31 · /qa
+
+- **Release signing:** fix just before the first Play upload, using the owner's own key. Deferred.
+- **Repeated warning box and `_quietly`:** defer until after the field tests.
+- **Other small findings:** ignored: the two start-up plugin imports, unused iOS code in the vendored plugin, no direct test for `lib/adapters/phone_health.dart`, and the notification warning delay of up to 60 s. Files: `docs/qa-report.md`.
+
+## 2026-11-01 · /developer gap 0
+
+- **Location stream failure (D4 option a):** the Watcher retries every 60 s and saves the failure to prefs, so the notification and main screen warn. No fallback to `LocationManager` yet, so the failing settings check itself remains. Files: `lib/service/watcher.dart`, `lib/service/entry_point.dart`, `lib/adapters/phone_health.dart`, `lib/ports/ports.dart`, `lib/ui/main_screen.dart`, `lib/l10n/strings.dart`, `test/service/watcher_test.dart`.

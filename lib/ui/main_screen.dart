@@ -163,6 +163,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   String _reason(ProtectionProblem problem) => switch (problem) {
     ProtectionProblem.locationOff => Strings.problemLocationOff,
+    ProtectionProblem.locationNotStarting => Strings.problemLocationNotStarting,
     ProtectionProblem.locationPermission => Strings.problemLocationPermission,
     ProtectionProblem.notifications => Strings.problemNotifications,
     ProtectionProblem.activityPermission => Strings.problemActivityPermission,

@@ -43,6 +43,7 @@ class _Handler extends TaskHandler {
 
     final watcher = Watcher(
       location: GeolocatorLocation(),
+      locationStatus: PrefsLocationStatus(),
       activity: PluginActivity(),
       store: PrefsStateStore(),
       reminders: session,
@@ -82,9 +83,10 @@ class _Handler extends TaskHandler {
   }
 
   @override
-  void onRepeatEvent(DateTime timestamp) {
+  Future<void> onRepeatEvent(DateTime timestamp) async {
     _watcher?.tick(timestamp);
-    _monitor?.check();
+    await _watcher?.checkLocation();
+    await _monitor?.check();
     _batteryMonitor?.check();
   }
 
