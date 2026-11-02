@@ -12,7 +12,7 @@ What it asks for first: 10 departures from home and 2 router restarts that drop 
 
 ## Read the results
 
-Tap **Show results** in the app, or **Share results** to send the report and raw logs through any app on the phone, such as email or a messenger. The logs hold timing, activity and steps-per-signal data, but no places. Or copy the logs to a computer:
+Tap **Show results** in the app, or **Share results** to send the report and a zip of the raw logs through any app on the phone, such as email or a messenger. The logs hold timing, activity and steps-per-signal data, but no places. Or copy the logs to a computer:
 
 ```bash
 adb pull /sdcard/Android/data/com.leavecheck.probe.steps_probe/files/ logs/

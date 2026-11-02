@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:archive/archive.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:steps_probe/steps_log.dart';
 
@@ -263,6 +266,14 @@ void main() {
       ];
       expect(analyze(log).falseWalks(40), 0);
     });
+  });
+
+  test('the zip holds every log, unchanged', () {
+    final zip = ZipDecoder().decodeBytes(
+      zipLogs({'a.jsonl': utf8.encode('one'), 'b.jsonl': utf8.encode('two')}),
+    );
+    expect(zip.files.map((f) => f.name), ['a.jsonl', 'b.jsonl']);
+    expect(utf8.decode(zip.files.last.content), 'two');
   });
 
   test('the report holds no step count', () {

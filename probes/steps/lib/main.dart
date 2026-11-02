@@ -247,11 +247,18 @@ class _ProbePageState extends State<ProbePage> {
               if (f.path.endsWith('.jsonl')) f,
           ];
     try {
+      final temp = await getTemporaryDirectory();
+      final zip = File('${temp.path}/steps-probe-logs.zip');
+      await zip.writeAsBytes(
+        zipLogs({
+          for (final f in logs) f.uri.pathSegments.last: f.readAsBytesSync(),
+        }),
+      );
       await SharePlus.instance.share(
         ShareParams(
           subject: 'Steps probe results',
           text: analyze(_readLogs()).report(),
-          files: [for (final f in logs) XFile(f.path)],
+          files: [XFile(zip.path, mimeType: 'application/zip')],
         ),
       );
     } on Exception catch (e) {

@@ -1,5 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
+import 'dart:typed_data';
+
+import 'package:archive/archive.dart';
 
 /// One line of the probe's log. Pure Dart, so the report tool can read it.
 class LogEntry {
@@ -39,6 +42,15 @@ List<LogEntry> parseLog(String text) {
     }
   }
   return entries;
+}
+
+/// All the logs in one file, for sharing. Keys are file names.
+Uint8List zipLogs(Map<String, List<int>> files) {
+  final archive = Archive();
+  for (final MapEntry(:key, :value) in files.entries) {
+    archive.addFile(ArchiveFile.bytes(key, value));
+  }
+  return ZipEncoder().encodeBytes(archive);
 }
 
 /// How much the acceleration size varied over a window, in m/s².
