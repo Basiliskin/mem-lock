@@ -213,5 +213,6 @@ S16 emulator check, 2026-11-01, uncommitted, release build, Android 16 emulator 
 - **Rule for a clear benefit:** at least 10 walks and 4 still segments; seen on at least 90% of walks; median delay at least 15 s shorter than Activity Recognition; false signals in no more still segments than Activity Recognition.
 - **Emulator check only:** over three short runs, the probe started and motion logging continued for about 40 s with the screen locked. The step stream reported "not available" once and stayed silent in the other two runs. One Activity Recognition signal arrived, in the first run only. No step or pedestrian signal has been seen, so the step path is untested, and this says nothing about the sensors' benefit.
 - **First real session:** after one short walk, check that the report shows step, pedestrian and activity signals before doing the full set.
+- **Unbroken Walk checks (added 2026-11-02, no real data):** slow and walker walks, pause comparison, and false walks in daily life. Pass rule in `probes/steps/README.md`.
 - **Real-walk results:** to be added here from `tool/report.dart`.
 

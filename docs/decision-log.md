@@ -152,3 +152,10 @@
 
 - **Fixed the README's language and feature text, and AC-4.3's conflict with AC-13.4.** The other findings keep the recommendations in the report. Files: `README.md`, `docs/requirements.md`, `docs/qa-report.md`.
 
+## 2026-11-02 · Unbroken Walk idea, probe extended
+
+- **Idea, not yet built:** an Unbroken Walk ends a Stay sooner. Direction is dropped, because phones can't measure walking direction reliably. The limit starts at 30 steps and drops 1 a minute to 12. With normal GPS it wakes location, and a good reading past half the Stay area confirms. With weak GPS, 40 steps start the Reminder alone. Today's rule stays as the backup. It covers Stays and Reminder Places, not Rides. All numbers are starting guesses.
+- **Nothing goes into the main app until the probe passes.** Pass rule: 90% of normal and of at least 3 elderly walks reach 40 unbroken steps, and at most 1 false walk per 16 waking hours, over at least 8 hours of daily life. The 8 and 16 hours are the developer's default.
+- **The probe now logs steps since the previous signal, replacing the earlier "never a count".** Sensors may deliver steps in batches, so walks can't be measured without it. It never logs the running total, and the main app's count stays in memory only (AC-14.3).
+- Files: `probes/steps/`, `GLOSSARY.md`, `docs/qa-report.md`.
+- **The probe now guides the tester:** checklist, next activity, timing and progress kept between sessions. Logging runs only during an activity, and an activity stopped before its minimum is discarded. Log lines are now written one at a time, because a write during an unfinished flush can throw an error.

@@ -11,6 +11,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:vibration/vibration.dart';
 
+import 'guide.dart';
 import 'steps_log.dart';
 
 void main() => runApp(const MaterialApp(home: ProbePage()));
@@ -26,26 +27,53 @@ class ProbePage extends StatefulWidget {
 }
 
 class _ProbePageState extends State<ProbePage> {
-  IOSink? _sink;
-  String? _path;
-  String _status = 'Not logging';
-  int _lines = 0;
-  String? _segment;
+  File? _file;
+  Directory? _dir;
+  String? _error;
+  Analysis _progress = analyze(const []);
+  GuideActivity? _activity;
   bool _settling = false;
+  DateTime? _startedAt;
+  String? _results;
   final _subs = <StreamSubscription<dynamic>>[];
   final _window = <double>[];
   Timer? _motionTimer;
   Timer? _settleTimer;
+  Timer? _clock;
 
-  bool get _logging => _sink != null;
-
-  void _log(String kind, [Map<String, dynamic> data = const {}]) {
-    _sink?.writeln(LogEntry(DateTime.now(), kind, data).toLine());
-    _sink?.flush();
-    if (mounted) setState(() => _lines++);
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_load());
   }
 
-  Future<void> _start() async {
+  /// Progress comes from the logs, so it survives closing the app.
+  Future<void> _load() async {
+    final dir = await getExternalStorageDirectory();
+    _dir = dir;
+    if (mounted) setState(() => _progress = analyze(_readLogs()));
+  }
+
+  List<LogEntry> _readLogs() {
+    final dir = _dir;
+    if (dir == null) return const [];
+    return [
+      for (final f in dir.listSync().whereType<File>())
+        if (f.path.endsWith('.jsonl')) ...parseLog(f.readAsStringSync()),
+    ];
+  }
+
+  // Written straight away, so a killed app loses as little as possible.
+  void _log(String kind, [Map<String, dynamic> data = const {}]) {
+    _file?.writeAsStringSync(
+      '${LogEntry(DateTime.now(), kind, data).toLine()}\n',
+      mode: FileMode.append,
+      flush: true,
+    );
+  }
+
+  Future<bool> _startLogging() async {
+    if (_file != null) return true;
     final results = await [
       Permission.locationWhenInUse,
       Permission.activityRecognition,
@@ -54,19 +82,16 @@ class _ProbePageState extends State<ProbePage> {
     final denied = results.entries.where((e) => !e.value.isGranted).toList();
     if (denied.isNotEmpty) {
       setState(
-        () => _status = 'Permission missing: ${denied.map((e) => e.key)}',
+        () => _error = 'Permission missing: ${denied.map((e) => e.key)}',
       );
-      return;
+      return false;
     }
+    setState(() => _error = null);
 
-    final dir = await getExternalStorageDirectory();
+    final dir = _dir ?? await getExternalStorageDirectory();
+    _dir = dir;
     final stamp = DateTime.now().toIso8601String().replaceAll(':', '-');
-    final file = File('${dir!.path}/steps-$stamp.jsonl');
-    setState(() {
-      _sink = file.openWrite(mode: FileMode.append);
-      _path = file.path;
-      _status = 'Logging';
-    });
+    _file = File('${dir!.path}/steps-$stamp.jsonl');
     _log('probe_start');
 
     // Only keeps the app running with the phone locked, as the real Watcher
@@ -84,15 +109,20 @@ class _ProbePageState extends State<ProbePage> {
             enableWakeLock: true,
           ),
         ),
-      ).listen((_) {}, onError: (Object e) => _log('keep_alive_error', {'error': '$e'})),
+      ).listen(
+        (_) {},
+        onError: (Object e) => _log('keep_alive_error', {'error': '$e'}),
+      ),
     );
 
-    // The count itself is never logged (AC-14.3), only that a step happened.
+    // Logs only the steps since the last signal, never the running total.
+    int? lastTotal;
     _subs.add(
-      Pedometer.stepCountStream.listen(
-        (_) => _log('step'),
-        onError: (Object e) => _log('step_error', {'error': '$e'}),
-      ),
+      Pedometer.stepCountStream.listen((e) {
+        final steps = stepsSince(lastTotal, e.steps);
+        lastTotal = e.steps;
+        _log('step', {'steps': steps});
+      }, onError: (Object e) => _log('step_error', {'error': '$e'})),
     );
     _subs.add(
       Pedometer.pedestrianStatusStream.listen(
@@ -121,48 +151,69 @@ class _ProbePageState extends State<ProbePage> {
             onError: (Object e) => _log('activity_error', {'error': '$e'}),
           ),
     );
+    return true;
   }
 
   double _magnitude(AccelerometerEvent e) =>
       sqrt(e.x * e.x + e.y * e.y + e.z * e.z);
 
-  Future<void> _stop() async {
+  Future<void> _stopLogging() async {
     _motionTimer?.cancel();
-    _settleTimer?.cancel();
     for (final s in _subs) {
       await s.cancel();
     }
     _subs.clear();
     _log('probe_stop');
-    await _sink?.close();
-    setState(() {
-      _sink = null;
-      _segment = null;
-      _settling = false;
-      _status = 'Stopped';
-    });
+    _file = null;
   }
 
-  void _begin(String type) {
+  Future<void> _begin(GuideActivity activity) async {
+    if (!await _startLogging()) return;
     setState(() {
-      _segment = type;
+      _activity = activity;
       _settling = true;
+      _results = null;
     });
     _settleTimer = Timer(_settle, () {
-      _log('segment_start', {'type': type});
+      _log('segment_start', {'type': activity.type});
       unawaited(Vibration.vibrate(duration: 800));
-      setState(() => _settling = false);
+      setState(() {
+        _settling = false;
+        _startedAt = DateTime.now();
+      });
+      var told = activity.minimum == Duration.zero;
+      _clock = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (!told && _elapsed >= activity.minimum) {
+          told = true;
+          unawaited(Vibration.vibrate(pattern: [0, 400, 300, 400]));
+        }
+        setState(() {});
+      });
     });
   }
 
-  void _end() {
+  Duration get _elapsed => _startedAt == null
+      ? Duration.zero
+      : DateTime.now().difference(_startedAt!);
+
+  bool get _minimumReached =>
+      _activity != null && _elapsed >= _activity!.minimum;
+
+  Future<void> _finish() async {
     _settleTimer?.cancel();
-    if (!_settling) _log('segment_end');
+    _clock?.cancel();
+    if (!_settling) _log(_minimumReached ? 'segment_end' : 'segment_cancel');
+    await _stopLogging();
     setState(() {
-      _segment = null;
+      _activity = null;
       _settling = false;
+      _startedAt = null;
+      _progress = analyze(_readLogs());
     });
   }
+
+  void _showResults() =>
+      setState(() => _results = analyze(_readLogs()).report());
 
   Widget _big(String label, VoidCallback? onTap) => Padding(
     padding: const EdgeInsets.only(top: 8),
@@ -173,34 +224,88 @@ class _ProbePageState extends State<ProbePage> {
     ),
   );
 
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Steps probe')),
-    body: ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Text('$_status · $_lines lines'),
-        if (_path != null) SelectableText(_path!),
-        if (!_logging) _big('Start logging', _start),
-        if (_logging && _segment == null) ...[
-          const Text('Choose what you are about to do:'),
-          _big('Walk', () => _begin('walk')),
-          _big('Sit still', () => _begin('sit')),
-          _big('Ride in a vehicle', () => _begin('vehicle')),
-          _big('Stop logging', _stop),
-        ],
-        if (_segment != null) ...[
-          Text(
-            _settling
-                ? 'Lock the phone, put it on your body and stand or sit still. '
-                      'It will vibrate in ${_settle.inSeconds} s.'
-                : _segment == 'walk'
-                ? 'Start walking now, at least 2 minutes. Then tap End.'
-                : 'Carry on for at least 5 minutes without walking. Then tap End.',
+  String _clockText(Duration d) =>
+      '${d.inMinutes}:${(d.inSeconds % 60).toString().padLeft(2, '0')}';
+
+  List<Widget> _running(GuideActivity a) {
+    final min = a.minimum;
+    final Widget text;
+    final String button;
+    if (_settling) {
+      text = Text(
+        'Lock the phone, put it on your body and stand or sit still. It '
+        'vibrates once in ${_settle.inSeconds} s. Then begin:\n\n${a.howTo}',
+      );
+      button = 'Cancel';
+    } else {
+      final left = min - _elapsed;
+      text = Text(
+        '${a.howTo}\n\n'
+        '${min == Duration.zero
+            ? 'Time so far: ${_clockText(_elapsed)}. All of it counts.'
+            : _minimumReached
+            ? 'Minimum reached. Stop, then tap Done.'
+            : 'Keep going for ${_clockText(left)}. It vibrates twice when '
+                  'the time is up.'}',
+      );
+      button = _minimumReached ? 'Done' : 'Stop early (will not count)';
+    }
+    return [
+      Text(a.title, style: Theme.of(context).textTheme.headlineSmall),
+      const SizedBox(height: 8),
+      text,
+      _big(button, _finish),
+    ];
+  }
+
+  List<Widget> _checklist() {
+    final goals = guideGoals(_progress);
+    final next = nextGoal(goals);
+    return [
+      if (noStepsSeen(_progress))
+        const Text(
+          'Warning: walks so far gave no step signals. Check the permission '
+          'or try another phone before doing the full set.',
+          style: TextStyle(color: Colors.red),
+        ),
+      if (_error != null)
+        Text(_error!, style: const TextStyle(color: Colors.red)),
+      Text(
+        next == null ? 'All done. Tap Show results.' : 'Next: ${next.title}',
+        style: Theme.of(context).textTheme.headlineSmall,
+      ),
+      if (next != null)
+        for (final a in next.activities)
+          _big('Start: ${a.title}', () => _begin(a)),
+      const Divider(height: 32),
+      for (final g in goals)
+        ExpansionTile(
+          tilePadding: EdgeInsets.zero,
+          leading: Icon(
+            g.complete ? Icons.check_circle : Icons.circle_outlined,
           ),
-          _big(_settling ? 'Cancel' : 'End', _end),
-        ],
+          title: Text('${g.title}: ${g.done} of ${g.needed} ${g.unit}'),
+          children: [
+            for (final a in g.activities) _big(a.title, () => _begin(a)),
+          ],
+        ),
+      _big('Show results', _showResults),
+      if (_results != null) ...[
+        const SizedBox(height: 8),
+        SelectableText(_results!),
       ],
-    ),
-  );
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final activity = _activity;
+    return Scaffold(
+      appBar: AppBar(title: const Text('Steps probe')),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: activity != null ? _running(activity) : _checklist(),
+      ),
+    );
+  }
 }

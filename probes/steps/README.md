@@ -1,16 +1,18 @@
 # Steps Probe (S21)
 
-A throwaway app that measures whether the phone's step and motion sensors notice walking clearly sooner than Activity Recognition (AC-14.1). Nothing in `lib/` of the main app may import it. It logs no places and no step counts, only that a signal happened.
+A throwaway app that measures whether the phone's step and motion sensors notice walking clearly sooner than Activity Recognition (AC-14.1). Nothing in `lib/` of the main app may import it. It also checks the Unbroken Walk idea: walking without a pause over 3 seconds, with no direction. It logs no places and never the phone's running step total, only the steps since the previous signal.
 
 ## Run a session
 
-1. Install on a real phone with `flutter run --release`, open the app and grant the permissions. Emulators have no step sensor, so their results don't count.
-2. Tap **Start logging**. Don't swipe the app away.
-3. **Walks (at least 10):** tap **Walk**, lock the phone, put it on your body and stand still. When it vibrates, start walking. Walk for at least 2 minutes, then tap **End**. Stand or sit for a minute between walks.
-4. **Still segments (at least 4):** do the same with **Sit still** and **Ride in a vehicle**, for at least 5 minutes each, including a bumpy ride if you can. These measure false signals.
-5. Tap **Stop logging**.
+Install on a real phone with `flutter run --release`, because emulators have no step sensor. Then open the app and follow it. It shows a checklist and the next activity, gives the instructions, vibrates when to start and when the minimum time is reached, and remembers progress between sessions. You can tap any activity to do it out of order, such as a vehicle ride when you happen to be on a bus. Stopping before the minimum discards that activity.
+
+After the first walk, it warns you if the phone gave no step signals. Don't swipe the app away during an activity, because that activity is lost.
+
+What it asks for: 10 normal walks of 2 minutes, 4 segments of sitting or riding of 5 minutes, 3 elderly walks of 2 minutes by an elderly person, ideally a real Wearer, and 8 hours of daily life without really leaving the place.
 
 ## Read the results
+
+Tap **Show results** in the app, or copy the logs to a computer:
 
 ```bash
 adb pull /sdcard/Android/data/com.leavecheck.probe.steps_probe/files/ logs/
@@ -18,5 +20,7 @@ dart run tool/report.dart logs/files/*.jsonl
 ```
 
 The verdict is **keep** only if a sensor is seen on at least 90% of walks, has a median delay at least 15 s shorter than Activity Recognition, and gives false signals in no more still segments than Activity Recognition. Otherwise it is **drop**, and AC-14.2 applies. A gap well over 2 seconds in the log means the phone paused the app, so treat that session with caution.
+
+**Unbroken Walk** is a separate verdict. It **passes** only if at least 90% of normal walks and at least 90% of elderly walks reach 40 unbroken steps, and daily life gives no more than 1 false walk at 40 steps per 16 waking hours. The report also shows other pauses and limits, for tuning. The main app builds this only if both verdicts allow it.
 
 Record the report in `docs/qa-report.md`.

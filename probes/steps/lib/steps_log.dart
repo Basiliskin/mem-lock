@@ -49,6 +49,45 @@ double motionStd(List<double> magnitudes) {
   return sqrt(sum / magnitudes.length);
 }
 
+/// Steps since the previous signal. Never the phone's running total. The first
+/// signal only sets the starting point, and a restarted phone counts from 0.
+int stepsSince(int? previous, int current) =>
+    previous == null || current < previous ? 0 : current - previous;
+
+/// Sensors may deliver several steps together.
+class StepSignal {
+  const StepSignal(this.time, this.steps);
+
+  final DateTime time;
+  final int steps;
+}
+
+/// Unbroken Walks reaching [limit] steps. A long walk counts once. A gap breaks
+/// the walk unless the steps delivered after it could have filled that gap.
+int unbrokenWalks(List<StepSignal> signals, int limit, Duration pause) {
+  var found = 0;
+  var run = 0;
+  var counted = false;
+  DateTime? previous;
+  for (final s in signals) {
+    if (s.steps <= 0) continue;
+    if (previous != null) {
+      final gap = s.time.difference(previous);
+      if (gap > pause && gap.inMilliseconds / s.steps > pause.inMilliseconds) {
+        run = 0;
+        counted = false;
+      }
+    }
+    run += s.steps;
+    previous = s.time;
+    if (run >= limit && !counted) {
+      found++;
+      counted = true;
+    }
+  }
+  return found;
+}
+
 enum Source { step, pedestrian, motion, activity }
 
 const _candidates = [Source.step, Source.pedestrian, Source.motion];
@@ -66,8 +105,19 @@ const requiredStill = 4;
 const requiredDetectedPercent = 90;
 const requiredLead = Duration(seconds: 15);
 
+// Unbroken Walk checks. These are starting values, set before any real walks.
+const unbrokenLimits = [12, 30, 40];
+const strictestLimit = 40;
+const maxPause = Duration(seconds: 3);
+const pausesToCompare = [Duration(seconds: 2), maxPause, Duration(seconds: 5)];
+const requiredElderlyWalks = 3;
+const requiredDailyHours = 8;
+const wakingHoursPerDay = 16;
+const maxFalseWalksPerDay = 1;
+const _elderlyWalkTypes = {'slow_walk', 'walker_walk'};
+
 Source? _sourceOf(LogEntry e) => switch (e.kind) {
-  'step' => Source.step,
+  'step' when e.data['steps'] != 0 => Source.step,
   'pedestrian' when e.data['status'] == 'walking' => Source.pedestrian,
   'motion' when ((e.data['std'] as num?) ?? 0) >= motionThreshold =>
     Source.motion,
@@ -79,10 +129,22 @@ Source? _sourceOf(LogEntry e) => switch (e.kind) {
 };
 
 class Walk {
-  Walk(this.delays);
+  Walk(this.delays, {this.steps = const []});
 
   /// A source with no signal during the walk has no entry.
   final Map<Source, Duration> delays;
+  final List<StepSignal> steps;
+
+  bool reaches(int limit, Duration pause) =>
+      unbrokenWalks(steps, limit, pause) > 0;
+}
+
+/// A long segment of ordinary life, without really leaving the place.
+class DailySegment {
+  DailySegment(this.length, this.steps);
+
+  final Duration length;
+  final List<StepSignal> steps;
 }
 
 class StillSegment {
@@ -95,11 +157,48 @@ class StillSegment {
 enum Verdict { keep, drop, notEnoughData }
 
 class Analysis {
-  Analysis(this.walks, this.still, this.longestGap);
+  Analysis(
+    this.walks,
+    this.still,
+    this.longestGap, {
+    this.elderlyWalks = const [],
+    this.daily = const [],
+  });
 
   final List<Walk> walks;
   final List<StillSegment> still;
   final Duration longestGap;
+  final List<Walk> elderlyWalks;
+  final List<DailySegment> daily;
+
+  int _reaching(List<Walk> from, Duration pause) =>
+      from.where((w) => w.reaches(strictestLimit, pause)).length;
+
+  bool _mostReach(List<Walk> from) =>
+      _reaching(from, maxPause) * 100 >= requiredDetectedPercent * from.length;
+
+  double get dailyHours =>
+      daily.fold<int>(0, (t, d) => t + d.length.inSeconds) / 3600;
+
+  int falseWalks(int limit) =>
+      daily.fold(0, (t, d) => t + unbrokenWalks(d.steps, limit, maxPause));
+
+  double get falseWalksPerDay => dailyHours == 0
+      ? 0
+      : falseWalks(strictestLimit) * wakingHoursPerDay / dailyHours;
+
+  Verdict get unbrokenVerdict {
+    if (walks.length < requiredWalks ||
+        elderlyWalks.length < requiredElderlyWalks ||
+        dailyHours < requiredDailyHours) {
+      return Verdict.notEnoughData;
+    }
+    return _mostReach(walks) &&
+            _mostReach(elderlyWalks) &&
+            falseWalksPerDay <= maxFalseWalksPerDay
+        ? Verdict.keep
+        : Verdict.drop;
+  }
 
   int detected(Source s) => walks.where((w) => w.delays.containsKey(s)).length;
 
@@ -142,7 +241,7 @@ class Analysis {
         'false signals in ${falseSegments(s)} of ${still.length} still segments',
       );
     }
-    b.writeln('Longest gap in the log: ${longestGap.inSeconds} s');
+    b.writeln('Longest gap during an activity: ${longestGap.inSeconds} s');
     b.writeln(switch (verdict) {
       Verdict.keep =>
         'Steps experiment: keep (${keepers.map((s) => s.name).join(', ')})',
@@ -151,6 +250,30 @@ class Analysis {
         'Steps experiment: not enough data (need $requiredWalks walks and '
             '$requiredStill still segments)',
     });
+    b.writeln('Unbroken Walk, $strictestLimit steps:');
+    for (final pause in pausesToCompare) {
+      b.writeln(
+        '  pause up to ${pause.inSeconds} s: '
+        '${_reaching(walks, pause)} of ${walks.length} normal walks, '
+        '${_reaching(elderlyWalks, pause)} of ${elderlyWalks.length} '
+        'elderly walks',
+      );
+    }
+    b.writeln('Daily life: ${dailyHours.toStringAsFixed(1)} hours');
+    for (final limit in unbrokenLimits) {
+      b.writeln('  $limit steps: ${falseWalks(limit)} false walks');
+    }
+    b.writeln(
+      '  ${falseWalksPerDay.toStringAsFixed(1)} a day at $strictestLimit steps',
+    );
+    b.writeln(switch (unbrokenVerdict) {
+      Verdict.keep => 'Unbroken Walk: pass',
+      Verdict.drop => 'Unbroken Walk: fail',
+      Verdict.notEnoughData =>
+        'Unbroken Walk: not enough data (need $requiredWalks normal walks, '
+            '$requiredElderlyWalks elderly walks and '
+            '$requiredDailyHours hours of daily life)',
+    });
     return b.toString();
   }
 }
@@ -158,14 +281,12 @@ class Analysis {
 Analysis analyze(List<LogEntry> input) {
   final log = [...input]..sort((a, b) => a.time.compareTo(b.time));
 
+  // Only inside activities, because logging is off between them.
   var longestGap = Duration.zero;
-  for (var i = 1; i < log.length; i++) {
-    final gap = log[i].time.difference(log[i - 1].time);
-    if (gap > longestGap) longestGap = gap;
-  }
-
   final walks = <Walk>[];
   final still = <StillSegment>[];
+  final elderlyWalks = <Walk>[];
+  final daily = <DailySegment>[];
   for (var i = 0; i < log.length; i++) {
     if (log[i].kind != 'segment_start') continue;
     final start = log[i].time;
@@ -179,14 +300,27 @@ Analysis analyze(List<LogEntry> input) {
     }
     if (j >= log.length || log[j].kind != 'segment_end') continue;
     final inside = log.sublist(i + 1, j);
+    for (var k = i + 1; k <= j; k++) {
+      final gap = log[k].time.difference(log[k - 1].time);
+      if (gap > longestGap) longestGap = gap;
+    }
 
-    if (type == 'walk') {
+    if (type == 'daily') {
+      final cutoff = log[j].time.subtract(endMargin);
+      daily.add(
+        DailySegment(
+          log[j].time.difference(start),
+          _stepSignals(inside.where((e) => e.time.isBefore(cutoff))),
+        ),
+      );
+    } else if (type == 'walk' || _elderlyWalkTypes.contains(type)) {
       final delays = <Source, Duration>{};
       for (final e in inside) {
         final s = _sourceOf(e);
         if (s != null) delays.putIfAbsent(s, () => e.time.difference(start));
       }
-      walks.add(Walk(delays));
+      final walk = Walk(delays, steps: _stepSignals(inside));
+      (type == 'walk' ? walks : elderlyWalks).add(walk);
     } else {
       final cutoff = log[j].time.subtract(endMargin);
       final counts = <Source, int>{};
@@ -199,5 +333,18 @@ Analysis analyze(List<LogEntry> input) {
       still.add(StillSegment(type, counts));
     }
   }
-  return Analysis(walks, still, longestGap);
+  return Analysis(
+    walks,
+    still,
+    longestGap,
+    elderlyWalks: elderlyWalks,
+    daily: daily,
+  );
 }
+
+/// A log line without a number holds one step.
+List<StepSignal> _stepSignals(Iterable<LogEntry> entries) => [
+  for (final e in entries)
+    if (e.kind == 'step')
+      StepSignal(e.time, ((e.data['steps'] as num?) ?? 1).toInt()),
+];

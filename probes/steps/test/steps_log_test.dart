@@ -119,7 +119,10 @@ void main() {
     });
 
     test('drops when steps are not clearly earlier', () {
-      expect(analyze(session(stepAt: 30, activityAt: 40)).verdict, Verdict.drop);
+      expect(
+        analyze(session(stepAt: 30, activityAt: 40)).verdict,
+        Verdict.drop,
+      );
     });
 
     test('drops when steps often never arrive', () {
@@ -147,6 +150,118 @@ void main() {
         analyze(session(stepAt: null, activityAt: null)).verdict,
         Verdict.drop,
       );
+    });
+  });
+
+  group('Unbroken Walk', () {
+    const pause = Duration(seconds: 3);
+    List<StepSignal> everySecond(int from, int steps) => [
+      for (var i = 0; i < steps; i++) StepSignal(at(from + i), 1),
+    ];
+
+    test('a long walk reaching the limit counts once', () {
+      expect(unbrokenWalks(everySecond(0, 100), 40, pause), 1);
+    });
+
+    test('short bursts do not add up', () {
+      final bursts = [...everySecond(0, 30), ...everySecond(100, 30)];
+      expect(unbrokenWalks(bursts, 40, pause), 0);
+    });
+
+    test('each walk after a real pause counts again', () {
+      final two = [...everySecond(0, 40), ...everySecond(100, 40)];
+      expect(unbrokenWalks(two, 40, pause), 2);
+    });
+
+    test('a delayed batch of steps does not look like a pause', () {
+      final batched = [StepSignal(at(0), 1), StepSignal(at(30), 40)];
+      expect(unbrokenWalks(batched, 40, pause), 1);
+    });
+
+    test('a pause just over the limit breaks the walk', () {
+      final signals = [StepSignal(at(0), 39), StepSignal(at(4), 1)];
+      expect(unbrokenWalks(signals, 40, pause), 0);
+    });
+
+    test('the first signal and a restarted phone add no steps', () {
+      expect(stepsSince(null, 5000), 0);
+      expect(stepsSince(5000, 5003), 3);
+      expect(stepsSince(5000, 2), 0);
+    });
+
+    /// [hours] of daily life holding [falseWalks] 40-step walks.
+    List<LogEntry> daily(int s, int hours, int falseWalks) => [
+      open(s, 'daily'),
+      for (var w = 0; w < falseWalks; w++)
+        LogEntry(at(s + 10 + w * 100), 'step', {'steps': 40}),
+      close(s + hours * 3600),
+    ];
+
+    List<LogEntry> elderly(int s, {int steps = 40}) => [
+      open(s, 'slow_walk'),
+      LogEntry(at(s + 30), 'step', {'steps': steps}),
+      close(s + 120),
+    ];
+
+    /// session() walks hold one step each, so give them real walks here.
+    List<LogEntry> normalWalks() => [
+      for (var i = 0; i < requiredWalks; i++) ...[
+        open(i * 200, 'walk'),
+        LogEntry(at(i * 200 + 30), 'step', {'steps': 40}),
+        close(i * 200 + 120),
+      ],
+    ];
+
+    List<LogEntry> full({int falseWalks = 0, int elderlySteps = 40}) => [
+      ...normalWalks(),
+      ...elderly(10000, steps: elderlySteps),
+      ...elderly(10200, steps: elderlySteps),
+      ...elderly(10400, steps: elderlySteps),
+      ...daily(20000, 8, falseWalks),
+    ];
+
+    test('passes with walks reached and few false walks', () {
+      final a = analyze(full());
+      expect(a.unbrokenVerdict, Verdict.keep);
+      expect(a.report(), contains('Unbroken Walk: pass'));
+    });
+
+    test('not enough data without enough of each part', () {
+      expect(analyze(normalWalks()).unbrokenVerdict, Verdict.notEnoughData);
+      final short = [
+        ...normalWalks(),
+        ...elderly(10000),
+        ...elderly(10200),
+        ...elderly(10400),
+        ...daily(20000, 7, 0),
+      ];
+      expect(analyze(short).unbrokenVerdict, Verdict.notEnoughData);
+    });
+
+    test('fails when an elderly walker\'s steps are missed', () {
+      expect(analyze(full(elderlySteps: 10)).unbrokenVerdict, Verdict.drop);
+    });
+
+    test('one false walk in 8 hours is 2 a day, so it fails', () {
+      final a = analyze(full(falseWalks: 1));
+      expect(a.falseWalksPerDay, 2);
+      expect(a.unbrokenVerdict, Verdict.drop);
+    });
+
+    test('new segment types are not still segments or normal walks', () {
+      final a = analyze(full());
+      expect(a.still, isEmpty);
+      expect(a.walks, hasLength(requiredWalks));
+      expect(a.elderlyWalks, hasLength(3));
+    });
+
+    test('handling just before the end tap is not a false walk', () {
+      final log = [
+        open(0, 'daily'),
+        LogEntry(at(95), 'step', {'steps': 40}),
+        close(100),
+      ];
+      expect(analyze(log).falseWalks(40), 0);
     });
   });
 

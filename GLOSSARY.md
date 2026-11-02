@@ -20,6 +20,10 @@ _Avoid_: Anchor, zone, geofence
 A period in which the person travelled in a vehicle such as a train or bus.
 _Avoid_: Trip, journey
 
+**Unbroken Walk**:
+Walking without a long pause, which suggests the Wearer may be leaving a Stay. Short bursts of walking don't add up to one.
+_Avoid_: Steps in one direction, walk-off
+
 **Quiet Place**:
 A place chosen by the Helper, such as the Wearer's home, that never produces a Reminder when the Wearer leaves it.
 _Avoid_: Home, safe zone, excluded zone
