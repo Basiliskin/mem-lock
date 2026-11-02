@@ -159,3 +159,10 @@
 - **The probe now logs steps since the previous signal, replacing the earlier "never a count".** Sensors may deliver steps in batches, so walks can't be measured without it. It never logs the running total, and the main app's count stays in memory only (AC-14.3).
 - Files: `probes/steps/`, `GLOSSARY.md`, `docs/qa-report.md`.
 - **The probe now guides the tester:** checklist, next activity, timing and progress kept between sessions. Logging runs only during an activity, and an activity stopped before its minimum is discarded. Log lines are now written one at a time, because a write during an unfinished flush can throw an error.
+
+## 2026-11-02 · Leaving home
+
+- **Steps are dropped (AC-14.2), and leaving home becomes the indoor case.** Home can be a Reminder Place with a message such as "Gas off? Door locked?", or a Quiet Place, as the family chooses.
+- **Goal:** a Reminder within about 30 m of the door. No leaving signal can come before the door closes.
+- **Home Wi-Fi dropping is the proposed signal, tested first.** The probe logs only whether Wi-Fi is connected. Pass rule in `probes/steps/README.md`; the 50 steps, 30 s and 90% are the developer's default. Nothing goes into the main app until it passes.
+- **Activity Recognition's walking signal now wakes precise location outside Rides (AC-1.6).** A good reading past half the area confirms leaving, so Reminders can come sooner, for Stays and Reminder Places. The 2-minute signal life and 25 m accuracy are starting values. The 2-reading rule at the full area stays as the backup. Files: `lib/domain/detector.dart`, `lib/domain/detector_json.dart`.

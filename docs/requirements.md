@@ -30,6 +30,7 @@ As a Wearer, I want a Reminder when I leave a place where I stayed, so that I do
 - **AC-1.3** Given a Stay is at a Quiet Place, when the Wearer leaves, then no Reminder starts.
 - **AC-1.4** Given the Wearer stays in place while the location signal drifts within the Stay area, then no Reminder starts.
 - **AC-1.5** Given a Reminder has started for a Stay, when the location signal crosses the edge of the Stay area again, then no second Reminder starts for that same Stay.
+- **AC-1.6** Given a Stay or Reminder Place visit and a recent walking signal, when a reading accurate to 25 m shows the Wearer past half the area, then one Reminder starts, and its repeats stop only within a quarter of the area.
 
 ### US-2: Reminder after a Ride (Must, depends on FT-2)
 As a Wearer, I want a Reminder when I get off a train or bus, so that I don't leave my bag on the seat.

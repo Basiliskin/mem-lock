@@ -64,6 +64,8 @@ String encodeState(DetectorState s) => jsonEncode({
     },
   },
   'returnTo': s.returnTo == null ? null : _point(s.returnTo!),
+  'returnMeters': s.returnMeters,
+  'walkingSince': s.walkingSince?.toUtc().toIso8601String(),
   'mode': s.locationMode.name,
 });
 
@@ -122,6 +124,11 @@ DetectorState decodeState(String text) {
       ],
       visit: _readVisit(m['visit']),
       returnTo: m['returnTo'] == null ? null : _readPoint(m['returnTo']),
+      // States saved by older versions don't have these.
+      returnMeters: (m['returnMeters'] as num?)?.toDouble(),
+      walkingSince: m['walkingSince'] == null
+          ? null
+          : DateTime.parse(m['walkingSince'] as String),
       locationMode: LocationMode.values.byName(m['mode'] as String),
     );
   } on FormatException {

@@ -69,8 +69,42 @@ const _daily = GuideActivity(
   Duration.zero,
 );
 
+const leaveHome = GuideActivity(
+  'leave_home',
+  'Leave home',
+  'Hold the phone. Walk out as usual and tap "Door closed" as the door shuts. '
+      'Then lock the phone, pocket it and keep walking away, down the stairs '
+      'and along the street.',
+  Duration(minutes: 2),
+);
+const _restart = GuideActivity(
+  'router_restart',
+  'Restart the router',
+  'Stay in one spot. Put the phone down and turn the router off, wait 1 '
+      'minute, then turn it back on. Then wait, without walking if you can.',
+  Duration(minutes: 3),
+);
+
+/// Activities that test Wi-Fi need the phone on the home Wi-Fi at the start.
+bool needsWifi(GuideActivity a) =>
+    a.type == leaveHome.type || a.type == _restart.type;
+
 /// Progress so far, in the order the tester should work through it.
 List<GuideGoal> guideGoals(Analysis a) => [
+  GuideGoal(
+    'Leaving home',
+    a.departures.length,
+    requiredDepartures,
+    'departures',
+    const [leaveHome],
+  ),
+  GuideGoal(
+    'Router restarts',
+    a.usefulRestarts,
+    requiredRestarts,
+    'restarts',
+    const [_restart],
+  ),
   GuideGoal('Normal walks', a.walks.length, requiredWalks, 'walks', const [
     _walk,
   ]),

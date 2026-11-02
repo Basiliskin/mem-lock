@@ -214,5 +214,6 @@ S16 emulator check, 2026-11-01, uncommitted, release build, Android 16 emulator 
 - **Emulator check only:** over three short runs, the probe started and motion logging continued for about 40 s with the screen locked. The step stream reported "not available" once and stayed silent in the other two runs. One Activity Recognition signal arrived, in the first run only. No step or pedestrian signal has been seen, so the step path is untested, and this says nothing about the sensors' benefit.
 - **First real session:** after one short walk, check that the report shows step, pedestrian and activity signals before doing the full set.
 - **Unbroken Walk checks (added 2026-11-02, no real data):** slow and walker walks, pause comparison, and false walks in daily life. Pass rule in `probes/steps/README.md`.
-- **Real-walk results:** to be added here from `tool/report.dart`.
+- **Real-walk results (2026-11-02, one tester on one phone, no elderly walks or daily life; logs in `probes/steps/data/`):** 10 walks, 4 sits, no vehicle rides. Steps: seen on 10 of 10 walks, median delay 0 s, false signals in 0 of 4 sits. Activity Recognition: 10 of 10, median 5 s, 0 of 4. Pedestrian: 3 of 10, median 81 s, 0 of 4. Motion: 10 of 10, median 1 s, 2 of 4. All 10 walks reached 40 unbroken steps at pauses up to 2, 3 and 5 s.
+- **Verdict from the report:** Steps experiment: **drop**, because steps lead Activity Recognition by only 5 s, not the required 15 s. Unbroken Walk: **not enough data**. So AC-14.2 applies: no steps in the release.
 

@@ -29,7 +29,7 @@ A place chosen by the Helper, such as the Wearer's home, that never produces a R
 _Avoid_: Home, safe zone, excluded zone
 
 **Reminder Place**:
-A place chosen by the Helper that always produces a Reminder when the Wearer leaves it, even after a short visit, with that place's own message. A place cannot be both a Reminder Place and a Quiet Place.
+A place chosen by the Helper such as the Wearer's home, that always produces a Reminder when the Wearer leaves it, even after a short visit, with that place's own message. A place cannot be both a Reminder Place and a Quiet Place.
 _Avoid_: Alert, custom location, geofence
 
 **Last Place**:

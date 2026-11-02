@@ -116,6 +116,12 @@ const wakingHoursPerDay = 16;
 const maxFalseWalksPerDay = 1;
 const _elderlyWalkTypes = {'slow_walk', 'walker_walk'};
 
+// Leaving home checks. Starting values, set before any real departures.
+const homeGoalSteps = 50; // About 30 m.
+const requiredDepartures = 10;
+const requiredRestarts = 2;
+const walkingNearLoss = Duration(seconds: 30);
+
 Source? _sourceOf(LogEntry e) => switch (e.kind) {
   'step' when e.data['steps'] != 0 => Source.step,
   'pedestrian' when e.data['status'] == 'walking' => Source.pedestrian,
@@ -154,6 +160,26 @@ class StillSegment {
   final Map<Source, int> falseSignals;
 }
 
+/// One walk out of the home, measured from the door closing.
+class Departure {
+  Departure(this.stepsToLoss, this.walkingNear);
+
+  /// Null when Wi-Fi never dropped.
+  final int? stepsToLoss;
+  final bool walkingNear;
+
+  bool get inTime =>
+      stepsToLoss != null && stepsToLoss! <= homeGoalSteps && walkingNear;
+}
+
+/// The router restarted while the tester stayed put.
+class RouterRestart {
+  RouterRestart(this.lost, this.walkingNear);
+
+  final bool lost;
+  final bool walkingNear;
+}
+
 enum Verdict { keep, drop, notEnoughData }
 
 class Analysis {
@@ -163,6 +189,8 @@ class Analysis {
     this.longestGap, {
     this.elderlyWalks = const [],
     this.daily = const [],
+    this.departures = const [],
+    this.restarts = const [],
   });
 
   final List<Walk> walks;
@@ -170,6 +198,27 @@ class Analysis {
   final Duration longestGap;
   final List<Walk> elderlyWalks;
   final List<DailySegment> daily;
+  final List<Departure> departures;
+  final List<RouterRestart> restarts;
+
+  int get departuresInTime => departures.where((d) => d.inTime).length;
+
+  /// A restart must drop Wi-Fi to test anything, and must not look like leaving.
+  int get usefulRestarts => restarts.where((r) => r.lost).length;
+  int get falseRestarts =>
+      restarts.where((r) => r.lost && r.walkingNear).length;
+
+  Verdict get homeVerdict {
+    if (departures.length < requiredDepartures ||
+        usefulRestarts < requiredRestarts) {
+      return Verdict.notEnoughData;
+    }
+    return departuresInTime * 100 >=
+                requiredDetectedPercent * departures.length &&
+            falseRestarts == 0
+        ? Verdict.keep
+        : Verdict.drop;
+  }
 
   int _reaching(List<Walk> from, Duration pause) =>
       from.where((w) => w.reaches(strictestLimit, pause)).length;
@@ -250,6 +299,23 @@ class Analysis {
         'Steps experiment: not enough data (need $requiredWalks walks and '
             '$requiredStill still segments)',
     });
+    final losses = [for (final d in departures) ?d.stepsToLoss]..sort();
+    b.writeln(
+      'Leaving home: Wi-Fi lost within $homeGoalSteps steps with walking on '
+      '$departuresInTime of ${departures.length} departures, median '
+      '${losses.isEmpty ? '-' : losses[losses.length ~/ 2]} steps after the door',
+    );
+    b.writeln(
+      'Router restarts: $usefulRestarts dropped Wi-Fi, '
+      '$falseRestarts looked like leaving',
+    );
+    b.writeln(switch (homeVerdict) {
+      Verdict.keep => 'Leaving home: pass',
+      Verdict.drop => 'Leaving home: fail',
+      Verdict.notEnoughData =>
+        'Leaving home: not enough data (need $requiredDepartures departures '
+            'and $requiredRestarts router restarts that dropped Wi-Fi)',
+    });
     b.writeln('Unbroken Walk, $strictestLimit steps:');
     for (final pause in pausesToCompare) {
       b.writeln(
@@ -287,6 +353,8 @@ Analysis analyze(List<LogEntry> input) {
   final still = <StillSegment>[];
   final elderlyWalks = <Walk>[];
   final daily = <DailySegment>[];
+  final departures = <Departure>[];
+  final restarts = <RouterRestart>[];
   for (var i = 0; i < log.length; i++) {
     if (log[i].kind != 'segment_start') continue;
     final start = log[i].time;
@@ -305,7 +373,14 @@ Analysis analyze(List<LogEntry> input) {
       if (gap > longestGap) longestGap = gap;
     }
 
-    if (type == 'daily') {
+    if (type == 'leave_home') {
+      departures.add(_departure(inside));
+    } else if (type == 'router_restart') {
+      final loss = _firstLoss(inside);
+      restarts.add(
+        RouterRestart(loss != null, loss != null && _walkingNear(inside, loss)),
+      );
+    } else if (type == 'daily') {
       final cutoff = log[j].time.subtract(endMargin);
       daily.add(
         DailySegment(
@@ -339,7 +414,35 @@ Analysis analyze(List<LogEntry> input) {
     longestGap,
     elderlyWalks: elderlyWalks,
     daily: daily,
+    departures: departures,
+    restarts: restarts,
   );
+}
+
+DateTime? _firstLoss(Iterable<LogEntry> entries) {
+  for (final e in entries) {
+    if (e.kind == 'wifi' && e.data['connected'] == false) return e.time;
+  }
+  return null;
+}
+
+bool _walkingNear(List<LogEntry> entries, DateTime loss) => entries.any((e) {
+  if (e.time.difference(loss).abs() > walkingNearLoss) return false;
+  final source = _sourceOf(e);
+  return source == Source.step || source == Source.activity;
+});
+
+/// Wi-Fi lost before the door closed counts as 0 steps.
+Departure _departure(List<LogEntry> inside) {
+  final loss = _firstLoss(inside);
+  if (loss == null) return Departure(null, false);
+  var door = inside.where((e) => e.kind == 'door_closed').firstOrNull?.time;
+  door ??= inside.isEmpty ? loss : inside.first.time;
+  var steps = 0;
+  for (final s in _stepSignals(inside)) {
+    if (s.time.isAfter(door) && !s.time.isAfter(loss)) steps += s.steps;
+  }
+  return Departure(steps, _walkingNear(inside, loss));
 }
 
 /// A log line without a number holds one step.

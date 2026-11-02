@@ -3,12 +3,14 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:activity_recognition_flutter/activity_recognition_flutter.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sensors_plus/sensors_plus.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:vibration/vibration.dart';
 
 import 'guide.dart';
@@ -33,6 +35,7 @@ class _ProbePageState extends State<ProbePage> {
   Analysis _progress = analyze(const []);
   GuideActivity? _activity;
   bool _settling = false;
+  bool _doorClosed = false;
   DateTime? _startedAt;
   String? _results;
   final _subs = <StreamSubscription<dynamic>>[];
@@ -115,6 +118,14 @@ class _ProbePageState extends State<ProbePage> {
       ),
     );
 
+    // Only whether Wi-Fi is connected, never the network's name.
+    _subs.add(
+      Connectivity().onConnectivityChanged.listen(
+        (r) => _log('wifi', {'connected': r.contains(ConnectivityResult.wifi)}),
+        onError: (Object e) => _log('wifi_error', {'error': '$e'}),
+      ),
+    );
+
     // Logs only the steps since the last signal, never the running total.
     int? lastTotal;
     _subs.add(
@@ -168,6 +179,17 @@ class _ProbePageState extends State<ProbePage> {
   }
 
   Future<void> _begin(GuideActivity activity) async {
+    if (needsWifi(activity)) {
+      final now = await Connectivity().checkConnectivity();
+      if (!now.contains(ConnectivityResult.wifi)) {
+        setState(() => _error = 'Connect to the home Wi-Fi first.');
+        return;
+      }
+    }
+    setState(() {
+      _doorClosed = false;
+      _error = null;
+    });
     if (!await _startLogging()) return;
     setState(() {
       _activity = activity;
@@ -215,6 +237,28 @@ class _ProbePageState extends State<ProbePage> {
   void _showResults() =>
       setState(() => _results = analyze(_readLogs()).report());
 
+  /// The report as text, with the raw logs attached so they can be re-analysed.
+  /// Logs hold no places and no running step total.
+  Future<void> _share() async {
+    final logs = _dir == null
+        ? <File>[]
+        : [
+            for (final f in _dir!.listSync().whereType<File>())
+              if (f.path.endsWith('.jsonl')) f,
+          ];
+    try {
+      await SharePlus.instance.share(
+        ShareParams(
+          subject: 'Steps probe results',
+          text: analyze(_readLogs()).report(),
+          files: [for (final f in logs) XFile(f.path)],
+        ),
+      );
+    } on Exception catch (e) {
+      if (mounted) setState(() => _error = 'Could not share: $e');
+    }
+  }
+
   Widget _big(String label, VoidCallback? onTap) => Padding(
     padding: const EdgeInsets.only(top: 8),
     child: SizedBox(
@@ -254,6 +298,11 @@ class _ProbePageState extends State<ProbePage> {
       Text(a.title, style: Theme.of(context).textTheme.headlineSmall),
       const SizedBox(height: 8),
       text,
+      if (!_settling && a.type == leaveHome.type && !_doorClosed)
+        _big('Door closed', () {
+          _log('door_closed');
+          setState(() => _doorClosed = true);
+        }),
       _big(button, _finish),
     ];
   }
@@ -290,6 +339,7 @@ class _ProbePageState extends State<ProbePage> {
           ],
         ),
       _big('Show results', _showResults),
+      _big('Share results', _share),
       if (_results != null) ...[
         const SizedBox(height: 8),
         SelectableText(_results!),
