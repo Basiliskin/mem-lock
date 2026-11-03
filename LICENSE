@@ -1,0 +1,78 @@
+LeaveCheck Source-Available License
+
+Copyright (c) 2026 Dimitry Katz. All rights reserved.
+
+The source code of LeaveCheck (the "Software") is published so that anyone can
+read it, verify what the app does, build it for themselves and suggest changes.
+It is not open-source software.
+
+1. Permitted uses
+
+   You may, free of charge:
+
+   a. view, download and study the source code;
+   b. compile and run the Software on devices you own or control, for your own
+      personal, non-commercial use;
+   c. modify the Software for the purposes in (b);
+   d. submit changes back to the author (for example as a pull request). By
+      doing so you grant the author a perpetual, worldwide, royalty-free licence
+      to use, modify, relicense and distribute your contribution as part of
+      the Software.
+
+2. Prohibited uses
+
+   Without the prior written permission of the copyright holder, you may not:
+
+   a. distribute, publish or make available the Software, or any modified or
+      rebranded version of it, in source or binary form, to anyone else;
+   b. publish the Software, or any application derived from it, on Google
+      Play, the Apple App Store or any other app store, website or download
+      service;
+   c. sell, sublicense, rent or lease the Software, or use it to provide a
+      paid or commercial service;
+   d. remove or alter this licence, the copyright notice or the app's name.
+
+   Forking the repository on GitHub for the purposes of section 1 is allowed.
+
+3. Conditions on permitted distribution (copyleft)
+
+   Any permission granted under section 2 is subject to the following
+   conditions, unless the written permission expressly says otherwise:
+
+   a. the complete corresponding source code of the distributed version,
+      including all modifications, must be made publicly available under
+      this same licence, at no charge, for as long as the version is
+      distributed;
+   b. the distributed version must keep this licence, the copyright notice
+      and a visible credit to the original author and to
+      https://github.com/Basiliskin/mem-lock;
+   c. modifications must be clearly marked as such, with the date of the
+      change, so that they are not attributed to the original author;
+   d. no additional restrictions may be imposed on recipients beyond those
+      in this licence.
+
+   A written permission that is silent on these points includes them.
+
+4. Trademarks
+
+   "LeaveCheck" and the application logo are used to identify the author's
+   application. This licence grants no right to use them for any other
+   application.
+
+5. Permission requests
+
+   To ask for permission to redistribute or publish the Software, or for any
+   other use not covered above, write to dima.icmega@gmail.com.
+
+6. No warranty
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+   ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+   WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+7. Termination
+
+   Your rights under this licence end automatically if you breach it.
