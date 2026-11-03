@@ -6,33 +6,38 @@ class HelperSettingsScreen extends StatelessWidget {
   const HelperSettingsScreen({
     super.key,
     required this.reminderOptions,
-    required this.staySetting,
-    required this.advancedSettings,
-    required this.quietPlaces,
-    required this.reminderPlaces,
+    this.staySetting,
+    this.advancedSettings,
+    this.quietPlaces,
+    this.reminderPlaces,
+    this.homeWifi,
     required this.language,
   });
 
   final WidgetBuilder reminderOptions;
-  final WidgetBuilder staySetting;
-  final WidgetBuilder advancedSettings;
-  final WidgetBuilder quietPlaces;
-  final WidgetBuilder reminderPlaces;
+  // Each is hidden when null, so a feature that is switched off has no link.
+  final WidgetBuilder? staySetting;
+  final WidgetBuilder? advancedSettings;
+  final WidgetBuilder? quietPlaces;
+  final WidgetBuilder? reminderPlaces;
+  final WidgetBuilder? homeWifi;
   final WidgetBuilder language;
 
-  Widget _link(BuildContext context, String text, WidgetBuilder builder) =>
-      Padding(
-        padding: const EdgeInsets.only(bottom: 16),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 64),
-          child: FilledButton(
-            onPressed: () =>
-                Navigator.of(context)
-                    .push(MaterialPageRoute<void>(builder: builder)),
-            child: Text(text, style: const TextStyle(fontSize: 20)),
+  Widget _link(BuildContext context, String text, WidgetBuilder? builder) =>
+      builder == null
+      ? const SizedBox.shrink()
+      : Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 64),
+            child: FilledButton(
+              onPressed: () =>
+                  Navigator.of(context)
+                      .push(MaterialPageRoute<void>(builder: builder)),
+              child: Text(text, style: const TextStyle(fontSize: 20)),
+            ),
           ),
-        ),
-      );
+        );
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -40,6 +45,7 @@ class HelperSettingsScreen extends StatelessWidget {
     body: ListView(
       padding: const EdgeInsets.all(20),
       children: [
+        _link(context, context.l10n.homeWifi, homeWifi),
         _link(context, context.l10n.reminderOptions, reminderOptions),
         _link(context, context.l10n.staySetting, staySetting),
         _link(context, context.l10n.advancedSettings, advancedSettings),

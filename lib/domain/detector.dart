@@ -132,7 +132,7 @@ class SettingsChanged extends DetectorEvent {
 
 // Decisions -----------------------------------------------------------------
 
-enum ReminderSource { stay, ride, reminderPlace }
+enum ReminderSource { stay, ride, reminderPlace, home }
 
 enum LocationMode { precise, lowPower }
 

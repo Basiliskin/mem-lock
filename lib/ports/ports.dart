@@ -1,6 +1,8 @@
 import '../domain/battery.dart';
+import '../domain/check_items.dart';
 import '../domain/detector.dart';
 import '../domain/geo.dart';
+import '../domain/home_wifi.dart';
 import '../domain/language.dart';
 import '../domain/last_place_record.dart';
 import '../domain/quiet_place_record.dart';
@@ -104,6 +106,7 @@ abstract interface class WatcherLink {
   void reminderPlacesChanged();
   void detectionSettingsChanged();
   void languageChanged();
+  void homeWifiChanged();
 }
 
 abstract interface class DetectionSettingsStore {
@@ -171,4 +174,25 @@ abstract interface class ProtectionNotice {
 abstract interface class MapLauncher {
   /// Returns false when no map app could open it.
   Future<bool> open(GeoPoint point);
+}
+
+/// The Wi-Fi network the phone is connected to.
+abstract interface class WifiSource {
+  /// The current network's name each time the connection changes; null when
+  /// not connected to Wi-Fi.
+  Stream<String?> get changes;
+
+  /// Returns null when not connected, or the name can't be read.
+  Future<String?> current();
+}
+
+abstract interface class HomeWifiStore {
+  Future<HomeWifi?> read();
+  Future<void> write(HomeWifi? value);
+}
+
+/// What the Wearer is asked about after leaving home.
+abstract interface class CheckItemStore {
+  Future<List<CheckItem>> read();
+  Future<void> write(List<CheckItem> items);
 }

@@ -1105,6 +1105,246 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Оставили место с напоминанием'**
   String get keptReminderPlace;
+
+  /// No description provided for @homeWifi.
+  ///
+  /// In ru, this message translates to:
+  /// **'Домашний Wi-Fi'**
+  String get homeWifi;
+
+  /// No description provided for @homeWifiHelp.
+  ///
+  /// In ru, this message translates to:
+  /// **'Напоминает проверить вещи, когда человек выходит из дома и телефон теряет домашний Wi-Fi.'**
+  String get homeWifiHelp;
+
+  /// No description provided for @homeWifiNone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Домашний Wi-Fi не выбран.'**
+  String get homeWifiNone;
+
+  /// No description provided for @homeWifiCurrent.
+  ///
+  /// In ru, this message translates to:
+  /// **'Домашний Wi-Fi: {name}'**
+  String homeWifiCurrent(String name);
+
+  /// No description provided for @homeWifiSet.
+  ///
+  /// In ru, this message translates to:
+  /// **'Это домашний Wi-Fi'**
+  String get homeWifiSet;
+
+  /// No description provided for @homeWifiRemove.
+  ///
+  /// In ru, this message translates to:
+  /// **'Убрать домашний Wi-Fi'**
+  String get homeWifiRemove;
+
+  /// No description provided for @homeWifiNotConnected.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сначала подключите телефон к домашнему Wi-Fi и попробуйте снова.'**
+  String get homeWifiNotConnected;
+
+  /// No description provided for @homeWifiNoFix.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не удалось определить место, ничего не сохранено. Встаньте у окна и попробуйте снова.'**
+  String get homeWifiNoFix;
+
+  /// No description provided for @homeWifiSaved.
+  ///
+  /// In ru, this message translates to:
+  /// **'Домашний Wi-Fi сохранён'**
+  String get homeWifiSaved;
+
+  /// No description provided for @homeWifiRemoved.
+  ///
+  /// In ru, this message translates to:
+  /// **'Домашний Wi-Fi убран'**
+  String get homeWifiRemoved;
+
+  /// No description provided for @setupHomeTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отметьте домашний Wi-Fi'**
+  String get setupHomeTitle;
+
+  /// No description provided for @setupHomeText.
+  ///
+  /// In ru, this message translates to:
+  /// **'Дома, когда телефон подключён к домашнему Wi-Fi, отметьте его. Тогда при выходе из дома будет напоминание.'**
+  String get setupHomeText;
+
+  /// No description provided for @setupOpenHome.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выбрать домашний Wi-Fi'**
+  String get setupOpenHome;
+
+  /// No description provided for @statusAllGood.
+  ///
+  /// In ru, this message translates to:
+  /// **'Всё хорошо'**
+  String get statusAllGood;
+
+  /// No description provided for @statusAllGoodText.
+  ///
+  /// In ru, this message translates to:
+  /// **'Когда вы выйдете из дома, будет напоминание.'**
+  String get statusAllGoodText;
+
+  /// No description provided for @statusNotSet.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не настроено'**
+  String get statusNotSet;
+
+  /// No description provided for @statusNotSetText.
+  ///
+  /// In ru, this message translates to:
+  /// **'Отметьте домашний Wi-Fi, чтобы начать.'**
+  String get statusNotSetText;
+
+  /// No description provided for @statusNeedsAttention.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нужно внимание'**
+  String get statusNeedsAttention;
+
+  /// No description provided for @lastReminder.
+  ///
+  /// In ru, this message translates to:
+  /// **'Последнее напоминание'**
+  String get lastReminder;
+
+  /// No description provided for @checkLeftHome.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вы вышли из дома'**
+  String get checkLeftHome;
+
+  /// No description provided for @checkYes.
+  ///
+  /// In ru, this message translates to:
+  /// **'Да'**
+  String get checkYes;
+
+  /// No description provided for @checkNoGoBack.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нет, вернуться'**
+  String get checkNoGoBack;
+
+  /// No description provided for @checkSkip.
+  ///
+  /// In ru, this message translates to:
+  /// **'Пропустить всё'**
+  String get checkSkip;
+
+  /// No description provided for @checkAllDone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Всё проверено'**
+  String get checkAllDone;
+
+  /// No description provided for @checkGoodTrip.
+  ///
+  /// In ru, this message translates to:
+  /// **'Хорошей дороги!'**
+  String get checkGoodTrip;
+
+  /// No description provided for @checkClose.
+  ///
+  /// In ru, this message translates to:
+  /// **'Закрыть'**
+  String get checkClose;
+
+  /// No description provided for @checkHaveEverything.
+  ///
+  /// In ru, this message translates to:
+  /// **'Всё взяли?'**
+  String get checkHaveEverything;
+
+  /// No description provided for @itemKeys.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ключи'**
+  String get itemKeys;
+
+  /// No description provided for @itemWallet.
+  ///
+  /// In ru, this message translates to:
+  /// **'Кошелёк'**
+  String get itemWallet;
+
+  /// No description provided for @itemPhone.
+  ///
+  /// In ru, this message translates to:
+  /// **'Телефон'**
+  String get itemPhone;
+
+  /// No description provided for @itemGlasses.
+  ///
+  /// In ru, this message translates to:
+  /// **'Очки'**
+  String get itemGlasses;
+
+  /// No description provided for @itemGas.
+  ///
+  /// In ru, this message translates to:
+  /// **'Газ выключен'**
+  String get itemGas;
+
+  /// No description provided for @itemDoor.
+  ///
+  /// In ru, this message translates to:
+  /// **'Дверь заперта'**
+  String get itemDoor;
+
+  /// No description provided for @whatToCheck.
+  ///
+  /// In ru, this message translates to:
+  /// **'Что проверить'**
+  String get whatToCheck;
+
+  /// No description provided for @addItem.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавить'**
+  String get addItem;
+
+  /// No description provided for @addItemHint.
+  ///
+  /// In ru, this message translates to:
+  /// **'Например, зонт'**
+  String get addItemHint;
+
+  /// No description provided for @removeItem.
+  ///
+  /// In ru, this message translates to:
+  /// **'Убрать'**
+  String get removeItem;
+
+  /// No description provided for @itemsOn.
+  ///
+  /// In ru, this message translates to:
+  /// **'Включено: {count}'**
+  String itemsOn(int count);
+
+  /// No description provided for @howToRemind.
+  ///
+  /// In ru, this message translates to:
+  /// **'Как напоминать'**
+  String get howToRemind;
+
+  /// No description provided for @notSet.
+  ///
+  /// In ru, this message translates to:
+  /// **'Не выбран'**
+  String get notSet;
 }
 
 class _AppLocalizationsDelegate

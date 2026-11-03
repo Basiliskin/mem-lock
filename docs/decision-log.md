@@ -166,3 +166,20 @@
 - **Goal:** a Reminder within about 30 m of the door. No leaving signal can come before the door closes.
 - **Home Wi-Fi dropping is the proposed signal, tested first.** The probe logs only whether Wi-Fi is connected. Pass rule in `probes/steps/README.md`; the 50 steps, 30 s and 90% are the developer's default. Nothing goes into the main app until it passes.
 - **Activity Recognition's walking signal now wakes precise location outside Rides (AC-1.6).** A good reading past half the area confirms leaving, so Reminders can come sooner, for Stays and Reminder Places. The 2-minute signal life and 25 m accuracy are starting values. The 2-reading rule at the full area stays as the backup. Files: `lib/domain/detector.dart`, `lib/domain/detector_json.dart`.
+
+## 2026-11-03 · Home Wi-Fi only, behind a flag
+
+- **Wi-Fi fingerprints of rooms are dropped.** The Wi-Fi probe (`probes/wifi/`) recognised 4 of 9 marked spots even with scan throttling off. Scans were partial, strong networks dropped out, and one room varied by 10–16 dB. With the screen off, Android scans about once per 30 minutes.
+- **The Helper chose to build the home Wi-Fi Reminder now, before the Leaving home probe passes.** It replaces the earlier "nothing goes in until it passes".
+- **Rule:** connected to the home Wi-Fi for at least 1 minute, then it is lost. Walking from 30 s before to 2 min after the loss gives the Reminder. Without walking, an accurate reading (25 m or better) more than 75 m from home gives it. Location is precise for 10 minutes after the loss, then low power. One Reminder per departure; reconnecting stops repeats and arms it again. A router restart with nobody walking gives none. All numbers are starting values.
+- **A name that can't be read while still on Wi-Fi is ignored**, so it can't look like leaving.
+- **`HOME_WIFI_ONLY` (in `.env`, default true) switches off Stays, Rides, Quiet Places and Reminder Places.** Their code and tests stay; only their service and settings links are off.
+- Files: `lib/domain/home_wifi.dart`, `lib/service/home_watcher.dart`, `lib/adapters/phone_wifi.dart`, `lib/ui/home_wifi_screen.dart`, `lib/features.dart`, `.env`.
+
+## 2026-11-03 · Home Wi-Fi screens
+
+- **Chosen from `prototypes/home-wifi-prototype.html`:** design A for the main screen (one big status), R2 for the check (one item at a time, "Yes" or "No, go back"), and F1 for family settings (a short list, each row its own page).
+- **New: the Helper chooses what to check.** Keys, wallet, phone, gas off and door locked are on by default; glasses is off; the Helper can add their own. Tapping the Reminder opens the check. "Yes" to the last item, or "Skip all", stops the Reminder; "No, go back" stops it and shows home on the map.
+- **Family settings opens with one tap on "👪 Settings for family".** The 2-second hold was replaced in both modes, because the Helper could not find how to open it.
+- In home Wi-Fi mode the family list replaces the old settings screen; with `HOME_WIFI_ONLY=false` the old screen is used. The main screen's new look applies in both modes.
+- Files: `lib/domain/check_items.dart`, `lib/ui/check_screen.dart`, `lib/ui/check_items_screen.dart`, `lib/ui/family_settings_screen.dart`, `lib/ui/main_screen.dart`.

@@ -592,4 +592,133 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get keptReminderPlace => 'Оставили место с напоминанием';
+
+  @override
+  String get homeWifi => 'Домашний Wi-Fi';
+
+  @override
+  String get homeWifiHelp =>
+      'Напоминает проверить вещи, когда человек выходит из дома и телефон теряет домашний Wi-Fi.';
+
+  @override
+  String get homeWifiNone => 'Домашний Wi-Fi не выбран.';
+
+  @override
+  String homeWifiCurrent(String name) {
+    return 'Домашний Wi-Fi: $name';
+  }
+
+  @override
+  String get homeWifiSet => 'Это домашний Wi-Fi';
+
+  @override
+  String get homeWifiRemove => 'Убрать домашний Wi-Fi';
+
+  @override
+  String get homeWifiNotConnected =>
+      'Сначала подключите телефон к домашнему Wi-Fi и попробуйте снова.';
+
+  @override
+  String get homeWifiNoFix =>
+      'Не удалось определить место, ничего не сохранено. Встаньте у окна и попробуйте снова.';
+
+  @override
+  String get homeWifiSaved => 'Домашний Wi-Fi сохранён';
+
+  @override
+  String get homeWifiRemoved => 'Домашний Wi-Fi убран';
+
+  @override
+  String get setupHomeTitle => 'Отметьте домашний Wi-Fi';
+
+  @override
+  String get setupHomeText =>
+      'Дома, когда телефон подключён к домашнему Wi-Fi, отметьте его. Тогда при выходе из дома будет напоминание.';
+
+  @override
+  String get setupOpenHome => 'Выбрать домашний Wi-Fi';
+
+  @override
+  String get statusAllGood => 'Всё хорошо';
+
+  @override
+  String get statusAllGoodText =>
+      'Когда вы выйдете из дома, будет напоминание.';
+
+  @override
+  String get statusNotSet => 'Не настроено';
+
+  @override
+  String get statusNotSetText => 'Отметьте домашний Wi-Fi, чтобы начать.';
+
+  @override
+  String get statusNeedsAttention => 'Нужно внимание';
+
+  @override
+  String get lastReminder => 'Последнее напоминание';
+
+  @override
+  String get checkLeftHome => 'Вы вышли из дома';
+
+  @override
+  String get checkYes => 'Да';
+
+  @override
+  String get checkNoGoBack => 'Нет, вернуться';
+
+  @override
+  String get checkSkip => 'Пропустить всё';
+
+  @override
+  String get checkAllDone => 'Всё проверено';
+
+  @override
+  String get checkGoodTrip => 'Хорошей дороги!';
+
+  @override
+  String get checkClose => 'Закрыть';
+
+  @override
+  String get checkHaveEverything => 'Всё взяли?';
+
+  @override
+  String get itemKeys => 'Ключи';
+
+  @override
+  String get itemWallet => 'Кошелёк';
+
+  @override
+  String get itemPhone => 'Телефон';
+
+  @override
+  String get itemGlasses => 'Очки';
+
+  @override
+  String get itemGas => 'Газ выключен';
+
+  @override
+  String get itemDoor => 'Дверь заперта';
+
+  @override
+  String get whatToCheck => 'Что проверить';
+
+  @override
+  String get addItem => 'Добавить';
+
+  @override
+  String get addItemHint => 'Например, зонт';
+
+  @override
+  String get removeItem => 'Убрать';
+
+  @override
+  String itemsOn(int count) {
+    return 'Включено: $count';
+  }
+
+  @override
+  String get howToRemind => 'Как напоминать';
+
+  @override
+  String get notSet => 'Не выбран';
 }

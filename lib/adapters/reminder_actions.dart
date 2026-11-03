@@ -25,6 +25,10 @@ void forwardAction(NotificationResponse response) {
   IsolateNameServer.lookupPortByName(_portName)?.send(id);
 }
 
+/// Answers the running Reminder from the app's own screens.
+void sendReminderAction(String id) =>
+    IsolateNameServer.lookupPortByName(_portName)?.send(id);
+
 /// Runs in its own isolate when a button is tapped with the app closed.
 @pragma('vm:entry-point')
 void onBackgroundReminderAction(NotificationResponse response) =>
@@ -35,14 +39,17 @@ const reminderNotificationSettings = InitializationSettings(
 );
 
 /// For the app's own isolate: "I forgot something" opens the app, including
-/// from a cold start, and [onForgot] then shows the Last Place.
-Future<void> initReminderActionsInApp(void Function() onForgot) async {
+/// from a cold start, and [onForgot] then shows the Last Place. Tapping the
+/// Reminder itself calls [onOpen].
+Future<void> initReminderActionsInApp(
+  void Function() onForgot, {
+  void Function()? onOpen,
+}) async {
   void handle(NotificationResponse response) {
     forwardAction(response);
-    if (response.actionId == actionForgot &&
-        response.payload != testReminderPayload) {
-      onForgot();
-    }
+    if (response.payload == testReminderPayload) return;
+    if (response.actionId == actionForgot) onForgot();
+    if (response.actionId == null) onOpen?.call();
   }
 
   final plugin = FlutterLocalNotificationsPlugin();

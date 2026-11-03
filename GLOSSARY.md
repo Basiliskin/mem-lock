@@ -24,6 +24,10 @@ _Avoid_: Trip, journey
 Walking without a long pause, which suggests the Wearer may be leaving a Stay. Short bursts of walking don't add up to one.
 _Avoid_: Steps in one direction, walk-off
 
+**Home Wi-Fi**:
+The Wi-Fi network the Helper marks at the Wearer's home. Losing it while walking out gives a Reminder.
+_Avoid_: SSID, router, access point
+
 **Quiet Place**:
 A place chosen by the Helper, such as the Wearer's home, that never produces a Reminder when the Wearer leaves it.
 _Avoid_: Home, safe zone, excluded zone
