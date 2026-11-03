@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home Wi-Fi Prototype</title>
+<!--
+  PROTOTYPE — throwaway. Question: what should the home-Wi-Fi-only LeaveCheck
+  look like, for an easy, modern experience for the Wearer and Helper?
+  Round 3: A for status, R2 Reminder; three Family settings variants, ?variant=F1|F2|F3,
+  the bottom bar, or ← →. Mocked state only; nothing is saved.
+-->
+<style>
+:root{--bg:#eef1f5;--ink:#14181f;--mute:#5b6472;--card:#fff;--ok:#1f8a5b;--okbg:#e3f5ec;--warn:#b45309;--warnbg:#fff3df;--alert:#c62828;--alertbg:#fde8e8;--acc:#2f5bea;--line:#dde2ea}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0e1116;--ink:#eef1f5;--mute:#9aa3b2;--card:#181c23;--okbg:#12291f;--warnbg:#2b2112;--alertbg:#2e1515;--line:#2a303a;--acc:#6d8bff}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:16px 16px 96px}
+.controls{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:14px}
+.controls button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer}
+.controls button.on{background:var(--ink);color:var(--bg)}
+.phone{width:min(380px,100%);height:760px;background:var(--card);border-radius:36px;box-shadow:0 20px 50px #0002;overflow:hidden;position:relative;display:flex;flex-direction:column;border:8px solid #0b0d11}
+.scroll{flex:1;overflow:auto;padding:20px}
+h1{font-size:26px;margin:0 0 4px}h2{font-size:20px;margin:0 0 8px}
+.mute{color:var(--mute)}
+.btn{display:block;width:100%;border:0;border-radius:18px;padding:18px;font-size:20px;font-weight:600;cursor:pointer;margin-top:12px}
+.primary{background:var(--acc);color:#fff}.ghost{background:transparent;border:2px solid var(--line);color:var(--ink)}
+.danger{background:var(--alert);color:#fff}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:13px;font-weight:600}
+.state{font-size:12px;color:var(--mute);margin-top:10px;max-width:380px;text-align:center}
+/* A — one big status */
+.a-hero{border-radius:28px;padding:28px 22px;text-align:center;margin-top:8px}
+.a-ring{width:150px;height:150px;border-radius:50%;margin:8px auto 18px;display:grid;place-items:center;font-size:64px}
+.a-big{font-size:30px;font-weight:800;margin:0}
+.a-row{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line);font-size:17px}
+/* B — guided checklist */
+.b-step{display:flex;gap:14px;align-items:flex-start;padding:16px;border:2px solid var(--line);border-radius:20px;margin-bottom:12px}
+.b-dot{flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:var(--line)}
+.b-step.done .b-dot{background:var(--ok);color:#fff}.b-step.now{border-color:var(--acc)}
+.b-nav{display:flex;border-top:1px solid var(--line)}
+.b-nav button{flex:1;padding:12px 0 16px;border:0;background:none;color:var(--mute);font-size:13px;cursor:pointer}
+.b-nav button.on{color:var(--acc);font-weight:700}.b-nav span{display:block;font-size:24px}
+/* C — timeline */
+.c-top{padding:22px 20px 18px;color:#fff}
+.c-tl{position:relative;margin-left:14px;border-left:3px solid var(--line);padding-left:20px}
+.c-ev{position:relative;margin-bottom:18px}.c-ev:before{content:"";position:absolute;left:-29px;top:4px;width:15px;height:15px;border-radius:50%;background:var(--card);border:3px solid var(--acc)}
+.c-ev.ok:before{border-color:var(--ok)}.c-ev.al:before{border-color:var(--alert);background:var(--alert)}
+.c-chip{display:flex;gap:8px;margin:14px 0}.c-chip div{flex:1;background:#fff2;border-radius:14px;padding:10px;text-align:center;font-size:13px}
+.c-chip b{display:block;font-size:20px}
+/* Reminder overlay, shared look per variant */
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;padding:28px 22px;z-index:5}
+.check{display:flex;gap:12px;align-items:center;font-size:21px;padding:14px;border-radius:16px;background:#fff2;margin-bottom:10px;cursor:pointer}
+.check input{width:28px;height:28px}
+.bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#111;color:#fff;border-radius:999px;display:flex;align-items:center;gap:8px;padding:6px;box-shadow:0 8px 24px #0006;z-index:9;font:600 14px system-ui}
+.bar button{background:#fff2;color:#fff;border:0;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer}
+.bar span{padding:0 10px;white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="controls" id="scenes"></div><div class="controls"><button onclick="set({fam:!S.fam,page:null})">Toggle Family settings</button></div>
+<div class="phone" id="phone"></div>
+<div class="state" id="state"></div>
+<div class="bar"><button id="prev" aria-label="Previous variant">←</button><span id="label"></span><button id="next" aria-label="Next variant">→</button></div>
+<script>
+const VARIANTS={F1:'Chosen: list + card pages',F2:'All on one page',F3:'With live preview'};
+const SCENES={setup:'Not set up',safe:'At home, protecting',out:'Out, reminded',problem:'Wi-Fi name hidden'};
+const S={scene:'safe',step:0,fam:true,page:null,sound:'voice',lang:'English',repeat:2,on:{Keys:true,Wallet:true,Phone:true,Glasses:false,'Gas off':true,'Door locked':true},network:'Katz-Home',checked:{},helperOpen:false,tab:'home'};
+let variant=new URLSearchParams(location.search).get('variant')||'F1';
+if(!VARIANTS[variant])variant='F1';
+const ITEMS=['🔑 Keys','👛 Wallet','📱 Phone charger','🔥 Gas is off','🚪 Door is locked'];
+const $=id=>document.getElementById(id);
+function set(p){Object.assign(S,p);render()}
+function setScene(scene){set({scene,checked:{},step:0,helperOpen:false,tab:'home',fam:false,page:null})}
+
+function reminder(bg){
+  const done=ITEMS.filter(i=>S.checked[i]).length;
+  return `<div class="overlay" style="background:${bg};color:#fff">
+    <div style="font-size:15px;opacity:.85">You just left home · 09:41</div>
+    <h1 style="font-size:34px;margin:6px 0 18px">Do you have everything?</h1>
+    ${ITEMS.map(i=>`<label class="check"><input type="checkbox" ${S.checked[i]?'checked':''} onchange="S.checked['${i}']=this.checked;render()">${i}</label>`).join('')}
+    <div style="flex:1"></div>
+    <button class="btn" style="background:#fff;color:#111" onclick="setScene('safe')">${done===ITEMS.length?'All good ✓':'I have everything'}</button>
+    <button class="btn" style="background:#fff3;color:#fff" onclick="alert('Shows home on the map')">I forgot something</button>
+  </div>`;
+}
+function helperSheet(){
+  return `<div class="overlay" style="background:var(--card)">
+    <h1>Home Wi-Fi</h1><p class="mute">Do this at home, with this phone on the home Wi-Fi.</p>
+    <div class="b-step done"><div class="b-dot">📶</div><div><b>Connected now</b><div class="mute">${S.network}</div></div></div>
+    <button class="btn primary" onclick="set({helperOpen:false,scene:S.scene==='setup'?'safe':S.scene})">This is the home Wi-Fi</button>
+    <button class="btn ghost" onclick="set({helperOpen:false})">Cancel</button>
+  </div>`;
+}
+
+const status={
+  setup:{icon:'📶',bg:'var(--warnbg)',fg:'var(--warn)',title:'Not set up',text:'Mark the home Wi-Fi to start.'},
+  safe:{icon:'🏠',bg:'var(--okbg)',fg:'var(--ok)',title:'All good',text:'You\'ll get a reminder when you walk out.'},
+  out:{icon:'🚶',bg:'var(--alertbg)',fg:'var(--alert)',title:'Left home',text:'Reminder shown at 09:41.'},
+  problem:{icon:'⚠️',bg:'var(--warnbg)',fg:'var(--warn)',title:'Needs attention',text:'Location must be "Allow all the time".'},
+};
+
+
+const TILES=[['🔑','Keys'],['👛','Wallet'],['📱','Phone'],['👓','Glasses'],['🔥','Gas off'],['🚪','Door locked']];
+const remTop=`<div style="display:flex;justify-content:space-between;align-items:center;font-size:15px;opacity:.9"><span>🏠 You left home · 09:41</span><span title="Reminder is spoken aloud">🔊</span></div>`;
+const REM={
+ R1(){ // tap tiles: big pictures, tap to tick, done button grows when all ticked
+  const n=TILES.filter(t=>S.checked[t[1]]).length,all=n===TILES.length;
+  return `<div class="overlay" style="background:#111827;color:#fff">${remTop}
+   <h1 style="font-size:32px;margin:14px 0 4px">Do you have everything?</h1>
+   <div style="opacity:.8;font-size:17px">Tap each one you have · ${n} of ${TILES.length}</div>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px">
+   ${TILES.map(t=>{const on=S.checked[t[1]];return `<button onclick="S.checked['${t[1]}']=!S.checked['${t[1]}'];render()" style="border:3px solid ${on?'#34d399':'#374151'};background:${on?'#064e3b':'#1f2937'};color:#fff;border-radius:22px;padding:16px 8px;cursor:pointer;font-size:18px;font-weight:700"><div style="font-size:42px">${on?'✅':t[0]}</div>${t[1]}</button>`}).join('')}
+   </div><div style="flex:1"></div>
+   <button class="btn" style="background:${all?'#10b981':'#fff'};color:${all?'#fff':'#111'};font-size:22px;padding:22px" onclick="setScene('safe')">${all?'All good, let\'s go ✓':'I have everything'}</button>
+   <button class="btn" style="background:transparent;color:#fca5a5;border:2px solid #7f1d1d" onclick="alert('Go back: shows the way home')">I forgot something — go back</button>
+  </div>`;},
+ R2done(){ return `<div class="overlay" style="background:#065f46;color:#fff;justify-content:center;text-align:center">
+   <div style="font-size:96px">✅</div><h1 style="font-size:36px">All checked</h1><p style="font-size:20px;opacity:.9">Have a good trip!</p>
+   <button class="btn" style="background:#fff;color:#065f46" onclick="setScene('safe')">Close</button></div>`;},
+ R2(){ // one question at a time, huge yes/no
+  const T=TILES.filter(t=>S.on[t[1]]);if(S.step>=T.length)return REM.R2done();const t=T[S.step];
+  return `<div class="overlay" style="background:#1e3a8a;color:#fff;text-align:center">${remTop}
+   <div style="display:flex;gap:6px;justify-content:center;margin:18px 0">${T.map((_,i)=>`<span style="width:28px;height:6px;border-radius:3px;background:${i<=S.step?'#fff':'#fff4'}"></span>`).join('')}</div>
+   <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+    <div style="font-size:120px;line-height:1">${t[0]}</div>
+    <h1 style="font-size:40px;margin:18px 0 0">${t[1]}?</h1></div>
+   <button class="btn" style="background:#22c55e;color:#fff;font-size:26px;padding:24px" onclick="set({step:S.step+1})">✓ Yes</button>
+   <button class="btn" style="background:#fff2;color:#fff;font-size:22px" onclick="alert('Go back: shows the way home')">✗ No — go back</button>
+   <button style="background:none;border:0;color:#fff9;font-size:16px;margin-top:12px;cursor:pointer" onclick="setScene('safe')">Skip all</button>
+  </div>`;},
+ R3(){ // the family's own message, voice, two buttons only
+  return `<div class="overlay" style="background:linear-gradient(180deg,#7c2d12,#431407);color:#fff">${remTop}
+   <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+    <div style="display:flex;gap:12px;align-items:center;margin-bottom:14px"><div style="width:56px;height:56px;border-radius:50%;background:#fed7aa;color:#7c2d12;display:grid;place-items:center;font-size:28px">👩</div><div style="opacity:.85;font-size:16px">Message from Anna</div></div>
+    <div style="background:#fff;color:#1c1917;border-radius:26px 26px 26px 6px;padding:22px;font-size:28px;font-weight:700;line-height:1.3">Mom, is the gas off and the door locked? Keys and wallet with you? ❤️</div>
+    <button style="margin-top:14px;align-self:flex-start;background:#fff2;color:#fff;border:0;border-radius:999px;padding:10px 16px;font-size:17px;cursor:pointer">▶ Play again</button>
+   </div>
+   <button class="btn" style="background:#fff;color:#7c2d12;font-size:24px;padding:22px" onclick="setScene('safe')">Yes, all done</button>
+   <button class="btn" style="background:#fff2;color:#fff" onclick="alert('Go back: shows the way home')">I need to go back</button>
+   <div style="text-align:center;opacity:.7;font-size:14px;margin-top:10px">Repeats in 2 min if not answered</div>
+  </div>`;},
+};
+
+const back=t=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><button onclick="set(${t})" style="border:0;background:var(--line);color:var(--ink);width:44px;height:44px;border-radius:50%;font-size:20px;cursor:pointer">←</button><h1 style="margin:0">`;
+const tog=(on,js)=>`<button onclick="${js}" aria-pressed="${on}" style="flex:none;width:58px;height:34px;border-radius:17px;border:0;background:${on?'var(--ok)':'var(--line)'};position:relative;cursor:pointer"><span style="position:absolute;top:3px;${on?'right:3px':'left:3px'};width:28px;height:28px;border-radius:50%;background:#fff"></span></button>`;
+const itemsBlock=()=>TILES.map(t=>`<div class="a-row" style="align-items:center"><span style="font-size:19px">${t[0]} ${t[1]}</span>${tog(S.on[t[1]],`S.on['${t[1]}']=!S.on['${t[1]}'];render()`)}</div>`).join('')+`<button class="btn ghost" style="font-size:17px;padding:12px">＋ Add item</button>`;
+const soundBlock=()=>`<div style="display:flex;gap:8px">${[['voice','🎙️ Your voice'],['tone','🔔 Tone']].map(o=>`<button onclick="set({sound:'${o[0]}'})" style="flex:1;padding:16px;border-radius:16px;font-size:17px;cursor:pointer;border:2px solid ${S.sound===o[0]?'var(--acc)':'var(--line)'};background:${S.sound===o[0]?'var(--acc)':'transparent'};color:${S.sound===o[0]?'#fff':'var(--ink)'}">${o[1]}</button>`).join('')}</div>
+ ${S.sound==='voice'?`<button class="btn ghost" style="font-size:17px;padding:12px">⏺ Record message (0:04)</button>`:''}
+ <div class="a-row" style="align-items:center"><span>Repeat if not answered</span><span><button onclick="set({repeat:Math.max(1,S.repeat-1)})" class="pill" style="border:0;background:var(--line);color:var(--ink);font-size:18px">−</button> <b>${S.repeat} min</b> <button onclick="set({repeat:S.repeat+1})" class="pill" style="border:0;background:var(--line);color:var(--ink);font-size:18px">+</button></span></div>
+ <button class="btn primary" style="font-size:17px;padding:12px" onclick="set({fam:false,scene:'out',step:0})">▶ Try the reminder</button>`;
+const wifiBlock=()=>`<div class="b-step done" style="margin:0"><div class="b-dot">📶</div><div style="flex:1"><b style="font-size:18px">${S.scene==='setup'?'Not set':S.network}</b><div class="mute">Marked at home</div></div></div>
+ <button class="btn ghost" style="font-size:17px;padding:12px" onclick="set({helperOpen:true})">Change home Wi-Fi</button>`;
+const langBlock=()=>`<div style="display:flex;gap:8px">${['English','Русский'].map(l=>`<button onclick="set({lang:'${l}'})" style="flex:1;padding:14px;border-radius:16px;font-size:17px;cursor:pointer;border:2px solid ${S.lang===l?'var(--acc)':'var(--line)'};background:transparent;color:var(--ink)">${S.lang===l?'✓ ':''}${l}</button>`).join('')}</div>`;
+const PAGES={wifi:['📶','Home Wi-Fi',wifiBlock,()=>S.scene==='setup'?'Not set':S.network],
+ items:['✅','What to check',itemsBlock,()=>TILES.filter(t=>S.on[t[1]]).length+' items'],
+ sound:['🔊','How to remind',soundBlock,()=>(S.sound==='voice'?'Your voice':'Tone')+' · every '+S.repeat+' min'],
+ lang:['🌐','Language',langBlock,()=>S.lang]};
+const FAM={
+ F1(){ // simple list → one page per setting
+  if(S.page){const p=PAGES[S.page];return `<div class="overlay" style="background:var(--bg);overflow:auto;padding:20px">${back("{page:null}")}${p[0]} ${p[1]}</h1></div><div style="background:var(--card);border-radius:22px;padding:18px">${p[2]()}</div></div>`;}
+  return `<div class="overlay" style="background:var(--card)">${back("{fam:false}")}Family settings</h1></div>
+   ${Object.entries(PAGES).map(([k,p])=>`<button onclick="set({page:'${k}'})" style="display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:18px 14px;margin-bottom:10px;border-radius:20px;border:2px solid var(--line);background:transparent;color:var(--ink);cursor:pointer"><span style="font-size:30px">${p[0]}</span><span style="flex:1"><b style="font-size:19px">${p[1]}</b><br><span class="mute">${p[3]()}</span></span><span class="mute" style="font-size:22px">›</span></button>`).join('')}
+   <div style="flex:1"></div><p class="mute" style="text-align:center;font-size:13px">Only for family. The Wearer doesn't need these.</p></div>`;},
+ F2(){ // everything on one scrolling page, in cards
+  return `<div class="overlay" style="background:var(--bg);overflow:auto;padding:20px">${back("{fam:false}")}Family settings</h1></div>
+   ${Object.values(PAGES).map(p=>`<div style="background:var(--card);border-radius:22px;padding:18px;margin-bottom:14px"><h2>${p[0]} ${p[1]}</h2>${p[2]()}</div>`).join('')}</div>`;},
+ F3(){ // settings on top, live preview of the R2 reminder below
+  const tabs=['items','sound','wifi','lang'];const cur=S.page||'items';const T=TILES.filter(t=>S.on[t[1]]);
+  return `<div class="overlay" style="background:var(--card);padding:0">
+   <div style="background:#1e3a8a;color:#fff;padding:16px 20px 18px;border-radius:0 0 28px 28px">
+    <div style="display:flex;justify-content:space-between;align-items:center"><button onclick="set({fam:false})" style="border:0;background:#fff2;color:#fff;width:40px;height:40px;border-radius:50%;font-size:18px;cursor:pointer">←</button><span style="opacity:.8;font-size:13px">PREVIEW · what Rosa sees</span><span></span></div>
+    <div style="display:flex;gap:8px;overflow:auto;margin-top:12px">${T.map(t=>`<div style="flex:none;background:#fff2;border-radius:14px;padding:8px 10px;text-align:center;font-size:13px"><div style="font-size:26px">${t[0]}</div>${t[1]}?</div>`).join('')||'<span style="opacity:.8">Nothing to check</span>'}</div>
+    <div style="font-size:13px;opacity:.85;margin-top:8px">${S.sound==='voice'?'🎙️ Your voice':'🔔 Tone'} · repeats every ${S.repeat} min</div></div>
+   <div style="display:flex;gap:6px;padding:14px 16px 0;overflow:auto">${tabs.map(k=>`<button onclick="set({page:'${k}'})" class="pill" style="border:0;cursor:pointer;padding:10px 14px;font-size:15px;background:${cur===k?'var(--ink)':'var(--line)'};color:${cur===k?'var(--bg)':'var(--ink)'}">${PAGES[k][0]} ${PAGES[k][1]}</button>`).join('')}</div>
+   <div style="padding:8px 20px 20px;overflow:auto;flex:1">${PAGES[cur][2]()}</div></div>`;},
+};
+
+function A(){
+  const s=status[S.scene];
+  return `<div class="scroll">
+    <div class="mute">Good morning, Rosa</div>
+    <div class="a-hero" style="background:${s.bg}">
+      <div class="a-ring" style="background:var(--card);box-shadow:0 0 0 10px ${s.fg}22">${s.icon}</div>
+      <p class="a-big" style="color:${s.fg}">${s.title}</p>
+      <p style="font-size:18px;margin:8px 0 0">${s.text}</p>
+    </div>
+    ${S.scene==='setup'?`<button class="btn primary" onclick="set({helperOpen:true})">Set home Wi-Fi</button>`:''}
+    ${S.scene==='problem'?`<button class="btn primary">Fix it</button>`:''}
+    ${S.scene==='safe'||S.scene==='out'?`<div style="margin-top:18px">
+      <div class="a-row"><span class="mute">Home Wi-Fi</span><b>${S.network}</b></div>
+      <div class="a-row"><span class="mute">Last reminder</span><b>Today 09:41</b></div></div>`:''}
+    <button class="btn ghost" onclick="alert('Shows last place on the map')">I forgot something</button>
+    <button class="btn ghost" style="font-size:16px;padding:12px" onclick="set({fam:true,page:null})">👪 Family settings</button>
+  </div>${S.scene==='out'?REM.R2():''}${S.fam?FAM[variant]():''}${S.helperOpen?helperSheet():''}`;
+}
+
+function B(){
+  const ready=S.scene!=='setup',perm=S.scene!=='problem';
+  const steps=[
+    ['Permissions',perm?'Location, activity, notifications':'Location must be "Allow all the time"',perm],
+    ['Home Wi-Fi',ready?S.network:'Connect at home, then tap',ready],
+    ['Test reminder','Hear how it sounds',ready&&perm],
+  ];
+  const nowIdx=steps.findIndex(x=>!x[2]);
+  const home=`<div class="scroll"><h1>LeaveCheck</h1>
+    <p class="mute">${nowIdx<0?'Everything is ready. You can put the phone away.':`${steps.length-nowIdx} step${steps.length-nowIdx>1?'s':''} left`}</p>
+    ${steps.map((x,i)=>`<div class="b-step ${x[2]?'done':i===nowIdx?'now':''}"><div class="b-dot">${x[2]?'✓':i+1}</div><div style="flex:1"><b style="font-size:18px">${x[0]}</b><div class="mute">${x[1]}</div>
+      ${i===nowIdx?`<button class="btn primary" style="padding:12px;font-size:17px" onclick="${i===1?'set({helperOpen:true})':'setScene(\'safe\')'}">${i===1?'Set home Wi-Fi':'Fix'}</button>`:''}</div></div>`).join('')}
+    <span class="pill" style="background:${status[S.scene].bg};color:${status[S.scene].fg}">● ${status[S.scene].title}</span></div>`;
+  const forgot=`<div class="scroll"><h1>Forgot something?</h1><p class="mute">Where the last reminders came from.</p>
+    <div class="b-step"><div class="b-dot">🏠</div><div><b>Home</b><div class="mute">Today 09:41</div><button class="btn ghost" style="padding:12px;font-size:17px">Show on map</button></div></div></div>`;
+  const fam=`<div class="scroll"><h1>Family</h1>${['Home Wi-Fi','Reminder sound','Language'].map(x=>`<div class="a-row"><b>${x}</b><span class="mute">›</span></div>`).join('')}</div>`;
+  return `${{home,forgot,fam}[S.tab]}
+    <div class="b-nav">${[['home','🏠','Home'],['forgot','🔎','Forgot'],['fam','👪','Family']].map(t=>`<button class="${S.tab===t[0]?'on':''}" onclick="set({tab:'${t[0]}'})"><span>${t[1]}</span>${t[2]}</button>`).join('')}</div>
+    ${S.helperOpen?helperSheet():''}${S.scene==='out'?reminder('#1b2a4a'):''}`;
+}
+
+function C(){
+  const s=status[S.scene];
+  const grad={setup:'#b45309,#d97706',safe:'#1f8a5b,#0f766e',out:'#c62828,#9f1239',problem:'#b45309,#92400e'}[S.scene];
+  const ev=S.scene==='setup'?[]:[
+    ['ok','07:02','Woke up at home','On '+S.network],
+    ['al','08:15','Left home · reminder','You checked: keys, wallet'],
+    ['ok','08:58','Back home',''],
+    ...(S.scene==='out'?[['al','09:41','Left home · reminder','Waiting for you to check']]:[]),
+  ];
+  return `<div class="c-top" style="background:linear-gradient(135deg,${grad})">
+      <div style="opacity:.85">Tuesday, 3 November</div>
+      <h1 style="font-size:28px">${s.icon} ${s.title}</h1><div>${s.text}</div>
+      <div class="c-chip"><div><b>${S.scene==='setup'?'—':S.scene==='out'?2:1}</b>reminders</div><div><b>${S.scene==='setup'?'—':'2'}</b>times out</div><div><b>${S.scene==='setup'?'—':'🔋 82%'}</b>battery</div></div>
+    </div>
+    <div class="scroll">
+      ${S.scene==='setup'?`<h2>Let's start</h2><p class="mute">Mark the home Wi-Fi once. Then the app watches quietly.</p><button class="btn primary" onclick="set({helperOpen:true})">Set home Wi-Fi</button>`:
+       S.scene==='problem'?`<button class="btn primary">Fix location permission</button>`:''}
+      ${ev.length?`<h2 style="margin-top:6px">Today</h2><div class="c-tl">${ev.slice().reverse().map(e=>`<div class="c-ev ${e[0]}"><div class="mute" style="font-size:13px">${e[1]}</div><b style="font-size:18px">${e[2]}</b><div class="mute">${e[3]}</div></div>`).join('')}</div>`:''}
+      <button class="btn ghost" onclick="alert('Shows last place on the map')">I forgot something</button>
+    </div>${S.helperOpen?helperSheet():''}${S.scene==='out'?reminder('linear-gradient(180deg,#9f1239,#3b0764)'):''}`;
+}
+
+function render(){
+  $('phone').innerHTML=A();
+  $('label').textContent=`${variant} (${VARIANTS[variant]})`;
+  $('scenes').innerHTML=Object.entries(SCENES).map(([k,v])=>`<button class="${S.scene===k?'on':''}" onclick="setScene('${k}')">${v}</button>`).join('');
+  $('state').textContent='state: '+JSON.stringify({variant,...S});
+}
+function go(d){const k=Object.keys(VARIANTS);variant=k[(k.indexOf(variant)+d+k.length)%k.length];
+  const u=new URL(location);u.searchParams.set('variant',variant);history.replaceState(null,'',u);render()}
+$('prev').onclick=()=>go(-1);$('next').onclick=()=>go(1);
+addEventListener('keydown',e=>{if(e.target.closest('input,textarea,[contenteditable]'))return;if(e.key==='ArrowLeft')go(-1);if(e.key==='ArrowRight')go(1)});
+render();
+</script>
+</body>
+</html>

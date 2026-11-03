@@ -18,6 +18,9 @@ class ForegroundHost implements BackgroundHost, WatcherLink {
   /// The message sent to the service when the language changes.
   static const languageMessage = 'language_changed';
 
+  /// The message sent to the service when the home Wi-Fi changes.
+  static const homeWifiMessage = 'home_wifi_changed';
+
   static const _tickMilliseconds = 60000;
 
   static void init(String channelName) => FlutterForegroundTask.init(
@@ -52,6 +55,10 @@ class ForegroundHost implements BackgroundHost, WatcherLink {
   @override
   void languageChanged() =>
       FlutterForegroundTask.sendDataToTask(languageMessage);
+
+  @override
+  void homeWifiChanged() =>
+      FlutterForegroundTask.sendDataToTask(homeWifiMessage);
 
   /// Asks again for anything missing, because the main screen's button uses
   /// this after setup too. "Allow all the time" is required for the service to

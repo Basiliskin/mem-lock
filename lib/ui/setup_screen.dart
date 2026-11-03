@@ -30,6 +30,7 @@ class SetupScreen extends StatefulWidget {
     required this.store,
     required this.activityCheck,
     required this.quietPlaces,
+    this.homeWifi,
     required this.reminderOptions,
     required this.onDone,
   });
@@ -39,6 +40,9 @@ class SetupScreen extends StatefulWidget {
   final SetupStore store;
   final ActivityAvailability activityCheck;
   final WidgetBuilder quietPlaces;
+
+  /// When set, marking the home Wi-Fi replaces marking a Quiet Place.
+  final WidgetBuilder? homeWifi;
   final WidgetBuilder reminderOptions;
   final VoidCallback onDone;
 
@@ -74,12 +78,20 @@ class _SetupScreenState extends State<SetupScreen> with WidgetsBindingObserver {
       why: context.l10n.setupWhyBattery,
     ),
     _Step(context.l10n.setupPhoneTitle, context.l10n.setupPhoneText),
-    _Step(
-      context.l10n.setupQuietTitle,
-      context.l10n.setupQuietText,
-      openLabel: context.l10n.setupOpenQuiet,
-      open: widget.quietPlaces,
-    ),
+    if (widget.homeWifi case final home?)
+      _Step(
+        context.l10n.setupHomeTitle,
+        context.l10n.setupHomeText,
+        openLabel: context.l10n.setupOpenHome,
+        open: home,
+      )
+    else
+      _Step(
+        context.l10n.setupQuietTitle,
+        context.l10n.setupQuietText,
+        openLabel: context.l10n.setupOpenQuiet,
+        open: widget.quietPlaces,
+      ),
     _Step(
       context.l10n.setupOptionsTitle,
       context.l10n.setupSilentText,

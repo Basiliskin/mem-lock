@@ -9,6 +9,7 @@ import '../adapters/plugin_activity.dart';
 import '../adapters/phone_battery.dart';
 import '../adapters/phone_health.dart';
 import '../adapters/phone_reminder_output.dart';
+import '../adapters/phone_wifi.dart';
 import '../adapters/prefs_detection_settings.dart';
 import '../adapters/prefs_last_place.dart';
 import '../adapters/prefs_quiet_places.dart';
@@ -16,7 +17,9 @@ import '../adapters/prefs_reminder_options.dart';
 import '../adapters/prefs_reminder_places.dart';
 import '../adapters/prefs_state_store.dart';
 import '../adapters/reminder_actions.dart';
+import '../features.dart';
 import 'battery_monitor.dart';
+import 'home_watcher.dart';
 import 'protection_monitor.dart';
 import 'reminder_session.dart';
 import 'watcher.dart';
@@ -27,6 +30,7 @@ void watcherEntryPoint() => FlutterForegroundTask.setTaskHandler(_Handler());
 
 class _Handler extends TaskHandler {
   Watcher? _watcher;
+  HomeWatcher? _home;
   ProtectionMonitor? _monitor;
   BatteryMonitor? _batteryMonitor;
   final _actions = ReceivePort();
@@ -42,29 +46,48 @@ class _Handler extends TaskHandler {
     registerActionPort(_actions.sendPort);
     _actions.listen((_) => session.stop());
 
-    final watcher = Watcher(
-      location: GeolocatorLocation(),
-      locationStatus: PrefsLocationStatus(),
-      activity: PluginActivity(),
-      store: PrefsStateStore(),
-      reminders: session,
-      places: PrefsLastPlace(),
-      quiet: PrefsQuietPlaces(),
-      reminderPlaces: PrefsReminderPlaces(),
-      detectionSettings: PrefsDetectionSettings(),
-    );
-    await watcher.start();
-    _watcher = watcher;
-    // A message sent before this point was dropped, so read once more.
-    await watcher.syncQuietPlaces();
-    await watcher.syncReminderPlaces();
-    await watcher.syncDetectionSettings();
+    if (homeWifiOnly) {
+      final home = HomeWatcher(
+        location: GeolocatorLocation(),
+        locationStatus: PrefsLocationStatus(),
+        activity: PluginActivity(),
+        wifi: PhoneWifi(),
+        home: PrefsHomeWifi(),
+        store: PrefsHomeState(),
+        reminders: session,
+        places: PrefsLastPlace(),
+      );
+      await home.start();
+      _home = home;
+      // A message sent before this point was dropped, so read once more.
+      await home.syncHome();
+    } else {
+      final watcher = Watcher(
+        location: GeolocatorLocation(),
+        locationStatus: PrefsLocationStatus(),
+        activity: PluginActivity(),
+        store: PrefsStateStore(),
+        reminders: session,
+        places: PrefsLastPlace(),
+        quiet: PrefsQuietPlaces(),
+        reminderPlaces: PrefsReminderPlaces(),
+        detectionSettings: PrefsDetectionSettings(),
+      );
+      await watcher.start();
+      _watcher = watcher;
+      // A message sent before this point was dropped, so read once more.
+      await watcher.syncQuietPlaces();
+      await watcher.syncReminderPlaces();
+      await watcher.syncDetectionSettings();
+    }
     final monitor = ProtectionMonitor(
       health: PhoneHealth(),
       notice: ServiceProtectionNotice(),
       onRecovered: () async {
-        await watcher.restartLocation();
-        await watcher.restartActivity();
+        await _watcher?.restartLocation();
+        await _watcher?.restartActivity();
+        await _home?.restartLocation();
+        await _home?.restartActivity();
       },
     );
     _monitor = monitor;
@@ -89,12 +112,15 @@ class _Handler extends TaskHandler {
       _watcher?.syncReminderPlaces();
     }
     if (data == ForegroundHost.languageMessage) _monitor?.refreshNotice();
+    if (data == ForegroundHost.homeWifiMessage) _home?.syncHome();
   }
 
   @override
   Future<void> onRepeatEvent(DateTime timestamp) async {
     _watcher?.tick(timestamp);
     await _watcher?.checkLocation();
+    _home?.tick(timestamp);
+    await _home?.checkLocation();
     await _monitor?.check();
     _batteryMonitor?.check();
   }
@@ -104,5 +130,6 @@ class _Handler extends TaskHandler {
     removeActionPort();
     _actions.close();
     await _watcher?.stop();
+    await _home?.stop();
   }
 }

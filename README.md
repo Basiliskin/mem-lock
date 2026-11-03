@@ -8,7 +8,9 @@ See `docs/idea.md`, `docs/requirements.md`, `docs/architecture.md` and `docs/des
 
 ```bash
 flutter pub get
-flutter run
+flutter run --dart-define-from-file=.env
 flutter test
 flutter analyze
 ```
+
+`.env` holds build-time feature flags. `HOME_WIFI_ONLY=true` (also the default without the file) runs only the home Wi-Fi Reminder: the Helper marks the home Wi-Fi, and walking out as the phone loses it gives a Reminder. Set it to `false` for Stays, Rides, Quiet Places and Reminder Places.

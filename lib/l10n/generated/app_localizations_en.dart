@@ -589,4 +589,133 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get keptReminderPlace => 'Kept as a Reminder Place';
+
+  @override
+  String get homeWifi => 'Home Wi-Fi';
+
+  @override
+  String get homeWifiHelp =>
+      'Reminds the person to check their belongings when they walk out of home and the phone loses the home Wi-Fi.';
+
+  @override
+  String get homeWifiNone => 'No home Wi-Fi is set.';
+
+  @override
+  String homeWifiCurrent(String name) {
+    return 'Home Wi-Fi: $name';
+  }
+
+  @override
+  String get homeWifiSet => 'This is the home Wi-Fi';
+
+  @override
+  String get homeWifiRemove => 'Remove home Wi-Fi';
+
+  @override
+  String get homeWifiNotConnected =>
+      'Connect this phone to the home Wi-Fi first, then try again.';
+
+  @override
+  String get homeWifiNoFix =>
+      'Could not find your location, so nothing was saved. Stand near a window and try again.';
+
+  @override
+  String get homeWifiSaved => 'Home Wi-Fi saved';
+
+  @override
+  String get homeWifiRemoved => 'Home Wi-Fi removed';
+
+  @override
+  String get setupHomeTitle => 'Mark home Wi-Fi';
+
+  @override
+  String get setupHomeText =>
+      'At home, with this phone connected to the home Wi-Fi, mark it. Walking out of home then gives a Reminder.';
+
+  @override
+  String get setupOpenHome => 'Set home Wi-Fi';
+
+  @override
+  String get statusAllGood => 'All good';
+
+  @override
+  String get statusAllGoodText =>
+      'You\'ll get a reminder when you walk out of home.';
+
+  @override
+  String get statusNotSet => 'Not set up';
+
+  @override
+  String get statusNotSetText => 'Mark the home Wi-Fi to start.';
+
+  @override
+  String get statusNeedsAttention => 'Needs attention';
+
+  @override
+  String get lastReminder => 'Last reminder';
+
+  @override
+  String get checkLeftHome => 'You left home';
+
+  @override
+  String get checkYes => 'Yes';
+
+  @override
+  String get checkNoGoBack => 'No, go back';
+
+  @override
+  String get checkSkip => 'Skip all';
+
+  @override
+  String get checkAllDone => 'All checked';
+
+  @override
+  String get checkGoodTrip => 'Have a good trip!';
+
+  @override
+  String get checkClose => 'Close';
+
+  @override
+  String get checkHaveEverything => 'Do you have everything?';
+
+  @override
+  String get itemKeys => 'Keys';
+
+  @override
+  String get itemWallet => 'Wallet';
+
+  @override
+  String get itemPhone => 'Phone';
+
+  @override
+  String get itemGlasses => 'Glasses';
+
+  @override
+  String get itemGas => 'Gas off';
+
+  @override
+  String get itemDoor => 'Door locked';
+
+  @override
+  String get whatToCheck => 'What to check';
+
+  @override
+  String get addItem => 'Add item';
+
+  @override
+  String get addItemHint => 'For example, umbrella';
+
+  @override
+  String get removeItem => 'Remove';
+
+  @override
+  String itemsOn(int count) {
+    return '$count on';
+  }
+
+  @override
+  String get howToRemind => 'How to remind';
+
+  @override
+  String get notSet => 'Not set';
 }

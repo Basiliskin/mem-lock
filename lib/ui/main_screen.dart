@@ -1,17 +1,20 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
+import '../domain/home_wifi.dart';
 import '../domain/last_place_record.dart';
 import '../l10n/l10n.dart';
 import '../ports/ports.dart';
 import 'forgot_screen.dart';
 
 const _ok = Color(0xFF0B6B2E);
+const _okBg = Color(0xFFE3F5EC);
 const _bad = Color(0xFFB3141C);
-const _helperPress = Duration(seconds: 2);
+const _badBg = Color(0xFFFDE8E8);
+const _warn = Color(0xFF8A4B00);
+const _warnBg = Color(0xFFFFF3DF);
 
 /// Quick settings can change location without the app ever leaving the screen.
 const _statusRefresh = Duration(seconds: 5);
@@ -26,7 +29,19 @@ class MainScreen extends StatefulWidget {
     required this.health,
     required this.battery,
     required this.helperSettings,
+    this.homeWifi,
+    this.homeWifiScreen,
+    this.checkRequests,
+    this.checkScreen,
   });
+
+  /// Set in home Wi-Fi mode: without a home Wi-Fi nothing is watched.
+  final HomeWifiStore? homeWifi;
+  final WidgetBuilder? homeWifiScreen;
+
+  /// Goes up each time the Reminder itself is tapped; opens [checkScreen].
+  final ValueListenable<int>? checkRequests;
+  final WidgetBuilder? checkScreen;
 
   final BackgroundHost host;
   final LastPlaceStore places;
@@ -52,13 +67,20 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   List<LastPlaceRecord> _places = const [];
   bool _lowBattery = false;
   int _handledRequests = 0;
+  int _handledChecks = 0;
+  HomeWifi? _home;
+  bool _homeRead = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     widget.forgotRequests.addListener(_onForgotRequest);
-    _refresh().then((_) => _onForgotRequest());
+    widget.checkRequests?.addListener(_onCheckRequest);
+    _refresh().then((_) {
+      _onForgotRequest();
+      _onCheckRequest();
+    });
     _timer = Timer.periodic(_statusRefresh, (_) => _refresh());
   }
 
@@ -66,6 +88,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   void dispose() {
     _timer?.cancel();
     widget.forgotRequests.removeListener(_onForgotRequest);
+    widget.checkRequests?.removeListener(_onCheckRequest);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -79,6 +102,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     final running = await widget.host.isRunning();
     final places = await _readPlaces();
     final lowBattery = await _readLowBattery();
+    var home = _home;
+    var homeRead = _homeRead;
+    try {
+      home = await widget.homeWifi?.read();
+      homeRead = true;
+    } on Object {
+      // Read again shortly.
+    }
     // A failed check keeps the last answer, so it can't clear a warning.
     var problem = _problem;
     try {
@@ -92,8 +123,28 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         _running = running;
         _places = places;
         _lowBattery = lowBattery;
+        _home = home;
+        _homeRead = homeRead;
       });
     }
+  }
+
+  void _onCheckRequest() {
+    final requests = widget.checkRequests;
+    final screen = widget.checkScreen;
+    if (requests == null || screen == null) return;
+    if (requests.value <= _handledChecks) return;
+    _handledChecks = requests.value;
+    if (mounted) {
+      Navigator.of(context).push(MaterialPageRoute<void>(builder: screen));
+    }
+  }
+
+  Future<void> _openHomeWifi() async {
+    final screen = widget.homeWifiScreen;
+    if (screen == null) return;
+    await Navigator.of(context).push(MaterialPageRoute<void>(builder: screen));
+    _refresh();
   }
 
   Future<List<LastPlaceRecord>> _readPlaces() async {
@@ -135,28 +186,15 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       Navigator.of(context)
           .push(MaterialPageRoute<void>(builder: widget.helperSettings));
 
-  Widget _helperEntry() => Semantics(
-    container: true,
-    onLongPress: _openHelper,
-    child: RawGestureDetector(
-      excludeFromSemantics: true,
-      behavior: HitTestBehavior.opaque,
-      gestures: {
-        LongPressGestureRecognizer:
-            GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
-              () => LongPressGestureRecognizer(duration: _helperPress),
-              (r) => r.onLongPress = _openHelper,
-            ),
-      },
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 48),
-        child: Center(
-          child: Text(
-            context.l10n.helperEntry,
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16, color: Color(0xFF3D3D3D)),
-          ),
-        ),
+  /// A plain button: the old 2-second hold was too hard to find.
+  Widget _helperEntry() => SizedBox(
+    height: 56,
+    child: TextButton.icon(
+      onPressed: _openHelper,
+      icon: const Text('👪', style: TextStyle(fontSize: 22)),
+      label: Text(
+        context.l10n.helperSettings,
+        style: const TextStyle(fontSize: 18, color: Color(0xFF3D3D3D)),
       ),
     ),
   );
@@ -190,149 +228,206 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
   }
 
+  Widget _bigButton(String label, VoidCallback onPressed) => Padding(
+    padding: const EdgeInsets.only(top: 16),
+    child: SizedBox(
+      width: double.infinity,
+      height: 64,
+      child: FilledButton(
+        style: FilledButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+        ),
+        onPressed: onPressed,
+        child: Text(label, style: const TextStyle(fontSize: 20)),
+      ),
+    ),
+  );
+
+  Widget _row(String label, String value) => Container(
+    padding: const EdgeInsets.symmetric(vertical: 14),
+    decoration: const BoxDecoration(
+      border: Border(bottom: BorderSide(color: Color(0xFFDDE2EA))),
+    ),
+    child: Row(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 17, color: Color(0xFF5B6472)),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     final serviceRunning = _running;
-    if (serviceRunning == null) {
+    if (serviceRunning == null || (widget.homeWifi != null && !_homeRead)) {
       return const Scaffold(body: SizedBox.shrink());
     }
+    final text = context.l10n;
     final problem = _problem;
+    final notSet = widget.homeWifi != null && _home == null;
     final running = serviceRunning && problem == null;
+    final homeMode = widget.homeWifi != null;
+    final (
+      Color fg,
+      Color bg,
+      String icon,
+      String title,
+      String? detail,
+    ) = notSet
+        ? (_warn, _warnBg, '📶', text.statusNotSet, text.statusNotSetText)
+        : running
+        ? (
+            _ok,
+            _okBg,
+            homeMode ? '🏠' : '✓',
+            homeMode ? text.statusAllGood : text.protecting,
+            homeMode ? text.statusAllGoodText : text.nothingToDo,
+          )
+        : (
+            problem == null ? _bad : _warn,
+            problem == null ? _badBg : _warnBg,
+            '⚠️',
+            homeMode && problem != null
+                ? text.statusNeedsAttention
+                : text.notProtecting,
+            problem != null
+                ? _reason(problem)
+                : _failed
+                ? text.startFailed
+                : null,
+          );
     return Scaffold(
-      backgroundColor: running ? _ok : _bad,
+      backgroundColor: Colors.white,
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: ListView(
+          padding: const EdgeInsets.all(20),
           children: [
-            Expanded(
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        running ? Icons.check : Icons.priority_high,
-                        size: 88,
-                        color: Colors.white,
-                      ),
-                      Semantics(
-                        liveRegion: true,
-                        child: Text(
-                          running
-                              ? context.l10n.protecting
-                              : context.l10n.notProtecting,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 36,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      if (running)
-                        Text(
-                          context.l10n.nothingToDo,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.white, fontSize: 20),
-                        ),
-                      if (!running) ...[
-                        if (problem != null)
-                          Text(
-                            _reason(problem),
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                            ),
-                          ),
-                        if (problem == null && _failed)
-                          Text(
-                            context.l10n.startFailed,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.white, fontSize: 20),
-                          ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 64,
-                          child: FilledButton(
-                            style: FilledButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: _bad,
-                            ),
-                            onPressed: problem == null
-                                ? _enable
-                                : () => _fix(problem),
-                            child: Text(
-                              problem == null
-                                  ? context.l10n.enable
-                                  : context.l10n.fix,
-                              style: const TextStyle(fontSize: 20),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-            ),
             Container(
-              color: Colors.white,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(22, 28, 22, 28),
+              decoration: BoxDecoration(
+                color: bg,
+                borderRadius: BorderRadius.circular(28),
+              ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (_lowBattery)
-                    Semantics(
-                      liveRegion: true,
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFF3C4),
-                          border: Border.all(color: const Color(0xFF7A5C00)),
-                        ),
-                        child: Text(
-                          context.l10n.lowBattery,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 20),
-                        ),
+                  Container(
+                    width: 150,
+                    height: 150,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(color: fg.withAlpha(40), spreadRadius: 10),
+                      ],
+                    ),
+                    child: ExcludeSemantics(
+                      child: Text(icon, style: const TextStyle(fontSize: 64)),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: fg,
+                        fontSize: 32,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
-                  if (_places.isNotEmpty)
-                    SizedBox(
-                      height: 96,
-                      child: OutlinedButton(
-                        onPressed: () => _openForgot(_places),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              context.l10n.actionForgot,
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              context.l10n.whenText(
-                                _places.first.time,
-                                DateTime.now(),
-                              ),
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          ],
-                        ),
-                      ),
+                  ),
+                  if (detail != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      detail,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 19),
                     ),
-                  _helperEntry(),
+                  ],
                 ],
               ),
             ),
+            if (notSet)
+              _bigButton(text.setupOpenHome, _openHomeWifi)
+            else if (problem != null)
+              _bigButton(text.fix, () => _fix(problem))
+            else if (!serviceRunning)
+              _bigButton(text.enable, _enable),
+            if (!notSet && (_home != null || _places.isNotEmpty))
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Column(
+                  children: [
+                    if (_home case final home?)
+                      _row(text.homeWifi, home.network),
+                    if (_places.isNotEmpty)
+                      _row(
+                        text.lastReminder,
+                        text.whenText(_places.first.time, DateTime.now()),
+                      ),
+                  ],
+                ),
+              ),
+            if (_lowBattery)
+              Semantics(
+                liveRegion: true,
+                child: Container(
+                  margin: const EdgeInsets.only(top: 16),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF3C4),
+                    border: Border.all(color: const Color(0xFF7A5C00)),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Text(
+                    text.lowBattery,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                ),
+              ),
+            if (_places.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: SizedBox(
+                  height: 64,
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      side: const BorderSide(
+                        color: Color(0xFFDDE2EA),
+                        width: 2,
+                      ),
+                    ),
+                    onPressed: () => _openForgot(_places),
+                    child: Text(
+                      text.actionForgot,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 20),
+            _helperEntry(),
           ],
         ),
       ),

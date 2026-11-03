@@ -1,4 +1,3 @@
-import 'dart:ui' show SemanticsAction;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -159,41 +158,11 @@ void main() {
   });
 
   group('Helper entry', () {
-    Future<void> hold(WidgetTester t, Duration time) async {
-      final g = await t.startGesture(t.getCenter(find.text(l10n.helperEntry)));
-      await t.pump(time);
-      await g.up();
-      await t.pumpAndSettle();
-    }
-
-    testWidgets('a 2-second press opens the Helper settings', (t) async {
+    testWidgets('one tap on the family button opens the settings', (t) async {
       await show(t, FakeHost(running: true));
-      await hold(t, const Duration(seconds: 2));
-      expect(find.text('helper-settings'), findsOneWidget);
-    });
-
-    testWidgets('a short press or tap does not', (t) async {
-      await show(t, FakeHost(running: true));
-      await hold(t, const Duration(seconds: 1));
-      expect(find.text('helper-settings'), findsNothing);
-      await t.tap(find.text(l10n.helperEntry));
-      await t.pumpAndSettle();
-      expect(find.text('helper-settings'), findsNothing);
-    });
-
-    testWidgets('TalkBack has an equal action', (t) async {
-      await show(t, FakeHost(running: true));
-      final handle = t.ensureSemantics();
-      t
-          .getSemantics(find.text(l10n.helperEntry))
-          .owner!
-          .performAction(
-            t.getSemantics(find.text(l10n.helperEntry)).id,
-            SemanticsAction.longPress,
-          );
+      await t.tap(find.text(l10n.helperSettings));
       await t.pumpAndSettle();
       expect(find.text('helper-settings'), findsOneWidget);
-      handle.dispose();
     });
   });
 
