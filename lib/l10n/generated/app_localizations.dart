@@ -1345,6 +1345,12 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Не выбран'**
   String get notSet;
+
+  /// No description provided for @reminderBodyHome.
+  ///
+  /// In ru, this message translates to:
+  /// **'Вы вышли из дома. Проверьте вещи.'**
+  String get reminderBodyHome;
 }
 
 class _AppLocalizationsDelegate

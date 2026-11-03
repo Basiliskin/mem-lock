@@ -721,4 +721,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get notSet => 'Не выбран';
+
+  @override
+  String get reminderBodyHome => 'Вы вышли из дома. Проверьте вещи.';
 }

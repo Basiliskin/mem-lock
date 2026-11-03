@@ -286,5 +286,6 @@
   "itemsOn": "Включено: {count}",
   "howToRemind": "Как напоминать",
   "notSet": "Не выбран",
-  "@itemsOn": {"placeholders": {"count": {"type": "int"}}}
+  "@itemsOn": {"placeholders": {"count": {"type": "int"}}},
+  "reminderBodyHome": "Вы вышли из дома. Проверьте вещи."
 }

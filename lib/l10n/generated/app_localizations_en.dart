@@ -718,4 +718,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notSet => 'Not set';
+
+  @override
+  String get reminderBodyHome => 'You left home. Check your things.';
 }

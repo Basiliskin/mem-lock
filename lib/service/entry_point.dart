@@ -11,6 +11,7 @@ import '../adapters/phone_health.dart';
 import '../adapters/phone_reminder_output.dart';
 import '../adapters/phone_wifi.dart';
 import '../adapters/prefs_detection_settings.dart';
+import '../adapters/prefs_language.dart';
 import '../adapters/prefs_last_place.dart';
 import '../adapters/prefs_quiet_places.dart';
 import '../adapters/prefs_reminder_options.dart';
@@ -42,6 +43,7 @@ class _Handler extends TaskHandler {
     final session = ReminderSession(
       output: output,
       options: PrefsReminderOptions(),
+      leftHomeText: () async => (await currentText()).reminderBodyHome,
     );
     registerActionPort(_actions.sendPort);
     _actions.listen((_) => session.stop());

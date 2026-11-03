@@ -13,8 +13,13 @@ class ReminderSession implements ReminderPlayer, ReminderTester {
   ReminderSession({
     required ReminderOutput output,
     required ReminderOptionsStore options,
+    Future<String> Function()? leftHomeText,
   }) : _output = output,
-       _optionsStore = options;
+       _optionsStore = options,
+       _leftHomeText = leftHomeText;
+
+  /// The default message after leaving home, read each time for the language.
+  final Future<String> Function()? _leftHomeText;
 
   final ReminderOutput _output;
   final ReminderOptionsStore _optionsStore;
@@ -38,6 +43,17 @@ class ReminderSession implements ReminderPlayer, ReminderTester {
     final message = reminder.placeMessage;
     if (message != null) {
       _options = _options.copyWith(body: () => message);
+    }
+    final leftHome = _leftHomeText;
+    if (reminder.source == ReminderSource.home &&
+        _options.body == null &&
+        leftHome != null) {
+      try {
+        final text = await leftHome();
+        _options = _options.copyWith(body: () => text);
+      } on Object {
+        // The general message still works.
+      }
     }
     if (run == _run) await _fire(run);
   }

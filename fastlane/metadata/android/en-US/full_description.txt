@@ -1,23 +1,26 @@
-Does your mother or father sometimes leave a bag or phone charger behind? LeaveCheck reminds them to check their belongings when they leave a place.
+Does your mother or father sometimes leave home without their keys, or forget to turn off the gas? LeaveCheck reminds them to check, right as they walk out of the door.
 
-You set it up once on their phone. After that, there is nothing to start or press. When they have stayed somewhere and walk away, the phone gives a Reminder and repeats it a few times until they tap it.
+You set it up once on their phone, at home: mark the home Wi-Fi and choose what to check. After that there is nothing to start or press. When they walk out and the phone loses the home Wi-Fi, it gives a Reminder and repeats it until they answer.
+
+HOW THE CHECK WORKS
+Tapping the Reminder asks one thing at a time, with big pictures and big buttons: "Keys?" – Yes. "Wallet?" – Yes. "Gas off?" – Yes. When everything is checked, the Reminder stops. "No, go back" shows home on the map.
 
 WHAT IT DOES
-• Gives a Reminder after leaving a place where they stayed for a while
-• Lets you mark places that always get a Reminder, with your own message
-• Lets you mark Quiet Places, such as home, where it stays silent
-• Plays your own text or recorded voice, with sound and vibration
-• "I forgot something" shows the last place, and opens it in the phone's map app
+• Notices leaving home from the home Wi-Fi, walking and location
+• Asks about each thing you choose: keys, wallet, phone, glasses, gas, door, or your own
+• Plays your own recorded voice or a tone, with vibration
+• A router restart while they sit at home gives no Reminder
+• "I forgot something" opens home in the phone's map app
 • Warns when something stops it working, such as location being off or a low battery
-• Protects settings from accidental changes
+• Simple, large screens made for older people
 
 WHAT IT CAN'T DO
-• It can't tell whether a bag was left behind. It reminds them to check, every time.
-• It can't detect a phone left inside a forgotten bag. The phone needs to be on their body, in a pocket or around the neck.
-• It can't guarantee that nothing will be lost.
-• Reminders can come late or be missed if the phone restricts background work or location is weak.
+• It can't tell whether something was left behind. It asks them to check, every time.
+• It can't notice leaving if the phone stays at home or isn't connected to the home Wi-Fi.
+• It can't guarantee that nothing will be forgotten.
+• Reminders can come late or be missed if the phone restricts background work.
 
 YOUR PRIVACY
-LeaveCheck uses location all the time, including in the background, to notice when they leave a place. Location stays on the phone. There is no account and no server. It is shared only when they choose to open directions in the map app.
+LeaveCheck uses location all the time, including in the background, to notice when they leave home. It reads the name of the Wi-Fi network the phone is connected to. Both stay on the phone. There is no account and no server. Location is shared only when they choose to open directions in the map app.
 
 Available in Russian and English. Free.

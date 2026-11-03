@@ -1,1 +1,1 @@
-First release.
+First release: a Reminder when leaving home, with a one-at-a-time check.

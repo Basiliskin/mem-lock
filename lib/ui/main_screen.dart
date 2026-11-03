@@ -245,6 +245,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     ),
   );
 
+  /// "Nov 1, 19:37", in the app's language.
+  String _shortTime(DateTime time) {
+    final m = MaterialLocalizations.of(context);
+    return '${m.formatShortMonthDay(time)}, '
+        '${m.formatTimeOfDay(TimeOfDay.fromDateTime(time), alwaysUse24HourFormat: true)}';
+  }
+
   Widget _row(String label, String value) => Container(
     padding: const EdgeInsets.symmetric(vertical: 14),
     decoration: const BoxDecoration(
@@ -375,10 +382,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     if (_home case final home?)
                       _row(text.homeWifi, home.network),
                     if (_places.isNotEmpty)
-                      _row(
-                        text.lastReminder,
-                        text.whenText(_places.first.time, DateTime.now()),
-                      ),
+                      _row(text.lastReminder, _shortTime(_places.first.time)),
                   ],
                 ),
               ),
