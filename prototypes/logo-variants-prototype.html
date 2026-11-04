@@ -1,0 +1,73 @@
+<!doctype html>
+<!-- PROTOTYPE — throwaway. Question: which app icon best says "check your things when you leave home"? Switch with ?v=A..E or the bottom bar. -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LeaveCheck Logo Variants</title>
+<style>
+:root{--bg:#f2f3f7;--fg:#1b1d24;--muted:#666;--card:#fff}
+@media (prefers-color-scheme:dark){:root{--bg:#121318;--fg:#eee;--muted:#aaa;--card:#1d1f27}}
+body{margin:0;font:15px system-ui,sans-serif;background:var(--bg);color:var(--fg);padding:16px 16px 110px}
+h1{font-size:20px;margin:0 0 4px} p{color:var(--muted);margin:0 0 20px;max-width:640px}
+.row{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-end;margin-bottom:28px}
+.lbl{font-size:12px;color:var(--muted);text-align:center;margin-top:6px}
+.icon svg{display:block}
+.circle svg{border-radius:50%} .squircle svg{border-radius:28%} .square svg{border-radius:12%}
+.phone{display:flex;gap:22px;padding:22px;border-radius:20px;flex-wrap:wrap}
+.phone.light{background:linear-gradient(#cfe3ff,#f5e6ff)} .phone.dark{background:linear-gradient(#111,#2a2240)}
+.app{width:64px;text-align:center;font-size:11px} .phone.light .app{color:#222}.phone.dark .app{color:#eee}
+.app svg{border-radius:50%;width:56px;height:56px} .dummy{width:56px;height:56px;border-radius:50%;margin:0 auto;background:#8884}
+.bar{position:fixed;left:0;right:0;bottom:0;display:flex;gap:6px;justify-content:center;padding:12px;background:var(--card);box-shadow:0 -2px 10px #0003;flex-wrap:wrap}
+.bar button{border:0;border-radius:10px;padding:10px 14px;font:inherit;background:var(--bg);color:var(--fg);cursor:pointer}
+.bar button.on{background:#0B3D91;color:#fff}
+.state{font:12px ui-monospace,monospace;color:var(--muted)}
+</style></head><body>
+<h1 id="name"></h1><p id="idea"></p>
+<div class="row" id="masks"></div>
+<div class="row" id="sizes"></div>
+<div class="phone light" id="pl"></div><br><div class="phone dark" id="pd"></div>
+<p class="state" id="state"></p>
+<div class="bar" id="bar"></div>
+
+<script>
+const BG='#0B3D91', Y='#FFC83D', W='#fff', G='#3DDC84';
+const V={
+A:{name:'A · House + check',idea:'A house whose door carries a big check mark. Reads as "home — all checked". Simplest, survives 48 px.',
+svg:`<rect width="108" height="108" fill="${BG}"/>
+<path d="M54 22 L86 48 V84 H22 V48 Z" fill="${W}"/>
+<path d="M54 22 L86 48 V84 H22 V48 Z" fill="none" stroke="${W}" stroke-width="6" stroke-linejoin="round"/>
+<path d="M38 58 l12 12 l22 -24" fill="none" stroke="${G}" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>`},
+B:{name:'B · Key + check',idea:'A key with a check badge. Says "did you take your keys?" — the most common item. Less about leaving.',
+svg:`<rect width="108" height="108" fill="${BG}"/>
+<circle cx="40" cy="48" r="16" fill="none" stroke="${Y}" stroke-width="9"/>
+<path d="M54 56 L80 82 M68 70 l8 -8 M76 78 l6 -6" stroke="${Y}" stroke-width="9" stroke-linecap="round"/>
+<circle cx="76" cy="34" r="15" fill="${G}"/><path d="M69 34 l5 5 l9 -10" fill="none" stroke="${W}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`},
+C:{name:'C · Open door + walker',idea:'A person stepping out of an open door, with a "?" bubble. Tells the story "leaving → are you sure?". Busiest at small size.',
+svg:`<rect width="108" height="108" fill="${BG}"/>
+<rect x="22" y="26" width="34" height="58" rx="3" fill="${Y}"/>
+<path d="M22 26 L40 32 V90 L22 84 Z" fill="#C8921A"/>
+<circle cx="70" cy="42" r="6" fill="${W}"/>
+<path d="M70 50 L66 68 L58 82 M66 68 L76 82 M68 56 L80 62 M68 56 L58 62" stroke="${W}" stroke-width="6" stroke-linecap="round" fill="none"/>
+<circle cx="84" cy="24" r="12" fill="${W}"/><text x="84" y="30" font-size="17" font-weight="800" text-anchor="middle" fill="${BG}" font-family="system-ui">?</text>`},
+D:{name:'D · Checklist in a house',idea:'House outline holding three checklist lines (keys, gas, door). Most literal "checklist when leaving home".',
+svg:`<rect width="108" height="108" fill="${BG}"/>
+<path d="M54 18 L90 46 V88 H18 V46 Z" fill="none" stroke="${W}" stroke-width="7" stroke-linejoin="round"/>
+${[52,64,76].map((y,i)=>`<path d="M32 ${y} l4 4 l7 -8" fill="none" stroke="${i<2?G:'#ffffff66'}" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="50" y="${y-3}" width="26" height="5" rx="2.5" fill="${W}"/>`).join('')}`},
+E:{name:'E · Wi-Fi leaving home + bell',idea:'House with fading Wi-Fi arcs and a reminder bell. Explains HOW it works (Wi-Fi lost → reminder), less WHAT for the user.',
+svg:`<rect width="108" height="108" fill="${BG}"/>
+<path d="M40 30 L64 50 V82 H16 V50 Z" fill="${W}"/>
+<path d="M66 44 a14 14 0 0 1 0 20 M74 36 a26 26 0 0 1 0 36" fill="none" stroke="${W}" stroke-width="5" stroke-linecap="round" opacity=".55"/>
+<path d="M82 28 a38 38 0 0 1 0 52" fill="none" stroke="${W}" stroke-width="5" stroke-linecap="round" opacity=".25"/>
+<path d="M30 68 a10 10 0 0 1 20 0 v6 h4 v4 h-28 v-4 h4 z" fill="${Y}"/><circle cx="40" cy="81" r="3" fill="${Y}"/>`},
+};
+const mk=(k,s)=>`<svg viewBox="0 0 108 108" width="${s}" height="${s}">${V[k].svg}</svg>`;
+function show(k){
+  if(!V[k])k='A'; history.replaceState(null,'','?v='+k);
+  name.textContent=V[k].name; idea.textContent=V[k].idea;
+  masks.innerHTML=['circle','squircle','square'].map(m=>`<div><div class="icon ${m}">${mk(k,160)}</div><div class="lbl">${m} mask</div></div>`).join('');
+  sizes.innerHTML=[96,64,48,32].map(s=>`<div><div class="icon circle">${mk(k,s)}</div><div class="lbl">${s}px</div></div>`).join('');
+  const home=`<div class="app"><div class="dummy"></div>Clock</div><div class="app"><div class="dummy"></div>Phone</div><div class="app">${mk(k,56)}<br>LeaveCheck</div><div class="app"><div class="dummy"></div>Photos</div>`;
+  pl.innerHTML=home; pd.innerHTML=home;
+  bar.innerHTML=Object.keys(V).map(x=>`<button class="${x===k?'on':''}" onclick="show('${x}')">${x}</button>`).join('');
+  state.textContent=`state: variant=${k} · background=${BG} (current ic_launcher_background) · viewBox 108 = adaptive-icon canvas, safe zone ≈ center 66`;
+}
+show(new URLSearchParams(location.search).get('v'));
+</script></body></html>

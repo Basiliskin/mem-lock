@@ -183,3 +183,6 @@
 - **Family settings opens with one tap on "👪 Settings for family".** The 2-second hold was replaced in both modes, because the Helper could not find how to open it.
 - In home Wi-Fi mode the family list replaces the old settings screen; with `HOME_WIFI_ONLY=false` the old screen is used. The main screen's new look applies in both modes.
 - Files: `lib/domain/check_items.dart`, `lib/ui/check_screen.dart`, `lib/ui/check_items_screen.dart`, `lib/ui/family_settings_screen.dart`, `lib/ui/main_screen.dart`.
+
+## 2026-11-04 · /prototype logo
+- **Logo:** a white house outline holding a three-line checklist (two green ticks, one pending) on the `primary` blue, as an adaptive icon — chosen from five variants in `prototypes/logo-variants-prototype.html` because it says "checklist when leaving home" and stays readable at 48 px. Replaces the earlier entry: tote bag with a checkmark. Notifications use a separate one-colour icon. Files: `assets/brand/`, `android/app/src/main/res/`, `fastlane/metadata/android/*/images/icon.png`.
