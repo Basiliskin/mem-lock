@@ -55,3 +55,4 @@ fastlane/report.xml
 key.properties
 vendor/bundle/
 .bundle/
+packages/activity_recognition_flutter/android/.gradle/
