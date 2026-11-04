@@ -1,0 +1,103 @@
+default_platform(:android)
+
+AAB = "build/app/outputs/bundle/release/app-release.aab"
+MAPPING = "build/app/outputs/mapping/release/mapping.txt"
+
+platform :android do
+  desc "Build release AAB"
+  lane :build do
+    sh("cd .. && flutter build appbundle --release --dart-define-from-file=.env")
+  end
+
+  desc "Upload the built AAB to the internal track"
+  lane :deploy_internal do
+    UI.user_error!("No AAB at #{AAB} — run ./gradlew bundleRelease first") unless File.exist?("../#{AAB}")
+    upload_to_play_store(
+      track: "internal",
+      aab: AAB,
+      mapping: File.exist?("../#{MAPPING}") ? MAPPING : nil,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  desc "Promote a release between tracks. Usage: promote from:internal to:beta [rollout:0.1]"
+  lane :promote do |options|
+    from = options[:from] || "internal"
+    to = options[:to] || UI.user_error!("Pass to:<track>")
+    rollout = options[:rollout]
+    params = {
+      track: from,
+      track_promote_to: to,
+      skip_upload_apk: true, skip_upload_aab: true,
+      skip_upload_metadata: true, skip_upload_images: true, skip_upload_screenshots: true
+    }
+    if rollout
+      params[:rollout] = rollout.to_s
+      params[:track_promote_release_status] = "inProgress"
+    end
+    upload_to_play_store(params)
+  end
+
+  desc "Change the production staged-rollout percentage. Usage: rollout percent:0.5"
+  lane :rollout do |options|
+    percent = options[:percent] || UI.user_error!("Pass percent:<0..1>")
+    if percent.to_f >= 1.0
+      upload_to_play_store(track: "production", release_status: "completed",
+        skip_upload_apk: true, skip_upload_aab: true, skip_upload_metadata: true,
+        skip_upload_images: true, skip_upload_screenshots: true, skip_upload_changelogs: true)
+    else
+      upload_to_play_store(track: "production", rollout: percent.to_s,
+        skip_upload_apk: true, skip_upload_aab: true, skip_upload_metadata: true,
+        skip_upload_images: true, skip_upload_screenshots: true, skip_upload_changelogs: true)
+    end
+  end
+
+  desc "Halt the current production staged rollout"
+  lane :halt do
+    upload_to_play_store(track: "production", release_status: "halted",
+      skip_upload_apk: true, skip_upload_aab: true, skip_upload_metadata: true,
+      skip_upload_images: true, skip_upload_screenshots: true, skip_upload_changelogs: true)
+  end
+
+  desc "Download the current store listing (texts, images, screenshots) into fastlane/metadata/android"
+  lane :pull_listing do
+    download_from_play_store(metadata_path: "fastlane/metadata/android")
+    sh("git", "-C", "..", "--no-pager", "diff", "--stat", "--", "fastlane/metadata") rescue nil
+  end
+
+  desc "Upload store listing. Options: text:true (texts only) | images:true (graphics + screenshots only)"
+  lane :push_listing do |options|
+    text_only = options[:text] == true || options[:text].to_s == "true"
+    images_only = options[:images] == true || options[:images].to_s == "true"
+    sh("python3", "../scripts/validate_listing.py", "../fastlane/metadata/android") if File.exist?("../scripts/validate_listing.py")
+    upload_to_play_store(
+      metadata_path: "fastlane/metadata/android",
+      track: options[:track] || "internal", # a track with a release; listing itself is app-wide
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      skip_upload_changelogs: true,
+      skip_upload_metadata: images_only,
+      skip_upload_images: text_only,
+      skip_upload_screenshots: text_only,
+      sync_image_upload: true # only re-upload images whose content changed
+    )
+  end
+
+  # Backwards-compatible alias
+  lane :metadata do
+    push_listing
+  end
+
+  desc "Show versionCodes on every track"
+  lane :versions do
+    %w[internal alpha beta production].each do |t|
+      begin
+        UI.message("#{t}: #{google_play_track_version_codes(track: t)}")
+      rescue => e
+        UI.message("#{t}: #{e.message}")
+      end
+    end
+  end
+end

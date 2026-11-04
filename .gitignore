@@ -46,3 +46,12 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Play publishing
+play-service-account.json
+fastlane/report.xml
+*.jks
+*.keystore
+key.properties
+vendor/bundle/
+.bundle/
